@@ -1,0 +1,22 @@
+<div class="row">
+    <div class="col-lg-3" id="toc_div">
+        <div id="toc_scroll_wrapper">
+            <nav id="toc" data-toggle="toc">
+                <ul class="nav">
+                    {% for element in as_run_history.get_children %}
+                        {% include "ui/pages/execute/execute_history_step_toc_title.html" %}
+                    {% endfor %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <div class="col-lg-9">
+        {# Print Elements #}
+        <div class="history_panel">
+            {% for element in as_run_history.get_children %}
+                {% include "ui/pages/execute/execute_history_step_detail.html" with as_run_history=True %}
+            {% endfor %}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,3 @@
+{% for role in roles %}
+    <a href="{% url 'manage_roles_page' %}?role_name={{ role }}">{{ role }}</a><br />
+{% endfor %}

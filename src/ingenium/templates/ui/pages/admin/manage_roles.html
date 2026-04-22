@@ -1,0 +1,102 @@
+{% extends "layouts/admin_template.html" %}
+{% load data_tables_tags %}
+
+{% block admin_page_content %}
+
+    {% render_data_table data_table %}
+
+    <script>
+
+        $(document).on('up.added', 'form#role_form', function (event, elements) {
+            if (this === elements) {
+                $(elements).each(function (index, element) {
+
+                    $(element).formValidation({
+                        framework: 'bootstrap',
+                        fields: {
+                            'name': {
+                                validators: {
+                                    notEmpty: {
+                                        message: '<strong>Name</strong> must be provided'
+                                    },
+                                    stringLength: {
+                                        max: 256,
+                                        message: '<strong>Name</strong> must be less then 256 characters'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    $(element).find('input[name="users"]').up_typeahead({
+                        url: '{% url 'lookup_user' %}',
+                        map: function(json) {
+                            return $.map(json, function(result) {
+                                return {
+                                    name: result,
+                                    value: result,
+                                    id: result
+                                };
+                            });
+                        },
+                        tokenfield: true,
+                        force_selection: true,
+                        hidden_id: true
+                    });
+
+                    $(element).find('input[name="groups"]').up_typeahead({
+                        url: '{% url 'lookup_group' %}',
+                        map: function(json) {
+                            return $.map(json, function(result) {
+                                return {
+                                    name: result,
+                                    value: result,
+                                    id: result
+                                };
+                            });
+                        },
+                        tokenfield: true,
+                        force_selection: true,
+                        hidden_id: true
+                    });
+
+                });
+
+            }
+        });
+
+        $('#add_role_btn').up_modal_request({
+            url: '{% url 'update_role_modal' %}',
+            on_modal_close: function() {
+                $("table#{{ data_table.get_table_name }}").DataTable().ajax.reload();
+            }
+        });
+
+        $(document).on('draw.dt', '#{{ data_table.get_table_name }}', function () {
+
+            $(this).find('.update_role_btn').each(function () {
+                $(this).up_modal_request({
+                    url: '{% url 'update_role_modal' %}',
+                    data: $(this).data('data'),
+                    notify_status_submitting_message: 'updating',
+                    notify_status_submitted_message: 'updated',
+                    on_modal_close: function () {
+                        $("table#{{ data_table.get_table_name }}").DataTable().ajax.reload();
+                    }
+                });
+            });
+
+            $(this).find('.delete_role_btn').each(function () {
+                $(this).up_modal_request({
+                    url: '{% url 'delete_role_modal' %}',
+                    data: $(this).data('data'),
+                    notify_status_submitting_message: 'deleting',
+                    notify_status_submitted_message: 'deleted',
+                    on_modal_close: function () {
+                        $("table#{{ data_table.get_table_name }}").DataTable().ajax.reload();
+                    }
+                });
+            });
+
+        });
+    </script>
+{% endblock %}

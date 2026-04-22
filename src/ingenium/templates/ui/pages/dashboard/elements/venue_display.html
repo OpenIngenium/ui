@@ -1,0 +1,45 @@
+
+<div style="display:flex;justify-content:space-between;align-items:center;">
+    <h2>Venues</h2>
+    <div class="btn-group" role="group" aria-label="...">
+        <button id="venue_list_btn" type="button" class="btn btn-default {% if venue_display_view == 'list' %}active{% endif %}"><span class="glyphicon glyphicon-list"></span></button>
+        <button id="venue_tile_btn" type="button" class="btn btn-default {% if venue_display_view == 'tile' %}active{% endif %}"><span class="glyphicon glyphicon-th"></span></button>
+    </div>
+</div>
+
+{#<!-- Sort button -->#}
+{#<div class="btn-group">#}
+{#    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">#}
+{#        <span class="glyphicon glyphicon-sort"></span> Sort <span class="caret"></span>#}
+{#    </button>#}
+{#    <ul class="dropdown-menu">#}
+{#        <li><a href="#"><span class="glyphicon glyphicon-sort-by-alphabet"></span> by Name</a></li>#}
+{#        <li><a href="#"><span class="glyphicon glyphicon-sort-by-alphabet-alt"></span> by Name</a></li>#}
+{#        <li role="separator" class="divider"></li>#}
+{#        <li><a href="#"><span class="glyphicon glyphicon-sort-by-alphabet"></span> by Type</a></li>#}
+{#        <li><a href="#"><span class="glyphicon glyphicon-sort-by-alphabet-alt"></span> by Type</a></li>#}
+{#        <li role="separator" class="divider"></li>#}
+{#        <li><a href="#"><span class="glyphicon glyphicon-sort-by-alphabet"></span> by Status</a></li>#}
+{#        <li><a href="#"><span class="glyphicon glyphicon-sort-by-alphabet-alt"></span> by Status</a></li>#}
+{#    </ul>#}
+{#</div>#}
+
+
+{# Store values in cookie to figure out preset #}
+{% if venues == None %}
+    <div class="alert alert-danger">There was an issue connecting to server</div>
+{% elif venue_display_view == 'tile' %}
+    {% include 'ui/pages/dashboard/elements/venues_tile.html' %}
+{% else %}
+    {% include 'ui/pages/dashboard/elements/venues_list.html' %}
+{% endif %}
+
+<script>
+    $("#venue_list_btn").on('click', function () {
+        venue_display('list')
+    });
+
+    $("#venue_tile_btn").on('click', function () {
+        venue_display('tile')
+    });
+</script>

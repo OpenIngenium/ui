@@ -1,0 +1,8 @@
+{% if element.get_is_executable %}
+    <div class="step_status step_show_details">
+        {% if element.get_execution_results %}
+            {% include element.get_execution_result_template_path %}
+        {% endif %}
+    </div>
+    <br/>
+{% endif %}

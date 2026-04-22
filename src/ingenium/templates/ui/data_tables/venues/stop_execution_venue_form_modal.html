@@ -1,0 +1,47 @@
+{% block modal_title %}
+    <h4 class="modal-title">Stop Execution on Venue</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="venue_form">
+        <input id="venue_id" name="venue_id" type="hidden" value="{{ venue.get_venue_id }}"/>
+        <input id="execution_id" name="execution_id" type="hidden" value="{{ venue.get_execution_id }}"/>
+
+        <div class="alert alert-danger">
+            You are about to stop the execution on the "{{ venue.get_name }}" venue.
+        </div>
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Information</th>
+                <th></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+                <td>Execution ID</td>
+                <td>{{ venue.get_execution_id }}</td>
+            </tr>
+            <tr>
+                <td>Conductor</td>
+                <td>{{ venue.get_test_conductor }}</td>
+            </tr>
+            <tr>
+                <td>Started on</td>
+                <td>{{ venue.get_test_started_on }}</td>
+            </tr>
+
+
+            </tbody>
+        </table>
+
+
+    </form>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-default pull-left">Cancel</button>
+    <button class="btn btn-primary" data-data='{"venue_id":"{{ venue.get_venue_id }}", "execution_id": "{{ venue.get_execution_id }}"' data-url="{% url 'stop_execution_venue' %}" data-form-id="venue_form">Confirm Stop</button>
+{% endblock %}

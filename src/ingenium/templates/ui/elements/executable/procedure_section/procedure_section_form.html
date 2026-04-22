@@ -1,0 +1,516 @@
+{% block step_content %}
+    <form id="procedure_section_{{ element.get_element_id }}" class="procedure_section_form" style="position: relative;">
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+        {# this is the procedure_id is/was selected via ui typeahead lookups below #}
+        <input type="hidden" name="reference_procedure_id" value="{{ element.get_reference_procedure_id_input|default_if_none:"" }}">
+        <div class="row">
+            <div class="col-xs-4 form-group">
+                <label data-toggle="tooltip" title="Procedure title."> Procedure</label>
+                <button type="button" class="btn btn-xs btn-info pull-right procedure-lookup">
+                    <span class="glyphicon glyphicon-search"></span> Lookup
+                </button>
+                <input name="reference_procedure_title" value="{{ element.get_reference_procedure_title_input|default_if_none:"" }}" type="text" class="form-control execution-input"/>
+                <div class="procedure_cm_container title" style="min-height: 200px;">
+                    <div class="procedure_config_management"></div>
+                </div>
+            </div>
+            <div class="col-xs-4 form-group">
+                <label data-toggle="tooltip" title="Procedure version."> Version</label>
+                <button type="button" class="btn btn-xs btn-info pull-right version-lookup">
+                    <span class="glyphicon glyphicon-search"></span> Lookup
+                </button>
+                <input name="reference_procedure_version" value="{{ element.get_reference_procedure_version_input|default_if_none:"" }}" type="text" class="form-control execution-input"/>
+                <div class="procedure_cm_container version" style="min-height: 200px;">
+                    <div class="procedure_config_management"></div>
+                </div>
+            </div>
+            <div class="col-xs-4 form-group"><label>Sections</label>
+                <button type="button" class="btn btn-xs btn-info pull-right choose-steps">
+                    <span class="glyphicon glyphicon-ok"></span> Choose
+                </button>
+                <div class="procedure_cm_container choose-steps-container" style="min-height: 200px;">
+                    <div class="procedure_config_management choose-steps" style="overflow-y: scroll;">
+                        {% for step in element.get_steps %}
+                            {% include "ui/elements/executable/procedure_section/steps_partial.html" %}
+                        {% empty %}
+                            No Steps/Sections Chosen.
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="">
+            <div class="col-xs-12">
+                <button style="margin-left: 5px;" type="button" class="btn btn-default pull-right procedure-preview">Preview</button>        
+                <button style="" type="button" {% if execution_id is None %}disabled{% endif %} class="btn btn-primary pull-right procedure-import">Import</button>       
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block javascript_content %}
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+    const blankChooseStepsDiv = '<div class="procedure_config_management choose-steps" style="overflow-y: scroll;">No Steps/Sections Chosen.</div>';
+ 
+        function populate_cm_details_under_title($cm_container, section_procedure_id) {
+            $.ajax({
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                    $cm_container.html('<div style="text-align: center; margin-top: 20px;"><h4>Loading Details...</h4></div>');
+                },
+                url: "/partial/procedure_section/cm_working_details/" + section_procedure_id + "/",
+                method: "GET",
+                dataType: "JSON",
+                success: function (result, status) {
+                    $cm_container.html(result.html);
+                },
+                error: function(error){
+                    console.log(error);
+                }
+            });
+        }        
+
+        function populate_cm_details_under_version($cm_container, procedure_id, version) {
+            $.ajax({
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                    $cm_container.html('<div style="text-align: center; margin-top: 20px;"><h4>Loading Details...</h4></div>');
+                },
+                url: "/partial/procedure_section/cm_version_details/" + procedure_id + "/" + version + "/",
+                method: "GET",
+                dataType: "JSON",
+                success: function (result, status) {
+                    $cm_container.html(result.html);
+                },
+                error: function(error){
+                    console.log(error);
+                }
+            });
+        }
+
+        function populate_cm_details_choose_steps($cm_container, element_id, procedure_id, execution_id) {
+            $.ajax({
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                    $cm_container.html('<div style="text-align: center; margin-top: 20px;"><h4>Loading Details...</h4></div>');
+                },
+                url: "/partial/procedure_section/cm_choose_steps/",
+                data: {
+                    'element_id': element_id,
+                    'procedure_id': procedure_id,
+                    'execution_id': execution_id
+                },
+                method: "GET",
+                dataType: "JSON",
+                success: function (result, status) {
+                    $cm_container.html(result.html);
+                },
+            });
+        }
+
+        $(document).on('up.added', '.procedure_section_form', function (event, element) {
+            /* because we're listening to 'document' for up.added and then rely on event bubbling to alert us when an
+             * $element was added to the document, we must make sure that the $element we get back is the same $element
+             * that we're listening for, and not a child of the $element that we're listening for */
+            if (this === element) {
+
+                const $form = $(element);
+
+                const reference_procedure_id = $form.find('input[name="reference_procedure_id"]').val();
+                const elem_id = $form.find('input[name="element_id"]').val();
+                const procedure_id = $form.find('input[name="procedure_id"]').val();
+                const execution_id = $form.find('input[name="execution_id"]').val();
+                const reference_procedure_version = $form.find('input[name="reference_procedure_version"]').val();
+                const $title_container = $form.find('.procedure_cm_container.title');
+                const $version_container = $form.find('.procedure_cm_container.version');
+                const $steps_container = $form.find('.procedure_cm_container.choose-steps-container');
+
+                if (reference_procedure_id) {
+                    populate_cm_details_under_title($title_container, reference_procedure_id);
+                    if (reference_procedure_version){
+                        populate_cm_details_under_version($version_container, reference_procedure_id, reference_procedure_version);
+                    }
+                }
+
+                $form.find('button.procedure-preview').up_modal_request({
+                    url: '{% url 'preview_procedure_modal' %}',
+                    data: { 
+                        'element_id': elem_id,
+                        'procedure_id': procedure_id,
+                        'execution_id': execution_id
+                    },
+                    'size': 'lg',
+                    'dismissible': true
+                });                
+
+                $form.find('button.procedure-import').on('click', function(event){
+                    const element_id = $(this).closest('form').find("input[name='element_id']").val();
+                    const element_type_id = $(this).closest('form').find("input[name='element_type_id']").val();
+                    $.ajax({
+                        beforeSend: function (xhr, settings) {
+                            xhr.setRequestHeader("X-CSRFToken", ING.utils.csrfToken());
+                        },
+                        url: '{% url 'import_procedure_section' %}',
+                        data: {
+                            'element_id': element_id,
+                            'execution_id': execution_id,
+                            'element_type_id': element_type_id
+                        },
+                        method: 'POST',
+                        dataType: 'JSON',
+                        success: function (result, status) {
+                            window.location.reload();
+                        },
+                        error: function(result, status) {
+                            let message = result.responseJSON.error.message;
+                            $.notify_status('error', {dismissible: true, details: message});
+                        }
+                    });
+                });
+
+                 /* initialize title up_typeahead */
+                $form.find('input[name="reference_procedure_title"]').up_typeahead({
+                    url: '{% url 'lookup_procedures' %}',
+                    force_selection: false,
+                    map_dict: {
+                        "name": "title",
+                        "description": "description",
+                        "id": "procedure_id",
+                     },
+                    typeahead_datasets: {
+                        templates: {
+                            suggestion: function (option) {
+                                return '<div class="step_typeahead_suggestion">' +
+                                    '<div>' +
+                                    '<h4>' + option.name + '</h4>' +
+                                    '<h4>' + option.id + '</h4>' +
+                                    '</div>' +
+                                    '<p>' + option.description + '</p>' +
+                                    '</div>';
+                            }
+                        }
+                    }
+
+                }).on('typeahead:select', function(event, selection) {
+                    $form.find('input[name="reference_procedure_id"]').val(selection.id);
+                    $form.find('input[name="reference_procedure_version"]').val(0);
+                    
+                    /* trigger change to save form input */
+                    $form.trigger('change');
+                    populate_cm_details_under_title($title_container, selection.id);
+                    populate_cm_details_under_version($version_container, selection.id, 0);
+                    $steps_container.html(blankChooseStepsDiv);
+                }); /* update details if procedure changes */
+
+                 /* initialize version up_typeahead */
+                $(element).find('input[name="reference_procedure_version"]').up_typeahead({
+                    url: '{% url 'lookup_procedure_versions' %}',
+                    force_selection: false,
+                    map_dict: {
+                        "id": "version_id",
+                        "procedure_id": "procedure_id",
+                        "name": "version",
+                        "author": "version_author",
+                        "status": "status",
+                        "description": "version_description",
+                     },
+                    typeahead_datasets: {
+                        templates: {
+                            suggestion: function (option) {
+                                return '<div class="step_typeahead_suggestion">' +
+                                    '<div>' +
+                                    '<h4>' + option.name + '</h4>' +
+                                    '<h4>' + option.status + '</h4>' +
+                                    '</div>' +
+                                    '<p>' +
+                                    '<strong>' + option.author + '</strong>&nbsp;-&nbsp;' +
+                                    '<span>' + option.description + '</span>' +
+                                    '</p>' +
+                                    '</div>';
+                            }
+                        }
+                    }
+                }).on('before_send', function () {
+                    $(this).up_typeahead('update_data', {
+                        'procedure_id': $("input[name='reference_procedure_id']").val()
+                    });
+                }).on('typeahead:select', function(event, selection) {
+                    /* trigger change to save form input */
+                    $form.trigger('change');
+                    populate_cm_details_under_version($version_container, selection.procedure_id, selection.name);
+                    $steps_container.html(blankChooseStepsDiv);
+                });
+
+                /************* PROCEDURE LOOKUP MODAL *************/
+                $(element).find('.procedure-lookup').up_modal_request({
+                    url: '{% url 'procedures_modal' %}',
+                    data: {'elem_id': $form.find('input[name="element_id"]').val() },
+                    up_modal_options: {
+                        'size': 'lg',
+                        'dismissible': true
+                    }
+                });
+                
+                /************* VERSION LOOKUP MODAL *************/
+                $(element).find('.version-lookup').up_modal_request({
+                    url: '{% url 'procedure_versions_modal' %}',
+                    data: {'elem_id': $form.find('input[name="element_id"]').val() },
+                    up_modal_options: {
+                        'size': 'lg',
+                        'dismissible': true
+                    },
+                    first_ajax_request_before_ajax: function ($button) {
+                        const proc_id = $button.closest('form').find("input[name='reference_procedure_id']").val();
+                        $button.up_modal_request('update_data', {'procedure_id': proc_id});
+                    }
+                });
+
+                /************* CHOOSE STEPS MODAL *************/
+                $(element).find('.choose-steps').up_modal_request({
+                    url: '{% url 'choose_steps_modal' %}',
+                    up_modal_options: {
+                        'size': 'md',
+                        'dismissible': true
+                    },
+                    first_ajax_request_before_ajax: function ($button) {
+                        const proc_id = $button.closest('form').find("input[name='reference_procedure_id']").val();
+                        const version = $button.closest('form').find("input[name='reference_procedure_version']").val();
+                        $button.up_modal_request('update_data', {
+                            'procedure_id': proc_id,
+                            'version': version,
+                        });
+                    },
+                    second_ajax_request_before_ajax: function($button) {
+                        var data = [];
+                        var $elements = $('ul.step-tree').find('input');
+
+                        $.each($elements, function(index, element){
+                            const $element = $(element);
+                            data.push({
+                                'elem_type': $element.data('elemType'),
+                                'elem_id': $element.data('elemId'),
+                                'title': $element.data('title'),
+                                'number': $element.data('number')+ "", /* convert to string */
+                                'selected': $element.prop('checked'),
+                                'parent': $element.data('parent') + "" /* convert to string */
+                            });
+                        });
+                        data = treeify(data);
+                        $button.up_modal_request('update_data', {
+                            'reference_procedure_id': $button.closest('form').find("input[name='reference_procedure_id']").val(),
+                            'reference_procedure_version': $button.closest('form').find("input[name='reference_procedure_version']").val(),
+                            'data': JSON.stringify(data),
+                            'element_id': $button.closest('form').find("input[name='element_id']").val(),                 
+                            'element_type_id': "PROCEDURE_SECTION",
+                            'execution_id': $button.closest('form').find("input[name='execution_id']").val()
+                        });
+                    },
+                    on_modal_close: function($title, $body, $footer, textStatus, jqXHR){
+                        populate_cm_details_choose_steps($steps_container, elem_id, procedure_id, execution_id); 
+                    }
+                });
+                ING.execution.change_step_form($form);             
+            }
+        });
+        
+        function treeify(list, idAttr, parentAttr, childrenAttr) {
+            if (!idAttr) idAttr = 'number';
+            if (!parentAttr) parentAttr = 'parent';
+            if (!childrenAttr) childrenAttr = 'children';
+
+            var treeList = [];
+            var lookup = {};
+            list.forEach(function(obj) {
+                lookup[obj[idAttr]] = obj;
+                obj[childrenAttr] = [];
+            });
+            list.forEach(function(obj) {
+                if (obj[parentAttr]) {
+                    lookup[obj[parentAttr]][childrenAttr].push(obj);
+                } else {
+                    treeList.push(obj);
+                }
+            });
+            return treeList;
+        };
+
+        /************* PROCEDURE MODAL SELECTION EVENT  *************/
+        $(document).on('up.added', 'button.step-select-procedure', function (event, element) {
+            if (this === element) {
+                $(element).on('click', function(){
+                    const elem_id = $(this).closest('.modal-content').find("input[name='elem_id']").val();
+                    const $procedure_section_form = $('form#procedure_section_' + elem_id);
+                    const procedure_id = $(element).data('procedureId');
+                    const procedure_title = $(element).data('procedureTitle');
+
+                    /* set form inputs with chosen procedure data */
+                    $procedure_section_form.find("input[name='reference_procedure_title']").val(procedure_title);
+                    $procedure_section_form.find("input[name='reference_procedure_id']").val(procedure_id);
+
+                    /* clear version */
+                    $procedure_section_form.find("input[name='reference_procedure_version']").val(0);
+
+                    /* trigger change to save form input */
+                    $procedure_section_form.trigger('change');
+                    
+                    /* clear details */
+                    $procedure_section_form.find('.procedure_cm_container').html('');
+
+                    /* populate title details */
+                    const $container = $procedure_section_form.find('.procedure_cm_container.title');
+                    const $version_container = $procedure_section_form.find('.procedure_cm_container.version');
+                    populate_cm_details_under_title($container, procedure_id);
+                    populate_cm_details_under_version($version_container, procedure_id, 0); /* reset version to zero on procedure change */
+                });
+            }
+        });
+
+        /************* VERSION MODAL SELECTION EVENT *************/
+        $(document).on('up.added', 'button.step-select-version', function (event, element) {
+            if (this === element) {
+                $(element).on('click', function(){
+                    const elem_id = $(this).closest('.modal-content').find("input[name='elem_id']").val();
+                    const $procedure_section_form = $('form#procedure_section_' + elem_id);
+                    const procedure_id = $procedure_section_form.find("input[name='reference_procedure_id']").val();
+                    const execution_id = $procedure_section_form.find("input[name='execution_id']").val();
+                    const procedure_version = $(element).data('version');
+
+                    /* set form input with chosen procedure version */
+                    $procedure_section_form.find("input[name='reference_procedure_version']").val(procedure_version);
+
+                    /* trigger change to save form input */
+                    $procedure_section_form.trigger('change');
+
+                    /* populate details */
+                    const $container = $procedure_section_form.find('.procedure_cm_container.version');
+                    const $steps_container = $procedure_section_form.find('.procedure_cm_container.choose-steps-container');
+                    populate_cm_details_under_version($container, procedure_id, procedure_version);
+                    $steps_container.html(blankChooseStepsDiv);
+                });
+            }
+        });
+
+        /*************** CHOOSE STEPS TREE LISTENERS ***************/
+        $(document).on('up.added', 'ul.step-tree', function (event, element) {
+            const $root = $(element);
+            $root.find('input').on('click', function(event){
+                const $clicked = $(this);
+                $clicked.closest('li').find('input').prop('checked', !$clicked.prop('checked'));
+            });
+        });
+
+        $(document).on('up.added', 'a.choose-steps-select-all', function (event, element) {
+            $(element).on('click', function(event){
+                event.preventDefault();
+                const $selectAll = $(this);
+                $selectAll.closest('.choose-steps-container').find('input').prop('checked', true);
+            });
+        });        
+        $(document).on('up.added', 'a.choose-steps-unselect-all', function (event, element) {
+            $(element).on('click', function(event){
+                event.preventDefault();
+                const $selectAll = $(this);
+                $selectAll.closest('.choose-steps-container').find('input').prop('checked', false);
+            });
+        });
+        $(document).on('up.added', '.select-step-checkbox', function (event, element) {
+            $(element).on('click', function(event){
+                let $input = $(this);
+                let checked = $input.prop('checked');
+                if (checked) {
+                    recursiveCheckUp($input);
+                }
+            });
+        });
+        function recursiveCheckUp($element) {
+            $element.prop('checked', true);
+            let $parent_input = $element.closest('ul').closest('li').find('input').first();
+            if ($parent_input.length) {
+                recursiveCheckUp($parent_input);
+            }   
+        }
+
+
+        /*************** PROCEDURE MODAL POPOVERS ***************/
+        $(document).on('up.added', 'button.procedure-actions-btn', function (event, element) {
+                const $button = $(element);
+                    
+                const title = $button.data('title');
+                const author = $button.data('author');
+                const procedure_id = $button.data('procedureId');
+                const institutional_id = $button.data('institutionalId');
+                const current_version = $button.data('currentVersion');
+                const created_at = $button.data('createdAt');
+                const saved_at = $button.data('savedAt');
+                const description = $button.data('description');
+
+                let options = {
+                    placement: 'left',
+                    html: 'true',
+                    content: '<dl>'+ 
+                                '<dt>Title</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+title+'</dd>'+
+                                '<dt>Author</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+author+'</dd>'+
+                                '<dt>Proc. ID</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+procedure_id+'</dd>'+
+                                '<dt>JPL ID</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+institutional_id+'</dd>'+                                
+                                '<dt>Cur. Ver.</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+current_version+'</dd>'+                                
+                                '<dt>Created</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+created_at+'</dd>'+                                
+                                '<dt>Updated</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+saved_at+'</dd>'+                                
+                                '<dt>Description</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+description+'</dd>'+
+                            '</dl>'
+                };
+                $button.popover(options);     
+
+        });
+
+        /*************** VERSION MODAL POPOVERS ***************/
+        $(document).on('up.added', 'button.procedure-version-actions-btn', function (event, element) {
+                const $button = $(element);
+                    
+                const version = $button.data('version');
+                const author = $button.data('author');
+                const status = $button.data('status');
+                const institutional_release_id = $button.data('institutionalReleaseId');
+                const api_version = $button.data('apiVersion');
+                const time_released = $button.data('timeReleased');
+                const time_versioned = $button.data('timeVersioned');
+                const description = $button.data('description');
+
+                let options = {
+                    placement: 'left',
+                    html: 'true',
+                    content: '<dl>'+ 
+                                '<dt>Version</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+version+'</dd>'+
+                                '<dt>Author</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+author+'</dd>'+
+                                '<dt>Status</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+status+'</dd>'+
+                                '<dt>PBAT Ver.</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+institutional_release_id+'</dd>'+                                
+                                '<dt>API Ver.</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+api_version+'</dd>'+                                
+                                '<dt>Released</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+time_released+'</dd>'+                                
+                                '<dt>Versioned</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+time_versioned+'</dd>'+                                
+                                '<dt>Description</dt>'+
+                                '<dd style="padding-bottom: 5px;">'+description+'</dd>'+
+                            '</dl>'
+                };
+                $button.popover(options);     
+
+        });
+
+    </script>
+{% endblock %}

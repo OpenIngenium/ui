@@ -1,0 +1,40 @@
+{% load up_tools_tags %}
+{% random_hash as unique_name %}
+<div class="dynamic_element cmd_file_element">
+    <input type="hidden" name="row_id" value="{{ unique_name }}"/>
+    <div class="row">
+        <div class="col-xs-6">
+            <label data-toggle="tooltip" title="The full path and name of the binary file on the venue. (Example: /home/swanchr/test.scmf)"> File Path</label>
+            <input name="file_path" value="{{ entry.file_path|default:"" }}" type="text" class="form-control execution-input"/>
+        </div>
+        <div class="col-xs-6">
+            <label data-toggle="tooltip" title="The location to save the file in the on board file system."> Onboard Path</label>
+            <input name="onboard_path" value="{{ entry.onboard_path|default:"" }}" type="text" class="form-control execution-input"/>
+        </div>
+
+    </div>
+    <br />
+    <div class="row">
+
+        <div class="col-xs-4">
+            <label data-toggle="tooltip" title="The specific file types of the file (varies from mission to mission) which is used for verification."> File Type</label>
+            <input name="file_type" value="{{ entry.file_type|default:"" }}" type="number" class="form-control execution-input"/>
+        </div>
+
+        <div class="col-xs-2">
+            <label>Timeout (sec)</label>
+            <input name="timeout" value="{{ entry.timeout|default:"" }}" type="number" class="form-control execution-input"/>
+        </div>
+
+        <div class="col-xs-3">
+            <label data-toggle="tooltip" title="Will verify the file was received by the spacecraft."> Verify Receipt?</label><br />
+            <label style="font-weight:normal;"><input name="verify_{{ unique_name }}" {% if entry.verify %}checked{% endif %} type="checkbox" class="execution-input"/> Yes</label>
+        </div>
+
+        <div class="col-xs-3">
+            <label data-toggle="tooltip" title="Overwrite the file if it exists on the spacecraft."> Overwrite?</label><br />
+            <label style="font-weight:normal;"><input name="overwrite_{{ unique_name }}" {% if entry.overwrite %}checked{% endif %} type="checkbox" class="execution-input"/> Yes</label>
+        </div>
+    </div>
+
+</div>

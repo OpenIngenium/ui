@@ -1,0 +1,18 @@
+{% block modal_title %}
+    <h4 class="modal-title">Activate User</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="user_activate_form">
+        <input id="user_id" name="user_id" type="hidden" value="{{ user.id }}"/>
+        <div class="alert alert-warning">
+            This will activate the user and allow them to log into the system.
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-default pull-left">Cancel</button>
+    <button class="btn btn-primary" data-data='{"user_id":"{{ user.id }}"}' data-url="{% url 'activate_user' %}" data-form-id="user_activate_form">Confirm Activation</button>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends "layouts/admin_template.html" %}
+{% load data_tables_tags %}
+
+{% block admin_page_content %}
+    {% render_data_table data_table %}
+
+    <script>
+
+        $('#add_venue_btn').up_modal_request({
+            url: '{% url 'update_venue_modal' %}',
+            on_modal_open: function($title, $body) {
+
+                $body.find("form#venue_form").formValidation({
+                    framework: 'bootstrap',
+                    fields: {
+                        'name': {
+                            validators: {
+                                notEmpty: {
+                                    message: '<strong>Name</strong> must be provided'
+                                },
+                                stringLength: {
+                                    max: 256,
+                                    message: '<strong>Name</strong> must be less then 256 characters'
+                                }
+                            }
+                        },
+                        'description': {
+                            validators: {
+                                notEmpty: {
+                                    message: '<strong>Description</strong> must be provided'
+                                }
+                            }
+                        },
+                        'ampcs_address': {
+                            validators: {
+                                notEmpty: {
+                                    message: '<strong>AMPCS Address</strong> must be provided'
+                                },
+                                stringLength: {
+                                    max: 64,
+                                    message: '<strong>AMPCS Address</strong> must be less then 64 characters'
+                                }
+                            }
+                        },
+                        'sse_address': {
+                            validators: {
+                                notEmpty: {
+                                    message: '<strong>SSE Address</strong> must be provided'
+                                },
+                                stringLength: {
+                                    max: 64,
+                                    message: '<strong>SSE Address</strong> must be less then 64 characters'
+                                }
+                            }
+                        },
+                        'location': {
+                            validators: {
+                                notEmpty: {
+                                    message: '<strong>Location</strong> must be provided'
+                                },
+                                stringLength: {
+                                    max: 128,
+                                    message: '<strong>Location</strong> must be less then 128 characters'
+                                }
+                            }
+                        },
+                        'type': {
+                            validators: {
+                                notEmpty: {
+                                    message: '<strong>Type</strong> must be selected'
+                                }
+                            }
+                        }
+                    }
+                });
+
+
+            },
+            on_modal_close: function() {
+                $("table#{{ data_table.get_table_name }}").DataTable().ajax.reload();
+            }
+        });
+
+        $(document).on('draw.dt', '#{{ data_table.get_table_name }}', function () {
+            /* init my_modal_request on every 'delete question' button */
+            $(this).find('.edit_venue_btn').each(function () {
+                $(this).up_modal_request({
+                    url: '{% url 'update_venue_modal' %}',
+                    data: $(this).data('data'),
+                    notify_status_submitting_message: 'updating',
+                    notify_status_submitted_message: 'updated',
+                    on_modal_close: function () {
+                        $("table#{{ data_table.get_table_name }}").DataTable().ajax.reload();
+                    }
+                });
+            });
+
+            $(this).find('.delete_venue_btn').each(function () {
+                $(this).up_modal_request({
+                    url: '{% url 'delete_venue_modal' %}',
+                    data: $(this).data('data'),
+                    notify_status_submitting_message: 'deleting',
+                    notify_status_submitted_message: 'deleted',
+                    on_modal_close: function () {
+                        $("table#{{ data_table.get_table_name }}").DataTable().ajax.reload();
+                    }
+                });
+            });
+
+            $(this).find('.update_status_venue_btn').each(function () {
+                $(this).up_modal_request({
+                    url: '{% url 'update_status_venue_modal' %}',
+                    data: $(this).data('data'),
+                    notify_status_submitting_message: 'updating',
+                    notify_status_submitted_message: 'updated',
+                    on_modal_close: function () {
+                        $("table#{{ data_table.get_table_name }}").DataTable().ajax.reload();
+                    }
+                });
+            });
+
+            $(this).find('.stop_execution_venue_btn').each(function () {
+                $(this).up_modal_request({
+                    url: '{% url 'stop_execution_venue_modal' %}',
+                    data: $(this).data('data'),
+                    notify_status_submitting_message: 'updating',
+                    notify_status_submitted_message: 'updated',
+                    on_modal_close: function () {
+                        $("table#{{ data_table.get_table_name }}").DataTable().ajax.reload();
+                    }
+                });
+            });
+
+
+        });
+    </script>
+
+{% endblock %}
+

@@ -1,0 +1,47 @@
+<table id="venue_list_table" class="table">
+    <thead>
+    <tr>
+        <th class="col-sm-6">Venue Name</th>
+        <th>Status</th>
+        <th class="col-sm-2">Actions</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for venue in venues %}
+        <tr>
+            <td><a href="{% url 'venue_detail_page' venue.get_venue_id %}">{{ venue.name }}</a></td>
+            <td>
+                <span class="status-dot {% if venue.is_available %}status-dot-green{% elif venue.is_in_use %}status-dot-yellow{% elif venue.is_offline %}status-dot-red{% else %}status-dot-grey{% endif %}" style="margin-bottom:-2px;"></span>&nbsp;
+                {{ venue.get_friendly_status }}
+                {% if venue.is_in_use %}
+                    <br/>
+                    &nbsp; {{ venue.get_test_started_on|timesince }} by
+                    {{ venue.get_test_conductor }}
+                {% endif %}
+            </td>
+
+            <td>
+                {% if venue.is_available %}
+                    <a href="{% url 'execution_page' venue.get_venue_id %}"><span class="glyphicon glyphicon-play-circle"></span> Execute</a>
+                {% elif venue.is_in_use and venue.get_test_conductor == request.user.get_username %}
+                    <a href="{% url 'execution_page' venue.get_venue_id %}"><span class="glyphicon glyphicon-play-circle"></span> Continue Executing</a>
+                {% elif venue.is_in_use and venue.get_execution_id %}
+                    <a href="{% url 'watching_execution_page' venue.get_execution_id %}"><span class="glyphicon glyphicon-eye-open"></span> Watch Now</a>
+                {% endif %}
+            </td>
+
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function () {
+        $('#venue_list_table').DataTable({
+            'dom': '<<rt><"col-sm-3"i><"col-sm-6"p><"col-sm-3"l>>',
+            'paging': false,
+            'stateSave': true
+        });
+    });
+</script>

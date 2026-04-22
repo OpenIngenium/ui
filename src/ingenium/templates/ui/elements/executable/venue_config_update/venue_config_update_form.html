@@ -1,0 +1,120 @@
+{% block step_content %}
+    <form id="update_venue_configuration_{{ element.get_element_id }}" class="update_venue_configuration_form execution_form">
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+        <div class="row">
+            <div class="col-xs-2">
+                <label>Element</label>
+            </div>
+            <div class="col-xs-2">
+                <label>Type</label>
+            </div>
+            <div class="col-xs-2">
+                <label>Status</label>
+            </div>
+            <div class="col-xs-3">
+                <label>Serial</label>
+            </div>
+            <div class="col-xs-3">
+                <label>Note</label>
+            </div>
+        </div>
+
+        <div class="dynamic_elements update_venue_configuration_elements">
+            {% for entry in element.get_user_inputs.entries %}
+                {% include "ui/elements/executable/venue_config_update/venue_config_update_element.html" %}
+            {% empty %}
+                {% include "ui/elements/executable/venue_config_update/venue_config_update_element.html" %}
+            {% endfor %}
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block javascript_content %}
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+
+        $(document).on('up.added', '.update_venue_configuration_form', function (event, element) {
+            /* because we're listening to 'document' for up.added and then rely on event bubbling to alert us when an
+             * $element was added to the document, we must make sure that the $element we get back is the same $element
+             * that we're listening for, and not a child of the $element that we're listening for */
+            if (this === element) {
+                $(element).each(function (index, form) {
+                    if (!$(form).data('update-venue-configuration-initialized')) {
+                        $(form).data('update-venue-configuration-initialized', true);
+
+                        var $form = $(form);
+
+                        /* dynamic_element */
+                        $form.children('.update_venue_configuration_elements').dynamic_element({
+                            url: "{% url 'update_venue_configuration_html' %}",
+                            data: {'element_type_id': '{{ element.get_element_type_id }}'}
+                        }).on('dynamic_element.changed', function () {
+                            $(this).closest('.update_venue_configuration_form').trigger('change');
+                        }).on('dynamic_element.initialized', function (event, wrapper, dynamic_elements) {
+                            initialize_update_venue_config_element_name($(dynamic_elements));
+                        }).on('dynamic_element.added', function (event, dynamic_element) {
+                            initialize_update_venue_config_element_name($(dynamic_element));
+                        });
+
+                        ING.execution.change_step_form($form);
+
+                        function initialize_update_venue_config_element_name($elements) {
+                            $elements.each(function (i, element) {
+
+                                /* initialize up_typeahead */
+                                $(element).find('input[name="element_name"]').up_typeahead({
+                                    url: '{% url 'get_venue_configuration_elements_by_id' %}',
+                                    force_selection: false,
+                                    map: function (json) {
+                                        return $.map(json, function (result) {
+                                            return {
+                                                name: result.elem_name
+                                            };
+                                        });
+                                    }
+                                }).on('before_send', function () {
+                                    $(this).up_typeahead('update_data', {
+                                        'venue_id': $("#get_venue_id").val()
+                                    });
+                                });
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+    </script>
+{% endblock %}
+
+{% block history_view %}
+    {% include 'ui/elements/executable/execution_results.html' %}
+
+    {% if element.get_all_checked %}
+        <div>All Elements Checked</div>
+    {% else %}
+        {% if element.get_user_inputs.entries %}
+            <table class="table table-striped">
+                <tr>
+                    <th>Element</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Serial</th>
+                    <th>Note</th>
+                </tr>
+                {% for entry in element.get_user_inputs.entries %}
+                    <tr>
+                        <td>{{ entry.config_elem_name }}</td>
+                        <td>{{ entry.type }}</td>
+                        <td>{{ entry.status }}</td>
+                        <td>{{ entry.serial_number }}</td>
+                        <td>{{ entry.notes }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+    {% endif %}
+{% endblock %}

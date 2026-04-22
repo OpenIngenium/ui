@@ -1,0 +1,13 @@
+# used to run Protractor end to end tests on CI
+
+FROM cae-artifactory.jpl.nasa.gov:17001/node:8.11.1-alpine as node
+
+RUN mkdir /src;
+COPY ./src/client /src/client
+
+WORKDIR /src/client
+
+RUN npm cache verify && \
+    npm install --unsafe-perm
+
+CMD npm run e2e-ci

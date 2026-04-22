@@ -1,0 +1,18 @@
+{% extends "layouts/ingenium_template.html" %}
+
+{% block html_title %}
+    Execution History
+{% endblock %}
+
+{% block page_label %}
+    Execution History "{{ execution.get_execution_id }}"
+{% endblock %}
+
+{% block page_content %}
+
+    <h3>Execution</h3>
+    {% include 'ui/pages/execute/execute_information.html' %}
+
+    {% block history_content %}{% endblock %}
+
+{% endblock %}

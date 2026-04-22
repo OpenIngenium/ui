@@ -1,0 +1,34 @@
+ul.venue-nav-tab {
+    border-bottom: none;
+}
+ul.venue-nav-tab > li.inactive {
+    color: black;
+}
+ul.venue-nav-tab > li.active {
+    border-bottom-color: white; 
+    z-index: 1;
+}
+#venue_configuration_history_table td:nth-child(4) {
+    color: red;
+}
+#venue_configuration_history_table td:nth-child(5) {
+    color: green;
+}
+#vc-row-save-btn {
+    text-align: center;
+    position: absolute;
+    border-top: 2px solid #ddd;
+    border-right: 2px solid #ddd;
+    border-bottom: 2px solid #ddd;
+    margin-top: 10px;
+    padding: 18px 12px;
+    border-radius: 0px 3px 3px 0px;
+    bottom: 0px;
+    right: -26px;
+}
+
+@media (max-width: 910px) {
+    #vc-row-save-btn {
+        display: none;
+    }
+}

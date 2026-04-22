@@ -1,0 +1,23 @@
+{% extends "layouts/ingenium_spa_template.html" %}
+
+{% load static %}
+{% block html_title %}
+    Authoring
+{% endblock %}
+
+{% block page_label %}
+    Authoring
+{% endblock %}
+
+{% block page_content %}
+    <link href="{% static "css/authoring.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "css/steps_spa.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "css/vue-multiselect.min.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "css/vue-datetime.min.css" %}" rel="stylesheet" type="text/css"/>
+
+    {# Vue Authoring Component #}
+    <div id="spa-authoring"></div>
+
+    <script src="{% static authoring_js_bundle %}"></script>
+
+{% endblock %}

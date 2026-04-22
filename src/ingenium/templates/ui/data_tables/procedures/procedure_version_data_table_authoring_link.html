@@ -1,0 +1,18 @@
+{% if procedure_version.get_version == 0 %}
+    {% if procedure.get_locked_by and username != procedure.get_locked_by %}
+        <a style="cursor: pointer;" data-procedure-id="{{ procedure_version.get_procedure_id }}" data-version="0" class="lock-version-link">
+            <span style="font-size: 20px;" class="glyphicon glyphicon-new-window"></span>
+            <span>Working</span>
+        </a>
+    {% else %}
+        <a href="{% url 'authoring_page' procedure_version.get_procedure_id 0 %}">
+            <span style="font-size: 20px;" class="glyphicon glyphicon-new-window"></span>
+            <span>Working</span>
+        </a>
+    {% endif %}
+{% else %}
+    <a href="{% url 'authoring_page' procedure_version.get_procedure_id procedure_version.version %}">
+        <span style="font-size: 20px;" class="glyphicon glyphicon-new-window"></span>
+        <span>{{ procedure_version.get_version }}</span>
+    </a>
+{% endif %}

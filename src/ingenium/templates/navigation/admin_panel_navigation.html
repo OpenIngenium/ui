@@ -1,0 +1,34 @@
+<div class="list-group">
+    <a href="#" class="list-group-item disabled"><span class="glyphicon glyphicon-cog"></span> Manage</a>
+    <a href="{% url 'manage_venues_page' %}"
+        class="list-group-item {% if request.resolver_match.url_name == 'manage_venues_page' or request.resolver_match.url_name == 'admin_index' %}active{% endif %}"><span
+        class="glyphicon glyphicon-oil"></span> Venues</a>
+    <a href="{% url 'venue_config_tpl_list_page' %}"
+       class="list-group-item {% if request.resolver.match.url_name == 'venue_config_tpl_list_page' %}active{% endif %}"><span
+       class="glyphicon glyphicon-th-list"></span> Configuration Templates</a>
+
+    <a href="{% url 'manage_dictionary_parsers_page' %}"
+        class="list-group-item {% if request.resolver.match.url_name == 'manage_dictionary_parsers_page'%}active{% endif %}"><span
+        class="glyphicon glyphicon-text-size"></span> Parsers</a>
+</div>
+
+<div class="list-group">
+    <a href="#" class="list-group-item disabled"><span class="glyphicon glyphicon-lock"></span> Permissions</a>
+    <a href="{% url 'manage_groups_page' %}"
+        class="list-group-item {% if request.resolver_match.url_name == 'manage_groups_page' %}active{% endif %}"><span
+        class="glyphicon glyphicon-folder-close"></span> Groups</a>
+    <a href="{% url 'manage_users_page' %}"
+        class="list-group-item {% if request.resolver_match.url_name == 'manage_users_page' %}active{% endif %}"><span
+        class="glyphicon glyphicon-user"></span> Users</a>
+
+    <a href="{% url 'manage_roles_page' %}"
+        class="list-group-item {% if request.resolver_match.url_name == 'manage_roles_page' %}active{% endif %}"><span
+        class="glyphicon glyphicon-eye-open"></span> Roles</a>
+</div>
+
+<div class="list-group">
+    <a href="#" class="list-group-item disabled"><span class="glyphicon glyphicon-cog"></span> System</a>
+    <a href="{% url 'health_check_page' %}"
+        class="list-group-item {% if request.resolver_match.url_name == 'health_check_page' %}active{% endif %}"><span
+        class="glyphicon glyphicon-heart"></span> Health Check</a>
+</div>

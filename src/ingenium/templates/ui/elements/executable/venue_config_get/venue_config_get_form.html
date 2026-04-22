@@ -1,0 +1,151 @@
+{% block step_content %}
+    <form id="get_venue_configuration_{{ element.get_element_id }}" class="get_venue_configuration_form execution_form">
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+
+        <div class="row">
+            <div class="col-xs-3">
+                <label>Element (<input type="checkbox" {% if element.get_all_checked %}checked{% endif %} name="all_elements" id="{{ element.get_element_id }}_all_elements"/> All)</label>
+            </div>
+            <div class="col-xs-3">
+                <label>Type</label>
+            </div>
+            <div class="col-xs-3">
+                <label>Status</label>
+            </div>
+            <div class="col-xs-3">
+                <label>Serial</label>
+            </div>
+        </div>
+
+        <div class="dynamic_elements get_venue_configuration_elements" {% if element.get_all_checked %}style="display: none" {% endif %}>
+            {% for entry in element.get_user_inputs.entries %}
+                {% include "ui/elements/executable/venue_config_get/venue_config_get_element.html" %}
+            {% empty %}
+                {% include "ui/elements/executable/venue_config_get/venue_config_get_element.html" %}
+            {% endfor %}
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block javascript_content %}
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+
+        $(document).on('up.added', '.get_venue_configuration_form', function (event, element) {
+            /* because we're listening to 'document' for up.added and then rely on event bubbling to alert us when an
+             * $element was added to the document, we must make sure that the $element we get back is the same $element
+             * that we're listening for, and not a child of the $element that we're listening for */
+            if (this === element) {
+                $(element).each(function (index, form) {
+                    if (!$(form).data('get-venue-configuration-initialized')) {
+                        $(form).data('get-venue-configuration-initialized', true);
+
+                        var $form = $(form);
+
+                        /* dynamic_element */
+                        $form.children('.get_venue_configuration_elements').dynamic_element({
+                            url: "{% url 'get_venue_configuration_html' %}",
+                            data: {'element_type_id': '{{ element.get_element_type_id }}'}
+                        }).on('dynamic_element.changed', function () {
+                            $(this).closest('.get_venue_configuration_form').trigger('change');
+                        }).on('dynamic_element.initialized', function (event, wrapper, dynamic_elements) {
+                            initialize_get_venue_config_element_name($(dynamic_elements));
+                        }).on('dynamic_element.added', function (event, dynamic_element) {
+                            initialize_get_venue_config_element_name($(dynamic_element));
+                        });
+
+
+                        ING.execution.change_step_form($form, {
+                            'success_callback': function ($form, result, status) {
+                                var all_checked = $form.find('input[name="all_elements"]').first().prop('checked');
+                                var $form_div = $form.find('.get_venue_configuration_elements').first();
+
+                                if (all_checked) {
+                                    $form_div.slideUp("fast");
+                                } else {
+                                    $form_div.slideDown("fast");
+                                }
+                            }
+                        });
+
+
+                        function initialize_get_venue_config_element_name($elements) {
+                            $elements.each(function (i, element) {
+
+                                /* initialize up_typeahead */
+                                $(element).find('input[name="element_name"]').up_typeahead({
+                                    url: '{% url 'get_venue_configuration_elements_by_id' %}',
+                                    force_selection: false,
+                                    map: function (json) {
+                                        return $.map(json, function (result) {
+                                            return {
+                                                name: result.elem_name
+                                            };
+                                        });
+                                    }
+                                }).on('before_send', function () {
+                                    $(this).up_typeahead('update_data', {
+                                        'venue_id': $("#get_venue_id").val()
+                                    });
+                                });
+                            });
+                        }
+
+
+                        /* initialize form validation */
+                        $form.formValidation({
+                            framework: 'bootstrap',
+                            fields: {
+                                element_name: {
+                                    validators: {
+                                        notEmpty: {
+                                            message: 'Must provide <strong>Element Name</strong> or select "<strong>All</strong>"'
+                                        },
+                                        callback: {
+                                            message: 'Cannot have duplicate <strong>Names</strong>; Fix before refreshing page',
+                                            callback: function (key, validator, $field) {
+
+                                                /* retrieve all $key fields except the current one */
+                                                var $used_keys = $field.closest('.get_venue_configuration_elements').children('.get_venue_configuration_element').find('input[name="key"]').not($field);
+
+                                                /* create array of used_keys */
+                                                var used_keys = [];
+                                                $used_keys.each(function () {
+                                                    used_keys.push($(this).val());
+                                                });
+
+                                                /* returns whether or not this is a unique key */
+                                                return (used_keys.indexOf(key) == -1);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                        /* on element_name change, revalidate all other $keys */
+                        $form.on('input', 'input[name="element_name"]', function () {
+                            $(this).closest('.get_venue_configuration_elements').children('.get_venue_configuration_element').find('input[name="element_name"]').not($(this)).each(function () {
+                                $form.data('formValidation').revalidateField($(this));
+                            });
+                        });
+
+                        /* when a element is added, add it to form validation */
+                        $form.children('.get_venue_configuration_elements').on('dynamic_element.added', function (e, element) {
+                            $form.data('formValidation').addField($(element).find('input[name="element_name"]'));
+                        });
+
+                        /* when a element is removed, re-run validation on 'element_name' field */
+                        $form.children('.get_venue_configuration_elements').on('dynamic_element.removed', function () {
+                            $form.data('formValidation').revalidateField('element_name');
+                        });
+                    }
+                });
+            }
+        });
+
+    </script>
+{% endblock %}

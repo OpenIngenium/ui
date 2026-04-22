@@ -1,0 +1,216 @@
+{% extends "layouts/admin_template.html" %}
+
+{% block admin_page_content %}
+<div style="margin-bottom: 10px;">
+    <span class="h2"><span class="glyphicon glyphicon-th-list"></span>&nbsp;<a href="{% url 'venue_config_tpl_list_page' %}">Venue Configuration Template</a>&nbsp;>>&nbsp;{{venue_type}} Update</span>
+    <span class="pull-right"><button type="button" id="add_element_btn" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> Add Element</button></span>
+</div>
+<table class="table table-bordered template-editor">
+    <thead>
+        <tr>
+            <!-- min-width allows space for inline editor -->
+            <th style="min-width: 266px;">Element</th>
+            <th style="min-width: 282px;">Description</th>
+            <th>Type</th>
+            <th style="text-align: center;"><span class="glyphicon glyphicon-trash"></span></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for element in elements %}
+        <tr data-name="{{ element.get_name }}" data-pk="{{element.get_id}}">
+            <td><a class="vc-admin-element-editable" href="#" data-type="text" data-name="name">{{ element.get_name }}</a></td>
+            <td><a class="vc-admin-element-editable" href="#" data-type="textarea" data-name="description" data-rows="3">{{ element.get_description }}</a></td>
+            <td>
+                <select class="form-control vc-admin-element-type">
+                    <option value="" {% if element.get_type == None %}selected{% endif %}>Choose Type</option>
+                    {% for element_type in element_types %}
+                    <option value="{{element_type}}" {% if element.get_type == element_type %}selected{% endif %}>{{ element_type }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td style="text-align: center;"><span style="cursor: hand;" class="vc-admin-delete-element glyphicon glyphicon-trash"></span></td>
+        </tr>
+        {% endfor %}
+        <tr style="background-color: #DBEBD4; display: none;">
+            <td><a class="vc-admin-element-editable" href="#" data-type="text" data-name="name"></a></td>
+            <td><a class="vc-admin-element-editable" href="#" data-type="textarea" data-name="description" data-rows="3"></a></td>
+            <td>
+                <select class="form-control vc-admin-element-type">
+                    <option value="">Choose Type</option>
+                    {% for element_type in element_types %}
+                    <option value="{{element_type}}">{{ element_type }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td style="text-align: center;"><span style="cursor: hand;" class="vc-admin-delete-element glyphicon glyphicon-trash"></span></td>
+        </tr>
+    </tbody>
+</table>
+
+<script>
+    (function() {
+        var createUrl = '{% url "create_venue_config_template_element" %}';
+        var updateUrl = '{% url "update_venue_config_template_element" %}';
+        var deleteUrl = '{% url "delete_venue_config_template_element" %}';
+
+        function sendRequest(url, method, data) {
+            return $.ajax({
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                },
+                url: url,
+                method: method,
+                data: data,
+                error: function (result, textStatus, errorThrown) {
+                    // notify user that there has been an error
+                    $.notify_status('error', {
+                        dismissible: true,
+                        details: 'There was an error saving the template element change<br />Please try again'
+                    });
+                }
+            })
+        }
+
+        function confirmDeleteModal(elementName, callback) {
+            bootbox.confirm({
+                title: 'Delete?',
+                message: 'Are you sure you want to delete "'+ elementName +'"?',
+                buttons: {
+                    confirm: {
+                        label: 'Yes, Delete It',
+                        className: 'btn-primary'
+                    },
+                    cancel: {
+                        label: 'Cancel',
+                        className: 'btn-default pull-left'
+                    }
+                },
+                callback: callback
+            });
+        }
+
+        function onTypeElementChange() {
+            var $row = $(this).closest("tr");
+            var data = {
+                name: "type",
+                value: this.value,
+                venue_type: "{{venue_type}}"
+            };
+            var apiUrl = createUrl;
+
+            if($row.data("pk")) {
+                data["element_id"] = $row.data("pk");
+                apiUrl = updateUrl;
+            }
+
+            sendRequest(apiUrl, "POST", data);
+        }
+
+        function onDeleteButtonClick() {
+            var $row = $(this).closest("tr");
+
+            var elementName = $row.data("name");
+            var data = {
+                element_id: $row.data("pk"),
+                venue_type: "{{venue_type}}"
+            };
+
+            if(data.element_id === undefined || data.element_id === "") {
+                bootbox.alert({
+                    message: 'This element has not been saved yet. You can make edits and then click the save icon or navigate away to discard.',
+                });
+                return;
+            }
+
+            confirmDeleteModal(elementName, function(confirmed) {
+                if(confirmed) {
+                    sendRequest(deleteUrl, "DELETE", data)
+                    .then(function(data, textStatus, jqXHR) {
+                        if(jqXHR.status === 200) {
+                            $row.fadeOut(function() {
+                                $row.remove();
+                            })
+                        }
+                    });
+                }
+            });
+        }
+
+        function onAddElementButtonClick() {
+            // scroll to the bottom of the table, to bring editrow into view
+            window.scrollTo(0, $("table.template-editor").height());
+        }
+
+        // this function cleans up event listeners so it can be called as needed
+        function initializeEditor() {
+            var $editables = $(".vc-admin-element-editable");
+            $editables.editable("destroy");
+            $editables.editable({
+                onblur: 'submit',
+                emptytext: 'Click to add',
+                success: function(response, newValue) {
+                    var data = {
+                        name: $(this).data("name"),
+                        value: newValue,
+                        venue_type: "{{venue_type}}"
+                    };
+                    var apiUrl = createUrl;
+                    var $row = $(this).closest("tr");
+
+                    // existing record
+                    if($row.data("pk")) {
+                        data["element_id"] = $row.data("pk");
+                        apiUrl = updateUrl;
+                    }
+
+                    sendRequest(apiUrl, "POST", data)
+                    .then(function(data, textStatus, jqXHR) {
+                        // if no existing PK and data is present
+                        // assume new element was created
+                        // set expected data on each row and each td
+                        // like a freshly rendered existing record
+                        if(($row.data("pk") === undefined) && data && data.elem_template_id) {
+                            $row.css("background-color", "initial");
+                            $row.data("pk", data.elem_template_id);
+                            $row.data("name", data.name);
+                            generateEditRow();
+                        }
+                    });
+                }
+            });
+
+            // handle element type choice outside x-editable
+            var $adminElementType = $(".vc-admin-element-type");
+            $adminElementType.off("change", onTypeElementChange);
+            $adminElementType.on("change", onTypeElementChange);
+
+            // delete element row buttons
+            var $adminDeleteElement = $(".vc-admin-delete-element");
+            $adminDeleteElement.off("click", onDeleteButtonClick);
+            $adminDeleteElement.on("click", onDeleteButtonClick);
+
+            // add element button (scrolls to bottom of table)
+            var $addElementButton = $("#add_element_btn");
+            $addElementButton.off("click", onAddElementButtonClick);
+            $addElementButton.on("click", onAddElementButtonClick);
+        }
+
+        // copy hidden edit row for use
+        function generateEditRow() {
+            var $editRow = $("table.template-editor").find("tr").last();
+            var $newRow = $editRow.clone();
+            $newRow.css("display", "table-row");
+            // x-editable does not clean up the 'emptyText' value, so we have to
+            $newRow.find("td a").slice(0, 2).text("");
+            $newRow.insertBefore($editRow);
+            initializeEditor();
+        }
+
+        $(document).ready(function () {
+            generateEditRow();  // calls initalizeEditor
+        });
+
+    })();
+</script>
+
+{% endblock %}

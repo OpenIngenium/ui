@@ -1,0 +1,21 @@
+{% extends 'ui/elements/executable/execution_result_container.html' %}
+{% load ingenium_tags %}
+
+{% block results %}
+    <table class="table execution-results-table {% execution_result_status_css_class execution_record %}">
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Serial</th>
+        </tr>
+        {% for entry in execution_record.get_results.entries %}
+            <tr>
+                <td>{{ entry.config_elem_name }}</td>
+                <td>{{ entry.type }}</td>
+                <td>{{ entry.status }}</td>
+                <td>{{ entry.serial }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

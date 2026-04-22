@@ -1,0 +1,112 @@
+{% block step_content %}
+    <form id="check_venue_configuraiton_{{ element.get_element_id }}" class="check_venue_configuration execution_form">
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+        <div class="row">
+            <div class="col-xs-2">
+                <label>Element</label>
+            </div>
+            <div class="col-xs-2">
+                <label>Field</label>
+            </div>
+            <div class="col-xs-2">
+                <label>Verif Condition</label>
+            </div>
+            <div class="col-xs-2">
+                <label>Verify Value</label>
+            </div>
+            <div class="col-xs-2">
+                <label>Actual Value</label>
+            </div>
+            <div class="col-xs-2">
+                <span class="glyphicon glyphicon-play-circle"></span>
+            </div>
+        </div>
+
+        <div class="dynamic_elements check_venue_configuration_elements">
+            {% for entry in element.get_user_inputs.entries %}
+                {% include "ui/elements/executable/venue_config_check/venue_config_check_element.html" %}
+            {% empty %}
+                {% include "ui/elements/executable/venue_config_check/venue_config_check_element.html" %}
+            {% endfor %}
+        </div>
+    </form>
+{% endblock %}
+
+{% block javascript_content %}
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+
+        $(document).on('up.added', '.check_venue_configuration', function (event, element) {
+            /* because we're listening to 'document' for up.added and then rely on event bubbling to alert us when an
+             * $element was added to the document, we must make sure that the $element we get back is the same $element
+             * that we're listening for, and not a child of the $element that we're listening for */
+            if (this === element) {
+                $(element).each(function (index, form) {
+                    if (!$(form).data('check-venue-configuration-initialized')) {
+                        $(form).data('check-venue-configuration-initialized', true);
+
+                        var $form = $(form);
+
+                        /* dynamic_element */
+                        $form.children('.check_venue_configuration_elements').dynamic_element({
+                            url: "{% url 'check_venue_configuration_html' %}",
+                            data: {'element_type_id': '{{ element.get_element_type_id }}'}
+                        }).on('dynamic_element.changed', function () {
+                            $(this).closest('.check_venue_configuration').trigger('change');
+                        }).on('dynamic_element.initialized', function (event, wrapper, dynamic_elements) {
+                            initialize_check_venue_config_element_name($(dynamic_elements));
+                        }).on('dynamic_element.added', function (event, dynamic_element) {
+                            initialize_check_venue_config_element_name($(dynamic_element));
+                        });
+
+                        var $fieldTypeDropdown = $form.find("[name='field_type']");
+                        var $verificationValueDropdown = $form.find("[name='verification_value']");
+
+                        $fieldTypeDropdown.on('change', function () {
+                            var visibleGroup = this.value;
+                            $verificationValueDropdown.find("option").each(function(index, el) {
+                                var $option = $(el);
+                                if($option.data("group") !== visibleGroup) {
+                                    $option.attr('disabled','disabled');
+                                    $option.prop("selected", false);
+                               } else {
+                                    $option.removeAttr('disabled');
+                                }
+                            });
+                        });
+
+                        /* trigger initial dynamic dropdown filter and default value */
+                        $fieldTypeDropdown.trigger("change");
+
+                        ING.execution.change_step_form($form);
+
+                        function initialize_check_venue_config_element_name($elements) {
+                            $elements.each(function (i, element) {
+
+                                /* initialize up_typeahead */
+                                $(element).find('input[name="element_name"]').up_typeahead({
+                                    url: '{% url 'get_venue_configuration_elements_by_id' %}',
+                                    force_selection: false,
+                                    map: function (json) {
+                                        return $.map(json, function (result) {
+                                            return {
+                                                name: result.elem_name
+                                            };
+                                        });
+                                    }
+                                }).on('before_send', function () {
+                                    $(this).up_typeahead('update_data', {
+                                        'venue_id': $("#get_venue_id").val()
+                                    });
+                                });
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+    </script>
+{% endblock %}

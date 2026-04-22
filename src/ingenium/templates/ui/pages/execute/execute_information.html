@@ -1,0 +1,82 @@
+<table class="table">
+    <thead>
+    <tr>
+        <th style="text-align: left;" class="col-lg-2">Information</th>
+        <th></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr>
+        <td>Execution Id</td>
+        <td>{{ execution.get_execution_id }}</td>
+    </tr>
+
+    <tr>
+        <td>Status</td>
+        <td>{{ execution.get_status }}</td>
+    </tr>
+
+    <tr>
+        <td>Mode</td>
+        <td>{{ execution.get_mode }}</td>
+    </tr>
+
+    {% if execution.api_version %}
+        <tr>
+            <td>API Version</td>
+            <td>{{ execution.api_version }}</td>
+        </tr>
+    {% endif %}
+
+
+    {% if execution.venue_name %}
+        <tr>
+            <td>Venue</td>
+            <td><a href="{% url 'venue_detail_page' execution.venue_id %}">{{ execution.venue_name }}</a></td>
+        </tr>
+    {% endif %}
+
+    {% if execution.test_conductors %}
+        <tr>
+            <td>Test Conductors</td>
+            <td>
+                {% for conductor in execution.test_conductors %}
+                    {{ conductor }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            </td>
+        </tr>
+    {% endif %}
+
+    {% if execution.get_time_started_date %}
+        <tr>
+            <td>Time Started</td>
+            <td>{{ execution.get_time_started_date }}</td>
+        </tr>
+    {% endif %}
+
+    {% if execution.get_time_completed_date %}
+        <tr>
+            <td>Time Complete</td>
+            <td>{{ execution.get_time_completed_date }}</td>
+        </tr>
+    {% endif %}
+
+    {% if execution.get_time_completed_date and execution.get_time_started_date %}
+        <tr>
+            <td>Run Time</td>
+            <td>{{ execution.get_run_time }}</td>
+        </tr>
+    {% endif %}
+
+    {% if execution.get_description %}
+        <tr>
+            <td>Description</td>
+            <td>{{ execution.get_description | safe }}</td>
+        </tr>
+    {% endif %}
+
+    </tbody>
+
+
+</table>

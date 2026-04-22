@@ -1,0 +1,25 @@
+<div class="procedure_config_management">
+    <div class="row">
+        <div class="col-sm-4"><strong>Author</strong></div>
+        <div class="col-sm-8">{{ procedure.version_author }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>Proc. ID</strong></div>
+        <div class="col-sm-8">{{ procedure.get_procedure_id }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>Release ID</strong></div>
+        <div class="col-sm-8">{{ procedure.institutional_release_id }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>Ver.</strong></div>
+        <div class="col-sm-8">{{ procedure.version }}</div>
+    </div>
+    <div class="row cm_description">
+        <div class="col-sm-12">
+            <strong>Description</strong>
+            <p>{{ procedure.version_description }}</p>
+        </div>
+    </div>
+    <div style="margin-top: 10px;"></div>
+</div>

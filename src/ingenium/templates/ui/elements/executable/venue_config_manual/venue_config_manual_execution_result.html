@@ -1,0 +1,36 @@
+{% extends 'ui/elements/executable/execution_result_container.html' %}
+{% load ingenium_tags %}
+
+{% block results %}
+    <table class="table execution-results-table {% execution_result_status_css_class execution_record %}">
+        <tr>
+            <th>Key</th>
+            <th>Value</th>
+        </tr>
+
+        <tr>
+            <td>fsw_version</td>
+            <td>{{ execution_record.get_results.fsw_version }}</td>
+        </tr>
+
+        <tr>
+            <td>sse_version</td>
+            <td>{{ execution_record.get_results.sse_version }}</td>
+        </tr>
+
+        <tr>
+            <td>fsw_dictionary</td>
+            <td>{{ execution_record.get_results.fsw_dictionary }}</td>
+        </tr>
+
+        <tr>
+            <td>sse_dictionary</td>
+            <td>{{ execution_record.get_results.sse_dictionary }}</td>
+        </tr>
+
+        <tr>
+            <td>gds_version</td>
+            <td>{{ execution_record.get_results.gds_version }}</td>
+        </tr>
+    </table>
+{% endblock %}

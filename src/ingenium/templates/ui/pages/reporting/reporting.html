@@ -1,0 +1,21 @@
+{% extends "layouts/ingenium_template.html" %}
+
+{% load static %}
+
+{% block html_title %}
+    Reporting
+{% endblock %}
+
+{% block page_label %}
+    Reporting
+{% endblock %}
+
+{% block page_content %}
+
+    {# Vue Reporting Component #}
+    <div id="spa-reporting"></div>
+
+    <script src="{% static reporting_js_bundle %}"></script>
+
+{% endblock %}
+

@@ -1,0 +1,144 @@
+{% block step_content %}
+    <form id="venue_configuration_form_{{ element.get_element_id }}" class="venue_configuration_form execution_form">
+
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+
+        <div class="row">
+            <div class="col-xs-9">
+                <label>Key</label>
+            </div>
+
+            <div class="col-xs-3">
+                <label>Value</label>
+            </div>
+        </div>
+
+        <div class="row form-group" style="margin-bottom:5px;">
+            <div class="col-xs-9">
+                <p class="trailing-ellipsis"><label for="fsw_version_{{ element.get_element_id }}">fsw_version</label></p>
+            </div>
+
+            <div class="col-xs-3">
+                {% if execution_id %}
+                    <input id="fsw_version_{{ element.get_element_id }}" name="fsw_version" value="{{ element.get_fsw_version_input_value|default:"" }}" type="text" class="form-control execution-input venue_configuration_field"/>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row form-group" style="margin-bottom:5px;">
+            <div class="col-xs-9">
+                <p class="trailing-ellipsis"><label for="sse_version_{{ element.get_element_id }}">sse_version</label></p>
+            </div>
+
+            <div class="col-xs-3">
+                {% if execution_id %}
+                    <input id="sse_version_{{ element.get_element_id }}" name="sse_version" value="{{ element.get_sse_version_input_value|default:"" }}" type="text" class="form-control execution-input venue_configuration_field"/>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row form-group" style="margin-bottom:5px;">
+            <div class="col-xs-9">
+                <p class="trailing-ellipsis"><label for="fsw_dictionary_{{ element.get_element_id }}">fsw_dictionary</label></p>
+            </div>
+
+            <div class="col-xs-3">
+                {% if execution_id %}
+                    <input id="fsw_dictionary_{{ element.get_element_id }}" name="fsw_dictionary" value="{{ element.get_fsw_dictionary_input_value|default:"" }}" type="text" class="form-control execution-input venue_configuration_field"/>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row form-group" style="margin-bottom:5px;">
+            <div class="col-xs-9">
+                <p class="trailing-ellipsis"><label for="sse_dictionary_{{ element.get_element_id }}">sse_dictionary</label></p>
+            </div>
+
+            <div class="col-xs-3">
+                {% if execution_id %}
+                    <input id="sse_dictionary_{{ element.get_element_id }}" name="sse_dictionary" value="{{ element.get_sse_dictionary_input_value|default:"" }}" type="text" class="form-control execution-input venue_configuration_field"/>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row form-group" style="margin-bottom:5px;">
+            <div class="col-xs-9">
+                <p class="trailing-ellipsis"><label for="gds_version_{{ element.get_element_id }}">gds_version</label></p>
+            </div>
+
+            <div class="col-xs-3">
+                {% if execution_id %}
+                    <input id="gds_version_{{ element.get_element_id }}" name="gds_version" value="{{ element.get_gds_version_input_value|default:"" }}" type="text" class="form-control execution-input venue_configuration_field"/>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block javascript_content %}
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+        $(document).on('up.added', '.venue_configuration_form', function (event, element) {
+            /* because we're listening to 'document' for up.added and then rely on event bubbling to alert us when an
+             * $element was added to the document, we must make sure that the $element we get back is the same $element
+             * that we're listening for, and not a child of the $element that we're listening for */
+            if (this === element) {
+                $(element).each(function (index, form) {
+                    if (!$(form).data('venue-configuration-initialized')) {
+                        $(form).data('venue-configuration-initialized', true);
+
+                        var $form = $(form);
+
+                        ING.execution.change_step_form($form);
+
+                        /* initialize form validation */
+                        $form.formValidation({
+                            framework: 'bootstrap',
+                            fields: {
+                                fsw_version: {
+                                    validators: {
+                                        notEmpty: {
+                                            message: 'Must provide <strong>fsw_version</strong>'
+                                        }
+                                    }
+                                },
+                                sse_version: {
+                                    validators: {
+                                        notEmpty: {
+                                            message: 'Must provide <strong>sse_version</strong>'
+                                        }
+                                    }
+                                },
+                                fsw_dictionary: {
+                                    validators: {
+                                        notEmpty: {
+                                            message: 'Must provide <strong>fsw_dictionary</strong>'
+                                        }
+                                    }
+                                },
+                                sse_dictionary: {
+                                    validators: {
+                                        notEmpty: {
+                                            message: 'Must provide <strong>sse_dictionary</strong>'
+                                        }
+                                    }
+                                },
+                                gds_version: {
+                                    validators: {
+                                        notEmpty: {
+                                            message: 'Must provide <strong>gds_version</strong>'
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                    }
+                });
+            }
+        });
+
+    </script>
+{% endblock %}

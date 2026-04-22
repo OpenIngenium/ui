@@ -1,0 +1,21 @@
+<a class="vc-detail-toggle"><span class="glyphicon glyphicon-plus-sign" style="font-size: 18px; color: #31708f; cursor: pointer;"></span></a>
+<a class="vc-detail-toggle"><span class="glyphicon glyphicon-minus-sign hidden" style="font-size: 18px; color: #31708f; cursor: pointer;"></span></a>
+
+<table class="table table-bordered hidden">
+    <thead>
+        <tr>
+            <th style="">Element</th>
+            <th style="">Old Value</th>
+            <th style="">New Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for change in changes %}
+            <tr>
+                <td>{{ change.field_name }}</td>
+                <td>{{ change.old_value }}</td>
+                <td>{{ change.new_value }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

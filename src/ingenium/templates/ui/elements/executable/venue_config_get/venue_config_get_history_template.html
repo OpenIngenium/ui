@@ -1,0 +1,26 @@
+{% include 'ui/elements/executable/execution_results.html' %}
+
+{% if element.get_all_checked %}
+    <div>All Elements Checked</div>
+{% else %}
+    {% if element.get_user_inputs.entries %}
+        <table class="table table-striped">
+            <tr>
+                <th>Element</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Serial</th>
+                <th>Note</th>
+            </tr>
+            {% for entry in element.get_user_inputs.entries %}
+                <tr>
+                    <td>{{ entry.config_elem_name }}</td>
+                    <td>{{ entry.type }}</td>
+                    <td>{{ entry.status }}</td>
+                    <td>{{ entry.serial_number }}</td>
+                    <td>{{ entry.notes }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endif %}

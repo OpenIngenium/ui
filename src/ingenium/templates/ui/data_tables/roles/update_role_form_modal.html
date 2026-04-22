@@ -1,0 +1,48 @@
+{% block modal_title %}
+    <h4 class="modal-title">{% if role.id %}Update{% else %}Add{% endif %} Role</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="role_form">
+        <input id="role_id" name="role_id" type="hidden" value="{{ role.id }}"/>
+
+        <div class="form-group">
+            <label for="name" class="control-label">Role Name</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Enter Name" value="{{ role.name }}">
+        </div>
+
+        <div class="form-group">
+            <label for="description" class="control-label">Description</label>
+            <textarea class="form-control" id="description" name="description" >{{ role.description|default:"" }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label">Permissions</label>
+            <ul>
+                {% for permission in permissions %}
+                   <li style="list-style-type: none;">
+                       <input id="permission_{{ permission.id }}" type="checkbox" value="{{ permission.id }}" {% if permission.id in role.permissions %}checked{% endif %} name="permissions" />
+                       <label for="permission_{{ permission.id }}" class="control-label">{{ permission.name }}</label>
+                   </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="form-group">
+            <label for="groups" class="control-label">LDAP Groups</label>
+            <input type="text" class="form-control" name="groups" id="groups" data-value='[{% for group in role.groups %}{"label": "{{ group }}", "value": "{{ group }}"}{% if not forloop.last %}, {% endif %}{% endfor %}]' >
+        </div>
+
+        <div class="form-group">
+            <label for="users" class="control-label">Users</label>
+            <input type="text" class="form-control" name="users" id="users" data-value='[{% for user in role.users %}{"label": "{{ user.username }}", "value": "{{ user.username }}"}{% if not forloop.last %}, {% endif %}{% endfor %}]'>
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-default pull-left">Cancel</button>
+    <button class="btn btn-primary" data-data='{"role_id":"{{ role.id }}"}' data-url="{% if role.id %}{% url 'update_role' %}{% else %}{% url 'add_role' %}{% endif %}" data-form-id="role_form">
+        {% if role.id %}Update{% else %}Create{% endif %} </button>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% include 'ui/elements/executable/execution_results.html' %}
+
+{% if element.get_user_inputs %}
+    <table class="table table-responsive table-striped">
+        <tr>
+            <th>Field</th>
+            <th>Value</th>
+        </tr>
+
+        {% if element.get_user_inputs.data_path %}
+            <tr>
+                <td>Data Path</td>
+                <td>{{ element.get_user_inputs.data_path }}</td>
+            </tr>
+        {% endif %}
+
+        {% if element.get_user_inputs.verification_condition %}
+            <tr>
+                <td>Verification Condition</td>
+                <td>{{ element.get_user_inputs.verification_condition }}</td>
+            </tr>
+        {% endif %}
+
+        {% if element.get_user_inputs.verification_value %}
+            <tr>
+                <td>Verification Value</td>
+                <td>{{ element.get_user_inputs.verification_value }}</td>
+            </tr>
+        {% endif %}
+
+        {% if element.get_user_inputs.evr_name %}
+            <tr>
+                <td>EVR Name</td>
+                <td>{{ element.get_user_inputs.evr_name }}</td>
+            </tr>
+        {% endif %}
+
+        {% if element.get_user_inputs.evr_level %}
+            <tr>
+                <td>EVR Level</td>
+                <td>{{ element.get_user_inputs.evr_level }}</td>
+            </tr>
+        {% endif %}
+
+        {% if element.get_user_inputs.evr_type %}
+            <tr>
+                <td>EVR Type</td>
+                <td>{{ element.get_user_inputs.evr_type }}</td>
+            </tr>
+        {% endif %}
+
+        {% if element.get_user_inputs.start_time %}
+            <tr>
+                <td>Start Time</td>
+                <td>{{ element.get_user_inputs.start_time }}</td>
+            </tr>
+        {% endif %}
+
+        {% if element.get_user_inputs.end_time %}
+            <tr>
+                <td>End Time</td>
+                <td>{{ element.get_user_inputs.end_time }}</td>
+            </tr>
+        {% endif %}
+
+        {% if element.get_user_inputs.duration %}
+            <tr>
+                <td>Duration (Sec)</td>
+                <td>{{ element.get_user_inputs.duration }}</td>
+            </tr>
+        {% endif %}
+
+        {% if element.get_user_inputs.time_type %}
+            <tr>
+                <td>Time Type</td>
+                <td>{{ element.get_user_inputs.time_type }}</td>
+            </tr>
+        {% endif %}
+
+        {% if element.get_user_inputs.timeout %}
+            <tr>
+                <td>Timeout (Sec)</td>
+                <td>{{ element.get_user_inputs.timeout }}</td>
+            </tr>
+        {% endif %}
+
+        {% if element.get_user_inputs.message_filter %}
+            <tr>
+                <td>Message Filter</td>
+                <td>{{ element.get_user_inputs.message_filter }}</td>
+            </tr>
+        {% endif %}
+
+    </table>
+{% endif %}

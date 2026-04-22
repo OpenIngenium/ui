@@ -1,0 +1,20 @@
+{% extends "layouts/ingenium_template.html" %}
+
+{% block html_title %}
+    Welcome to {{ APPLICATION_ACRONYM }}
+{% endblock %}
+
+{% block page_label %}
+    {{ APPLICATION_TITLE }}
+{% endblock %}
+
+{% block page_content %}
+    <div class="row" style="margin-top: 80px;">
+        <div class="col-sm-6">
+            <h2>Sign In</h2>
+            {% include 'ingenium_login/login_form_widget.html' %}
+        </div>
+        <div class="col-sm-6">
+        </div>
+    </div>
+{% endblock %}

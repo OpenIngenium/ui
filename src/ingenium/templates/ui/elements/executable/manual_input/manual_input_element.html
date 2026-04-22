@@ -1,0 +1,280 @@
+<div class="dynamic_element manual_input_element">
+    <div class="row">
+        <div class="col-xs-2 form-group">
+            <div>
+                <input name="name" value="{{ entry.name }}" type="text" class="form-control execution-input"/>
+            </div>
+        </div>
+
+        <div class="col-xs-2 form-group">
+            <select name="verify_on" class="form-control execution-input">
+                {% for option in element.VERIFICATION_ON %}
+                    <option {% if entry.verify_on == option.0 %}selected{% endif %} value="{{ option.0 }}">{{ option.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-xs-2 form-group">
+            <select name="verification_condition" class="form-control execution-input">
+                {% for option in element.VERIFY_CONDITION_OPTIONS %}
+                    <option {% if entry.verification_condition == option.0 %}selected{% endif %} value="{{ option.0 }}" data-type="{{ option.2 }}">{{ option.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-xs-2 form-group">
+            <select name="type" class="form-control execution-input">
+                {% for option in element.VERIFICATION_TYPES %}
+                    <option {% if entry.type == option.0 %}selected{% endif %} value="{{ option.0 }}">{{ option.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-xs-2 form-group">
+            <div>
+                <input class="verification_value form-control" type="text" name="verification_value" value="{{ entry.verification_values.0|default:"" }}" style="display: none;" />
+                <label class="verification_value_none" style="display: none;">N/A</label>
+                <span  class="verification_value_range input-group-addon" style="display: none;">to</span>
+                <input class="verification_value_to form-control" type="text" name="verification_value_to" value="{{ entry.verification_values.1|default:"" }}" style="display: none;" />
+            </div>
+        </div>
+
+        <div class="col-xs-2 form-group">
+            <div>
+                <input name="actual_value" value="{{ entry.actual_value }}" type="text" class="form-control execution-input {% if execution_id is None %} invisible {% endif %}"/>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+  $(document).on('up.added', '.manual_input_element', function (event, element) {
+      if(this === element) {
+          const $element = $(this);
+        
+          var manual_input_verification_conditions = [];
+          {% for option in element.VERIFY_CONDITION_OPTIONS %}
+              manual_input_verification_conditions.push({'condition':'{{ option.0 }}', 'friendly':'{{ option.1 }}', 'field_type':'{{ option.2 }}'});
+          {% endfor %}
+          
+          /* Get the valid operations dict from manual_input_element.py */
+          let validOperations = {};
+          {% autoescape off %}
+              validOperations = {{ element.VALID_OPERATIONS }};
+          {% endautoescape %}
+          
+          let $verifyOnDropdown = $element.find("select[name='verify_on']");
+          let $conditionDropdown = $element.find("select[name='verification_condition']");
+          let $typeDropdown = $element.find("select[name='type']");
+
+          /* Get initial state of the dropdowns */
+          let verifyOnState = $verifyOnDropdown.val();
+          let conditionState = $conditionDropdown.val();
+          let validationState = $typeDropdown.val();
+          
+          /* initialize form validation */
+          $element.formValidation({
+              framework: 'bootstrap',
+              fields: {
+                  actual_value: {
+                      excluded: function($field, validator) {
+                          return '{{ execution_id }}' === '';
+                      },
+                      validators: {
+                          notEmpty: {
+                              message: 'Must provide <strong>Actual Value</strong>'
+                          },
+                          integer: {
+                              enabled: false,
+                              message: 'Must be an <strong>integer</strong>'
+                          },
+                          numeric: {
+                              enabled: false,
+                              message: 'Must be a <strong>float</strong>'
+                          },
+                          boolean: {
+                              enabled: false,
+                              message: 'Must be a <strong>boolean</strong>'
+                          }
+                      }
+                  },
+                  verification_value: {
+                      validators: {
+                          notEmpty: {
+                            message: 'Must provide <strong>Verification Value</strong>'
+                          },
+                          integer: {
+                              enabled: false,
+                              message: 'Must be an <strong>integer</strong>'
+                          },
+                          numeric: {
+                              enabled: false,
+                              message: 'Must be a <strong>float</strong>'
+                          },
+                          boolean: {
+                              enabled: false,
+                              message: 'Must be a <strong>boolean</strong>'
+                          }
+                      }
+                  },
+                  verification_value_to: {
+                      excluded: function($field, validator) {
+                        return !(conditionState === 'INCLUSIVE_RANGE' || conditionState === 'EXCLUSIVE_RANGE');
+                      },
+                      validators: {
+                          notEmpty: {
+                            message: 'Must provide <strong>Verification Value</strong>'
+                          },
+                          integer: {
+                              enabled: false,
+                              message: 'Must be an <strong>integer</strong>'
+                          },
+                          numeric: {
+                              enabled: false,
+                              message: 'Must be a <strong>float</strong>'
+                          }
+                      }
+                  }
+              }
+          });
+          
+          /* Update condition dropdown */
+          const conditions = Object.keys(validOperations[verifyOnState]);
+          const enabledConditions = conditions.filter(function(condition) {
+              return validOperations[verifyOnState][condition].length > 0;
+          });
+          optionHide($conditionDropdown, enabledConditions);
+
+          /* On change function that restricts the operations available.
+           * Will mutate the attributes of the verification condition options */
+          $verifyOnDropdown.on('change', function() {
+              /* Update state */
+              verifyOnState = this.value;
+
+              /* Enblabled conditions are defined as conditions that don't
+               * have an empty list of valid types */
+              const conditions = Object.keys(validOperations[verifyOnState]);
+              const enabledConditions = conditions.filter(function(condition) {
+                  return validOperations[verifyOnState][condition].length > 0;
+              });
+              optionHide($conditionDropdown, enabledConditions);
+
+              /* Find the first non-hidden option and set that to the value of the select*/
+              $conditionDropdown.val($conditionDropdown.find('option:first').not('.hidden').val());
+
+              $element.data('formValidation').resetForm();
+
+              /* Then trigger an on-change event to cascade down */
+              $conditionDropdown.trigger('change');
+          });
+
+          /* helper function to hide/show options in the dropdown */
+          function optionHide($select, enabledOptions) {
+              $select.find('option').each(function() {
+                  /* Only hide if not in the enabled list */
+                  const shouldHide = !enabledOptions.includes(this.value);
+
+                  if(shouldHide) {
+                      $(this).removeAttr('selected');
+                      $(this).addClass('hidden');
+                  } else {
+                      $(this).removeClass('hidden');
+                  }
+              });
+          };
+
+          /* Add onChange function to the dropdowns to enabled validation cases */
+          $typeDropdown.on('change', function() {
+              /* Disable previous state validation */
+              validatorToggle(validationState, false);
+
+              /* Update validation state and enable it */
+              validationState = this.value;
+              validatorToggle(validationState, true);
+
+              /* Revalidate the fields */
+              $element.data('formValidation').resetForm();
+              $element.bootstrapValidator('revalidateField', 'actual_value');
+              $element.bootstrapValidator('revalidateField', 'verification_value');
+              $element.bootstrapValidator('revalidateField', 'verification_value_to');
+          });
+
+          /* helper function to determine which validators to enable/disable  */
+          function validatorToggle(valueType, isEnabled) {
+              /* Conditionally enable the different value validators */
+              switch(valueType) {
+                  case 'INTEGER':
+                      $element.formValidation('enableFieldValidators', 'actual_value', isEnabled, 'integer');
+                      $element.formValidation('enableFieldValidators', 'verification_value', isEnabled, 'integer');
+                      $element.formValidation('enableFieldValidators', 'verification_value_to', isEnabled, 'integer');
+                      break;
+                  case 'FLOAT':
+                      $element.formValidation('enableFieldValidators', 'actual_value', isEnabled, 'numeric');
+                      $element.formValidation('enableFieldValidators', 'verification_value', isEnabled, 'numeric');
+                      $element.formValidation('enableFieldValidators', 'verification_value_to', isEnabled, 'numeric');
+                      break;
+                  case 'BOOLEAN':
+                      $element.formValidation('enableFieldValidators', 'actual_value', isEnabled, 'boolean');
+                      $element.formValidation('enableFieldValidators', 'verification_value', isEnabled, 'boolean');
+                      break;
+                  /* String has no specific validators */
+                  default:
+                      break;
+              };
+          };
+          
+          $element.find('select[name="verification_condition"]').change(function() {
+              var option = {};
+              for (var i=0; i < manual_input_verification_conditions.length; i++) {
+                  if (manual_input_verification_conditions[i].condition === $(this).val()) {
+                      option = manual_input_verification_conditions[i];
+                  }
+              }
+
+              if(option.field_type === 'RANGE') {
+                /* Turn on notEmpty and let the validator toggle handle the rest */
+                $element.formValidation('enableFieldValidators', 'verification_value_to', true);
+                $element.formValidation('enableFieldValidators', 'verification_value_to', false, 'integer');
+                $element.formValidation('enableFieldValidators', 'verification_value_to', false, 'numeric');
+                $element.formValidation('enableFieldValidators', 'verification_value_to', true, 'notEmpty');
+              } else {
+                /* Turn off all validation */
+                $element.formValidation('enableFieldValidators', 'verification_value_to', false);
+              }
+              $element.data('formValidation').resetForm();
+
+              /* Update type dropwon */
+              conditionState = this.value;
+              const enabledTypes = validOperations[verifyOnState][conditionState];
+              optionHide($typeDropdown, enabledTypes);
+
+              /* Disable previous state validation */
+              validatorToggle(validationState, false);
+              
+              /* Find the first non-hidden option and set that to the value of the select*/
+              if($typeDropdown.find("option:selected").hasClass("hidden")) {
+                validationState = $typeDropdown.find('option:not(.hidden)').first().val();
+                $typeDropdown.val($typeDropdown.find('option:not(.hidden)').first().val());
+              }
+
+              /* Change the validation type state */
+              validatorToggle(validationState, true);
+
+
+              /* Revalidate the fields if there is input already in them (i.e. page reload) */
+              const actualVal = $(element).find("input[name='actual_value']").val();
+              const verificationVal = $(element).find("input[name='verification_value']").val();
+              const verificationValTo = $(element).find("input[name='verification_value_to']").val();
+              if(actualVal.length > 0) {
+                  $element.bootstrapValidator('revalidateField', 'actual_value');
+              }
+              if(verificationVal.length > 0) {
+                  $element.bootstrapValidator('revalidateField', 'verification_value');
+              }
+              if(verificationValTo.length > 0) {
+                  $element.bootstrapValidator('revalidateField', 'verification_value_to');
+              }
+          });
+        
+      }
+  });
+</script>

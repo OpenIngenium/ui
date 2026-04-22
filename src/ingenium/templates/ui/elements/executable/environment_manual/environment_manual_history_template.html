@@ -1,0 +1,28 @@
+{% include 'ui/elements/executable/execution_results.html' %}
+
+{% if element.get_user_inputs %}
+    <table class="table table-stripped">
+        <tr class="">
+            <th>Name</th>
+            <th>Verify On</th>
+            <th>Verification Condition</th>
+            <th>Verification Value</th>
+            <th>Actual Value</th>
+        </tr>
+        <tr class="">
+            <td>Temperature (°C)</td>
+            <td>{{ element.get_user_inputs.temperature.verify_on }}</td>
+            <td>{{ element.get_user_inputs.temperature.verification_condition }}</td>
+            <td>{{ element.get_user_inputs.temperature.verification_values.0 }} {% if element.get_user_inputs.temperature.verification_values.1 %} - {{ element.get_user_inputs.temperature.verification_values.1 }}{% endif %}</td>
+            <td>{{ element.get_user_inputs.temperature.actual_value }}</td>
+
+        </tr>
+        <tr class="">
+            <td>Humidity (%)</td>
+            <td>{{ element.get_user_inputs.humidity.verify_on }}</td>
+            <td>{{ element.get_user_inputs.humidity.verification_condition }}</td>
+            <td>{{ element.get_user_inputs.humidity.verification_values.0 }} {% if element.get_user_inputs.humidity.verification_values.1 %} - {{ element.get_user_inputs.humidity.verification_values.1 }}{% endif %}</td>
+            <td>{{ element.get_user_inputs.humidity.actual_value }}</td>
+        </tr>
+    </table>
+{% endif %}

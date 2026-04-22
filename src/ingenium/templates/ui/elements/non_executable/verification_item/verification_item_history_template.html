@@ -1,0 +1,24 @@
+{% if element.get_vag_name %}
+    {{ element.get_vag_name }} {% if element.get_va_name %} / {{ element.get_va_name }}{% endif %}
+
+    {% if element.get_vis %}
+        <table class="table">
+            <thead>
+            <tr>
+                <th style="text-align: left;" class="col-sm-2">ID</th>
+                <th style="text-align: left;">Name</th>
+                <th style="text-align: left;">Value</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for vi in element.get_vis %}
+                <tr>
+                    <td>{{ vi.id }}</td>
+                    <td>{{ vi.name }}</td>
+                    <td>{{ vi.value }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endif %}

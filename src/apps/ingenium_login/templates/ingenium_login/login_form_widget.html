@@ -1,0 +1,50 @@
+<form action="{% url 'public_login' %}{% if next %}?next={{ next }}{% endif %}" method="post" id="login_widget">
+
+    {% csrf_token %}
+
+    {% if login_errors %}
+      <div class="alert alert-danger" role="alert">{{ login_errors }}</div>
+    {% endif %}
+
+    <label for="username" class="control-label">JPL Username</label>
+    <div class="input-group" id="login_widget_username">
+        <span class="input-group-addon">
+            <span class="glyphicon glyphicon-user"></span>
+        </span>
+        <input type="text" id="username" name="username" class="form-control" placeholder="JPL Username">
+    </div>
+
+    <label for="password" class="control-label">{{ secret_label }}</label>
+    <div class="input-group" id="login_widget_password">
+        <span class="input-group-addon">
+            <span class="glyphicon glyphicon-lock"></span>
+        </span>
+        <input type="password" id="password" name="password" class="form-control" autocomplete="off" placeholder="{{secret_label}}">
+    </div>
+
+    <br />
+
+    <button class="btn btn-large btn-primary" type="submit">Sign in</button>
+
+</form>
+
+<style>
+    form#login_widget div#login_widget_username span.input-group-addon {
+        border-bottom-left-radius: 0;
+    }
+    form#login_widget div#login_widget_username input.form-control {
+        border-bottom-right-radius: 0;
+    }
+    form#login_widget div#login_widget_password {
+        margin-top: -1px;
+    }
+    form#login_widget div#login_widget_password span.input-group-addon {
+        border-top-left-radius: 0;
+    }
+    form#login_widget div#login_widget_password input.form-control {
+        border-top-right-radius: 0;
+    }
+    div#login_widget_username {
+        margin-bottom: 15px;
+    }
+</style>

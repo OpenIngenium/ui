@@ -1,0 +1,10 @@
+<h3>Execution</h3>
+{% include 'ui/pages/execute/execute_information.html' %}
+
+<br />
+<hr />
+
+<h3>As Run</h3>
+{% for element in as_run_history.get_children %}
+    {% include "ui/pages/execute/execute_history_step_detail.html" %}
+{% endfor %}

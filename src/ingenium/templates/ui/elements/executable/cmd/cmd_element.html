@@ -1,0 +1,33 @@
+{% load up_tools_tags %}
+{% random_hash as unique_name %}
+<div class="dynamic_element cmd_element" id="{{ unique_name }}">
+    <div class="row">
+        <input type="hidden" name="row_id" value="{{ unique_name }}"/>
+        <div class="col-xs-2">
+            <label>HW/FSW</label>
+            <select name="hw_fsw" class="form-control execution-input">
+                {% for option in element.HW_FSW_OPTIONS %}
+                    <option {% if entry.hw_fsw == option.0 %}selected{% endif %} value="{{ option.0 }}">{{ option.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-xs-5">
+            <label data-toggle="tooltip" title="Command Stem with all arguments, command separated."> Command String</label>
+            <button type="button" class="btn btn-xs btn-info pull-right command-lookup">
+                <span class="glyphicon glyphicon-search"></span> Lookup
+            </button>
+            <input name="command" value="{{ entry.cmd_string|default:"" }}" type="text" class="form-control execution-input"/>
+        </div>
+
+        <div class="col-xs-2">
+            <label>Timeout (sec)</label>
+            <input name="timeout" value="{{ entry.timeout|default:"" }}" type="number" class="form-control execution-input"/>
+        </div>
+
+        <div class="col-xs-3">
+            <label data-toggle="tooltip" title="Will verify the command was received and dispatched by the spacecraft."> Verify Receipt?</label><br />
+            <label style="font-weight:normal;"><input name="verify_receipt_{{ unique_name }}" {% if entry.verify %}checked{% endif %} type="checkbox" class="execution-input"/> Yes</label>
+        </div>
+    </div>
+</div>

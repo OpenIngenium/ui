@@ -1,0 +1,83 @@
+{% extends "layouts/ingenium_template.html" %}
+{% load staticfiles %}
+{% block page_label %}
+    Yikes we can't find that page
+{% endblock %}
+{% block page_content %}
+    <html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+
+        <style type="text/css">
+
+            html {
+                height: 100%;
+                margin-left: auto;
+                margin-right: auto;
+                padding: 0;
+                display: table;
+
+            }
+
+            body {
+{#                background: #d4d4d4;#}
+                margin: 0;
+                height: 100%;
+                display: table-cell;
+                vertical-align: middle;
+            }
+
+            div.error404_main {
+            background: url({% static "images/404/error404_main.jpg" %}) no-repeat;
+                width: 950px;
+                height: 550px;
+                margin: 48px 21px 0 21px;
+                position: relative;
+            }
+
+            span.main_txt {
+                display: block;
+                width: 150px;
+                height: 63px;
+                position: absolute;
+                top: 223px;
+                left: 745px;
+                text-align: center;
+                color: #1d1d1d;
+                padding: 10px 0 0 0;
+                font-family: 'Lucida Grande', Arial, Verdana, sans-serif;
+                font-size: 13px;
+                font-style: normal;
+                font-variant: normal;
+                font-weight: normal;
+                line-height: normal;
+            }
+
+        </style>
+
+
+        <script type="text/javascript">
+            function countdown() {
+                var i = document.getElementById('counter');
+                if (parseInt(i.innerHTML) == 0) {
+                    location.href = '/';
+                } else {
+                    i.innerHTML = (parseInt(i.innerHTML) - 1) + "";
+                }
+            }
+            setInterval(function () {countdown();}, 1000);
+        </script>
+
+    </head>
+
+    <body>
+
+    <div class="error404_main">
+    <span class="main_txt">
+        <span>Redirecting you<br/>to homepage in<br/><span id="counter">5</span> seconds</span>
+    </span>
+    </div>
+
+    </body>
+    </html>
+{% endblock %}

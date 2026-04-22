@@ -1,0 +1,92 @@
+{% block step_content %}
+    <form id="gds_form_{{ element.get_element_id }}" class="gds_form execution_form">
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+
+            <div class="dynamic_elements gds_elements">
+                {% for entry in element.get_user_inputs.entries %}
+                    {% include "ui/elements/executable/gds_manual/gds_element.html" %}
+                {% endfor %}
+            </div>
+    </form>
+{% endblock %}
+
+{% block javascript_content %}
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+
+        function initialize_validation($form, executionId) {
+            $form.formValidation({
+                framework: 'bootstrap',
+                fields: {
+                    data_path: {
+                        excluded: function($field, validator) {
+                            return executionId === '';
+                        },
+                        validators: {
+                            notEmpty: {
+                                message: 'Must provide <strong>data_path</strong>'
+                            }
+                        }
+                    },
+                    session_id: {
+                        excluded: function($field, validator) {
+                            return executionId === '';
+                        },
+                        validators: {
+                            notEmpty: {
+                                message: 'Must provide <strong>session_id</strong>'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        $(document).on('up.added', '.gds_form', function (event, element) {
+            /* because we're listening to 'document' for up.added and then rely on event bubbling to alert us when an
+             * $element was added to the document, we must make sure that the $element we get back is the same $element
+             * that we're listening for, and not a child of the $element that we're listening for */
+            if (this === element) {
+                $(element).each(function (index, form) {
+                    if (!$(form).data('gds_manual-initialized')) {
+                        $(form).data('gds_manual-initialized', true);
+
+                        var $form = $(form);
+                        const executionId = $form.find("input[name=execution_id]").val();
+
+                        /* dynamic_element */
+                        $form.children('.gds_elements').dynamic_element({
+                            url: "{% url 'gds_html' %}",
+                            data: {
+                                'element_type_id': '{{ element.get_element_type_id }}',
+                                'execution_id': '{{ execution_id }}'
+                            }
+                        }).on('dynamic_element.changed', function () {
+                            $(this).closest('.check_venue_configuration').trigger('change');
+                        }).on('dynamic_element.removed', function() {
+                            $form.data('formValidation').destroy();
+                            initialize_validation($form, executionId);
+                        });
+
+                        initialize_validation($form, executionId);
+                        ING.execution.change_step_form($form);
+
+                    }
+                });
+            }
+        });
+        $(document).on('up.added', '.gds_element', function (event, element){
+            if (this === element) {
+                const $element = $(this);
+                const $form = $element.closest('.gds_form');
+                const executionId = $form.find("input[name=execution_id]").val();
+
+                /* re-initialize form validation */
+                $form.data('formValidation').destroy();
+                initialize_validation($form, executionId);
+            }
+        });        
+
+    </script>
+{% endblock %}

@@ -1,0 +1,226 @@
+{% block step_content %}
+
+    <form id="graph_eha_form_{{ element.get_element_id }}" class="graph_eha_form execution_form">
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+
+        <div class="row">
+            <div class="col-xs-3">
+                <label for="flight_sse_{{ element.get_element_id }}">Flight/SSE</label>
+                <select id="flight_sse_{{ element.get_element_id }}" name="flight_sse" class="form-control execution-input" data-prev="{{ element.get_flight_sse|default:element.FLIGHT_SSE_OPTIONS.0.0 }}">
+                    {% for option in element.FLIGHT_SSE_OPTIONS %}
+                        <option {% if element.get_flight_sse == option.0 %}selected{% endif %} value="{{ option.0 }}">{{ option.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-xs-3">
+                <label for="channel_type_{{ element.get_element_id }}">Channel Type</label>
+                <select id="channel_type_{{ element.get_element_id }}" name="channel_type" class="form-control execution-input">
+                    {% for channel_type in element.CHANNEL_TYPE %}
+                        <option {% if element.get_channel_type == channel_type.0 %}selected{% endif %} value="{{ channel_type.0 }}">{{ channel_type.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-xs-6">
+                <label data-toggle="tooltip" title="Channel Name to Graph."> Channel</label>
+                <button type="button"  class="btn btn-xs btn-info pull-right eha-lookup">
+                    <span class="glyphicon glyphicon-search"></span> Lookup
+                </button>
+                <input name="channel_name" value="{{ element.get_channel_name|default:"" }}" type="text" class="form-control execution-input" data-value='{"label":"{{ element.get_channel_name|default:"" }}","value":"{{ element.get_channel_id|default:"" }}"}' />
+            </div>
+        </div>
+
+        <br />
+
+        <div class="row">
+            <div class="col-xs-3">
+                <label for="data_path_{{ element.get_element_id }}">Data Path</label>
+                <input id="data_path_{{ element.get_element_id }}" name="data_path" value="{{ element.get_data_path|default:"" }}" type="text" class="form-control execution-input"/>
+            </div>
+
+            <div class="col-xs-3">
+                <label for="dn_eu_{{ element.get_element_id }}">DN/EU</label>
+                <select id="dn_eu_{{ element.get_element_id }}" name="dn_eu" class="form-control execution-input">
+                    {% for option in element.DN_EU_OPTIONS %}
+                        <option {% if element.get_dn_eu == option.0 %}selected{% endif %} value="{{ option.0 }}">{{ option.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-xs-3">
+                <label for="timeout_{{ element.get_element_id }}">Timeout (sec)</label>
+                <input id="timeout_{{ element.get_element_id }}" name="timeout" value="{{ element.get_timeout|default:"" }}" type="text" class="form-control execution-input"/>
+            </div>
+        </div>
+
+        <br />
+
+        <div class="row">
+            <div class="col-xs-3">
+                <label
+                        for="start_time_{{ element.get_element_id }}"
+                        data-toggle="tooltip"
+                        data-placement="right"
+                        title="Allowable formats include: SCLK (example: 0565999907.12500), ERT/SCET - DOY format (2017-234T10:23:12.329), or one of the following defined Time Constants: CURRENT_TIME, LAST_STEP_START, LAST_STEP_END, CURRENT_STEP_START">
+                    Start Time</label>
+                <input id="start_time_{{ element.get_element_id }}" name="start_time" value="{{ element.get_start_time|default:"" }}" type="text" class="form-control execution-input"/>
+            </div>
+
+            <div class="col-xs-3">
+                <label
+                        for="end_time_{{ element.get_element_id }}"
+                        data-toggle="tooltip"
+                        title="Allowable formats include: SCLK (example: 0565999907.12500), ERT/SCET - DOY format (2017-234T10:23:12.329), or one of the following defined Time Constants: CURRENT_TIME, LAST_STEP_START, LAST_STEP_END, CURRENT_STEP_START">
+                    End Time</label>
+                <input id="end_time_{{ element.get_element_id }}" name="end_time" value="{{ element.get_end_time|default:"" }}" type="text" class="form-control execution-input"/>
+            </div>
+
+            <div class="col-xs-3">
+                <label for="duration_{{ element.get_element_id }}">Duration (sec)</label>
+                <input id="duration_{{ element.get_element_id }}" name="duration" value="{{ element.get_duration|default:"" }}" type="text" class="form-control execution-input"/>
+            </div>
+
+            <div class="col-xs-3">
+                <label for="time_type_{{ element.get_element_id }}">Time Type</label>
+                <select id="time_type_{{ element.get_element_id }}" name="time_type" class="form-control execution-input">
+                    {% for time_type in element.TIME_TYPE %}
+                        <option {% if element.get_time_type == time_type.0 %}selected{% endif %} value="{{ time_type.0 }}">{{ time_type.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block javascript_content %}
+    <!--suppress JSUnresolvedVariable -->
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+
+        /**
+         * Listen for existence of any instance of element .graph_eha_form; initialize if it's not already initialized.
+         */
+        $(document).on('up.added', '.graph_eha_form', function (event, element) {
+            if (this === element) {
+                $(element).each(function (index, form) {
+                    if (!$(form).data('initialized')) {
+                        $(form).data('initialized', true);
+                        initialize_graph_eha_step(form);
+                    }
+                });
+            }
+        });
+
+        /**
+         * Initialize whatever needs to be initialized
+         *
+         * @param form      <form> element in graph_eha step
+         */
+        function initialize_graph_eha_step(form) {
+
+            ING.execution.change_step_form($(form));
+
+            /* initialize up_typeahead */
+            $(form).find('input[name="channel_name"]').up_typeahead({
+                url: '{% url 'lookup_eha_names' %}',
+                force_selection: true,
+                hidden_id: true,
+                hidden_id_field_name: 'channel_id',
+                map_dict: {
+                    "name": "eha_name",
+                    "id": "channel_id",
+                    "description": "eha_description"
+                },
+                typeahead_options: {
+                    highlight: false
+                },
+                typeahead_datasets: {
+                    templates: {
+                        suggestion: function (option) {
+                            return '<div class="step_typeahead_suggestion">' +
+                                '<div>' +
+                                '<h4>' + option.name + '</h4>' +
+                                '<h4>' + option.id + '</h4>' +
+                                '</div>' +
+                                '<p>' + option.description + '</p>' +
+                                '</div>';
+                        }
+                    }
+                }
+            }).on('before_send', function () {
+                $(this).up_typeahead('update_data', get_graph_eha_data(this));
+            });
+
+            /* initialize up_modal_request */
+            $(form).find('button.eha-lookup').up_modal_request({
+                url: '{% url 'lookup_eha_modal' %}',
+                up_modal_options: {
+                    'size': 'lg',
+                    'dismissible': false
+                },
+                first_ajax_request_before_ajax: function ($button) {
+                    var data = $.extend(true, get_graph_eha_data($button), {
+                        'dynamic_element_id': $button.closest('.wait_eha_element').attr('id')
+                    });
+                    $button.up_modal_request('update_data', data);
+                },
+                on_modal_open: function(title, body) {
+
+                    /* attach listener to each 'Select' button in the wizard popup */
+                    $(body).find('table.data_table_element').on('draw.dt', function() {
+                        $(this).find('button.select-eha-button').each(function(i, button) {
+                            $(button).on('click', function () {
+                                $('#graph_eha_form_' + $(this).data('element-id'))
+                                    .find('input[name="channel_id"]').val($(this).data('id')).end()
+                                    .find('input[name="channel_name"]').typeahead('val', $(this).data('name')).trigger('change');
+                                $.up_modal('hide');
+                            });
+                        });
+                    });
+
+                }
+            });
+
+            /* initialize change listener on flight_sse to set channel_type and clear channel_name/channel_id */
+            $(form).find('select[name="flight_sse"]').change(function() {
+                var channel_type = ($(this).val() == 'SSE') ? 'SSE' : 'FSW';
+                $(form).find('select[name="channel_type"]').find('option[value^="' + channel_type + '"]').first().prop('selected', true);
+                $(form).find('input[name="channel_name"]').typeahead('val', '');
+                $(form).find('input[name="channel_id"]').val('');
+                $(this).data('prev', $(this).val());
+            });
+
+            /* initialize change listener on channel_type to set flight_sse */
+            $(form).find('select[name="channel_type"]').change(function() {
+                var flight_sse = ($(this).val() == 'SSE') ? 'SSE' : 'FLIGHT';
+                var $flight_sse = $(form).find('select[name="flight_sse"]');
+                $flight_sse.find('option[value="' + flight_sse + '"]').first().prop('selected', true);
+                if ($flight_sse.data('prev') != $flight_sse.val()) {
+                    $flight_sse.trigger('change');
+                }
+                $flight_sse.data('prev', $flight_sse.val());
+            });
+
+        }
+
+        /**
+         * Plugins like up_typeahead and up_modal_request need to know a few things about where requests are coming
+         * from.  This function gathers that information and structures it into a dictionary.
+         *
+         * @param _element  Any random element inside of form
+         */
+        function get_graph_eha_data(_element) {
+            return {
+                'dictionary_type': $(_element).closest('.step').find('select[name="flight_sse"]').val(),
+                'sse_dictionary_version': $('#sse_dictionary_version').val(),
+                'flight_dictionary_version': $('#flight_dictionary_version').val(),
+                'element_id': $(_element).closest('.step').first().data('element-id')
+            };
+        }
+
+    </script>
+{% endblock %}

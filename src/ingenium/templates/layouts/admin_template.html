@@ -1,0 +1,20 @@
+{% extends "layouts/ingenium_admin_template.html" %}
+
+{% load static %}
+
+{% block html_title %}
+    Admin Panel
+{% endblock %}
+
+{% block page_label %}
+    Admin Panel
+{% endblock %}
+
+{% block page_content %}
+
+    {# Vue Project Configuration Component #}
+    <div id="spa-admin"></div>
+
+    <script src="{% static admin_js_bundle %}"></script>
+
+{% endblock %}

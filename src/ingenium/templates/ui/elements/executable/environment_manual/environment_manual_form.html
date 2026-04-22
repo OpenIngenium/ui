@@ -1,0 +1,147 @@
+{% block step_content %}
+    <form id="environment_form_{{ element.get_element_id }}" class="environment_form execution_form">
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+
+        <div class="row">
+            <div class="col-xs-2">
+                <label>Name</label>
+            </div>
+            <div class="col-xs-2">
+                <label>Verify On</label>
+            </div>
+            <div class="col-xs-3">
+                <label>Verification Condition</label>
+            </div>
+            <div class="col-xs-3">
+                <label>Verification Value</label>
+            </div>
+            {# only show in execution view #}
+            <div class="col-xs-2">
+                {% if execution_id %}
+                    <label>Actual Value</label>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row form-group" style="margin-bottom:5px;">
+            <div class="col-xs-2">
+                Temperature (°C)
+            </div>
+            <div class="col-xs-2">
+                <select name="temp_verify_on" class="form-control execution-input">
+                    {% for option in element.VERIFICATION_ON %}
+                        <option {% if element.get_temperature_inputs.verify_on == option.0 %}selected{% endif %} value="{{ option.0 }}">{{ option.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-xs-3">
+                <select name="temp_verification_condition" class="form-control execution-input">
+                    {% for option in element.VERIFICATION_CONDITION %}
+                        <option {% if element.get_temperature_inputs.verification_condition == option.0 %}selected{% endif %} value="{{ option.0 }}">{{ option.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-xs-3">
+               <div class="input-group">
+                    <input name="temp_verification_value" value="{{ element.get_temperature_inputs.verification_values.0 |default:"" }}" type="number" data-fv-digits class="form-control execution-input"/>
+                    <span class="input-group-addon range-option-group hidden">to</span>
+                    <input name="temp_verification_value_to" value="{{ element.get_temperature_inputs.verification_values.1 |default:"" }}" type="number" data-fv-digits class="hidden form-control execution-input range-option-group"/>
+               </div>
+            </div>
+            {# only show in execution view #}
+            <div class="col-xs-2">
+                <input name="temp_actual_value" value="{{ element.get_temperature_inputs.actual_value }}" type="number" class="form-control execution-input {% if execution_id == None %} invisible {% endif %}"/>
+            </div>
+        </div>
+
+        <div class="row form-group" style="margin-bottom:5px;">
+            <div class="col-xs-2">
+                Humidity (%)
+            </div>
+            <div class="col-xs-2">
+                <select name="humidity_verify_on" class="form-control execution-input">
+                    {% for option in element.VERIFICATION_ON %}
+                        <option {% if element.get_humidity_inputs.verify_on == option.0 %}selected{% endif %} value="{{ option.0 }}">{{ option.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-xs-3">
+                <select name="humidity_verification_condition" class="form-control execution-input">
+                    {% for option in element.VERIFICATION_CONDITION %}
+                        <option {% if element.get_humidity_inputs.verification_condition == option.0 %}selected{% endif %} value="{{ option.0 }}">{{ option.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-xs-3">
+                <div class="input-group">
+                    <input name="humidity_verification_value" value="{{ element.get_humidity_inputs.verification_values.0 |default:"" }}" type="number" class="form-control execution-input"/>
+                    <span class="input-group-addon range-option-group hidden ">to</span>
+                    <input name="humidity_verification_value_to" value="{{ element.get_humidity_inputs.verification_values.1 |default:"" }}" type="number" class="range-option-group hidden form-control execution-input"/>
+               </div>
+            </div>
+            {# only show in execution view #}
+            <div class="col-xs-2">
+                <input name="humidity_actual_value" value="{{ element.get_humidity_inputs.actual_value }}" type="number" class="form-control execution-input {% if execution_id == None %} invisible {% endif %}"/>
+            </div>
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block javascript_content %}
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+
+        $(document).on('up.added', '.environment_form', function (event, element) {
+            /* because we're listening to 'document' for up.added and then rely on event bubbling to alert us when an
+             * $element was added to the document, we must make sure that the $element we get back is the same $element
+             * that we're listening for, and not a child of the $element that we're listening for */
+            if (this === element) {
+                $(element).each(function (index, form) {
+                    if (!$(form).data('environment-initialized')) {
+                        $(form).data('environment-initialized', true);
+
+                        var $form = $(form);
+
+                        /* toggle range field visibility  */
+                        var $dropdowns = $form.find("[name='temp_verification_condition'],[name='humidity_verification_condition']");
+
+                        $dropdowns.each(function (index, dropdown){
+                            if (this.value === "INCLUSIVE_RANGE" || this.value === "EXCLUSIVE_RANGE") {
+                                $(this).closest('.form-group').find('.range-option-group').removeClass('hidden');
+                            }
+                        });
+
+                        $dropdowns.on('change', function() {
+                            if (this.value === "INCLUSIVE_RANGE" || this.value === "EXCLUSIVE_RANGE") {
+                                $(this).closest('.form-group').find('.range-option-group').removeClass('hidden');
+                            } else {
+                                $(this).closest('.form-group').find('.range-option-group').addClass('hidden');
+                            }
+                            if (this.value === "RECORD") {
+                                if(this.name === "temp_verification_condition") {
+                                    $form.formValidation('enableFieldValidators', 'temp_verification_value', false);
+                                }
+                                if(this.name === "humidity_verification_condition") {
+                                    $form.formValidation('enableFieldValidators', 'humidity_verification_value', false);
+                                }
+                            } else {
+                                if(this.name === "temp_verification_condition") {
+                                    $form.formValidation('enableFieldValidators', 'temp_verification_value', true);
+                                }
+                                if(this.name === "humidity_verification_condition") {
+                                    $form.formValidation('enableFieldValidators', 'humidity_verification_value', true);
+                                }
+                            }
+                        });
+
+                        ING.execution.change_step_form($form);
+                    }
+                });
+            }
+        });
+
+    </script>
+{% endblock %}

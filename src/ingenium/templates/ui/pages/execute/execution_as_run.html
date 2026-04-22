@@ -1,0 +1,23 @@
+{% extends "layouts/ingenium_spa_template.html" %}
+
+{% load static %}
+{% block html_title %}
+    Execution As Run
+{% endblock %}
+
+{% block page_label %}
+    Execution As Run
+{% endblock %}
+
+{% block page_content %}
+    <link href="{% static "css/execution_spa.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "css/steps_spa.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "css/vue-multiselect.min.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "css/vue-datetime.min.css" %}" rel="stylesheet" type="text/css"/>
+    
+    {# Vue As Run Component #}
+    <div id="spa-execute-as-run"></div>
+
+    <script src="{% static execute_as_run_js_bundle %}"></script>
+
+{% endblock %}

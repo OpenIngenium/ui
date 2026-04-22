@@ -1,0 +1,7 @@
+{# Need to do this since django interpolation prevents JS from running #}
+
+<script>
+    window.applicationTitle = "{{ APPLICATION_TITLE }}";
+</script>
+
+<script src="/static/{{ HEADER_JS_BUNDLE }}"></script>

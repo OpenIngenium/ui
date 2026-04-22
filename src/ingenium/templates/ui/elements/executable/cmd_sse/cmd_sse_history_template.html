@@ -1,0 +1,21 @@
+{% include 'ui/elements/executable/execution_results.html' %}
+
+{% if element.get_user_inputs.data_path %}
+    Data Path: {{ element.get_user_inputs.data_path }} <br/>
+{% endif %}
+
+{% if element.get_user_inputs.entries %}
+
+    <table class="table table-striped">
+        <tr>
+            <th>Command String</th>
+            <th>Timeout (sec)</th>
+        </tr>
+        {% for entry in element.get_user_inputs.entries %}
+            <tr>
+                <td>{{ entry.cmd_string }}</td>
+                <td>{{ entry.timeout }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}

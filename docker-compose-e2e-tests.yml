@@ -1,0 +1,33 @@
+version: "3.3"
+
+services:
+  chrome:
+    image: selenium/standalone-chrome:3.10.0
+    container_name: selenium-chrome
+    environment:
+      - JAVA_OPTS=-Dselenium.LOGGER.level=WARNING
+    ports:
+      - "4444:4444"
+  ingenium_e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile-e2e-testing-ci
+    container_name: ingenium_e2e_testrunner
+    environment:
+      - TEST_USER=${TEST_USER}
+      - TEST_PASS=${TEST_PASS}
+      - ARCHIVE_API_URL=http://archive_ing:8010/api/v5/
+      - CORE_API_URL=http://core_server:8080/api/v5/
+      - DICT_API_URL=http://ingenium-ci.jpl.nasa.gov:5000/api/v3
+      - VENUE_CONFIG_API_URL=http://venue_config:5151/api/v1/
+      - EXECUTION_SERVER_URL=http://exec_server:9999/api/v4/
+      - UI_NGINX_URL=http://ui_nginx:80
+      - PRIVATE_PEM=${PRIVATE_PEM}
+    depends_on:
+      - chrome
+    volumes:
+       - $REPO_DIR/tests/test-reports:/src/client/test/test-reports
+networks:
+  default:
+    external:
+      name: ${SINGLENODE_COMPOSE_NETWORK}

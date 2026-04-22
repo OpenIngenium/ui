@@ -1,0 +1,316 @@
+{% extends "layouts/ingenium_template.html" %}
+{% load static %}
+
+{% block html_title %}
+    Execution
+{% endblock %}
+
+{% block page_label %}
+    Execution
+{% endblock %}
+
+{% block page_content %}
+    <link href="{% static "css/execution.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "css/steps.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "css/vue-multiselect.min.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "css/vue-datetime.min.css" %}" rel="stylesheet" type="text/css"/>
+
+    <div class="row" id="execution_page">
+
+        <div class="col-xs-3" id="execution_page_left">
+
+            <div id="execution_toolbar_wrapper">
+
+                <div id="execution_toolbar_top">
+
+                    <h2>Controls</h2>
+
+{#                    <!-- this was stubbed out for a future phase when we have both 'auto' and 'manual' execution modes -->#}
+{#                    <br/>#}
+{##}
+{#                    <div class="form-group">#}
+{#                        <label for="toggle_execution_mode">Execution Mode</label>#}
+{#                        <br/>#}
+{#                        <input type="checkbox" id="toggle_execution_mode" checked/>#}
+{#                    </div>#}
+
+                    <div class="execution_mode_manual">
+
+                        {#                    <label>Manual Controls</label>#}
+                        <button type="button" class="btn btn-default" id="manual_button_play" data-execution-id="{{ execution.get_execution_id }}">
+                            <span class="glyphicon glyphicon-play"></span> Play
+                        </button>
+                        <button type="button" class="btn btn-default" id="manual_button_halt" data-execution-id="{{ execution.get_execution_id }}">
+                            <span class="glyphicon glyphicon-stop"></span> Halt
+                        </button>
+                        <button type="button" class="btn btn-danger" id="manual_button_end" data-execution-id="{{ execution.get_execution_id }}">
+                            <span class="glyphicon glyphicon-saved"></span> Close
+                        </button>
+
+
+                    </div>
+
+{#                    <!-- this was stubbed out for a future phase when we have both 'auto' and 'manual' execution modes -->#}
+{#                    <div class="execution_mode_automatic">#}
+{##}
+{#                        <label>Automatic Controls</label>#}
+{#                        <div class="btn-group" role="group">#}
+{#                            <button type="button" class="btn btn-default" id="automatic_button_play">#}
+{#                                <span class="glyphicon glyphicon-play"></span> Play#}
+{#                            </button>#}
+{#                            <button type="button" class="btn btn-default" id="automatic_button_pause">#}
+{#                                <span class="glyphicon glyphicon-pause"></span> Pause#}
+{#                            </button>#}
+{#                            <button type="button" class="btn btn-default" id="automatic_button_halt">#}
+{#                                <span class="glyphicon glyphicon-stop"></span> Halt#}
+{#                            </button>#}
+{#                        </div>#}
+{##}
+{#                        <br/>#}
+{##}
+{#                        <div class="form-group">#}
+{#                            <label for="automatic_play_mode_select">Automatic Play Mode</label>#}
+{#                            <select class="form-control" id="automatic_play_mode_select">#}
+{#                                <option>Nostrud Exercitation</option>#}
+{#                                <option>Ullamco Laboris Nisi</option>#}
+{#                                <option>Ut Aliquip Ex Ea</option>#}
+{#                            </select>#}
+{#                        </div>#}
+{##}
+{#                    </div>#}
+
+                    <div class="clearfix"></div>
+
+                    <hr />
+
+                    <h2>Status</h2>
+
+                    <div id="execution_status">
+                        <div class="row">
+                            <div class="col-sm-6"><strong>Status</strong></div>
+                            <div class="col-sm-6" id="execution_status_status"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6"><strong>Executable Steps</strong></div>
+                            <div class="col-sm-6" id="execution_status_un_executed_steps"></div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h2>Dictionaries</h2>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label for="sse_dictionary_version">SSE Dictionary</label>
+                                <select id="sse_dictionary_version" name="sse_dictionary_version" class="form-control" placeholder="SSE Dictionary">
+                                    {% for dictionary in sse_dictionaries %}
+                                        <option value="{{ dictionary.get_version }}">{{ dictionary.get_version }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-6">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label for="flight_dictionary_version">Flight Dictionary</label>
+                                <select id="flight_dictionary_version" name="flight_dictionary_version" class="form-control" placeholder="Flight Dictionary">
+                                    {% for dictionary in flight_dictionaries %}
+                                        <option value="{{ dictionary.get_version }}">{{ dictionary.get_version }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h2>Steps</h2>
+
+                </div>
+                <div id="execution_toolbar_bottom">
+
+                    <ol class="steps_list" id="steps_toolbar">
+                        {% for category, elements in ingenium_steps %}
+                            <li class="ui-state-default ui-state-disabled"><h4>{{ category }}</h4></li>
+                            {% for element in elements %}
+                                {% include "ui/elements/generic/step_outer.html" with type="toolbar" execution_id=execution.get_execution_id %}
+                            {% endfor %}
+                            {% if not forloop.last %}<hr />{% endif %}
+                        {% endfor %}
+                    </ol>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xs-9" id="execution_page_right">
+
+            <div class="row">
+
+                <div class="col-xs-12">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <h2 style="display:inline-block;margin:0;">
+
+                                <a href="{% url 'venue_detail_page' venue.get_venue_id %}">{{ venue.name }}</a>
+                                {% if venue.get_execution_id %}
+                                    | {{ venue.get_execution_id }}
+                                {% endif %}
+
+
+                            </h2>
+                            <div style="margin-top:10px;">
+                                <span class="status-dot {% if venue.is_available %}status-dot-green{% elif venue.is_in_use %}status-dot-yellow{% elif venue.is_offline %}status-dot-red{% else %}status-dot-grey{% endif %}" style="margin-bottom:-2px;"></span>
+                                {{ venue.get_friendly_status }}
+                                {% if venue.get_test_conductor %}by {{ venue.get_test_conductor }}{% endif %}
+                                {% if venue.get_test_started_on %}({{ venue.get_test_started_on|timesince }}){% endif %}
+                            </div>
+                        </div>
+                        <div style="display:flex;">
+                            <div class="form-group" style="margin:0;">
+                                <label for="toggle_venue_status">Venue Details</label>
+                                <br/>
+                                <input type="checkbox" id="toggle_venue_status"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="description_wysiwyg" style="margin-top:10px;">
+                        <div class="description_wysiwyg_content">{{ execution.get_description|safe }}</div>
+                        <button class="btn btn-sm btn-primary description_wysiwyg_button" type="button" data-url="{% url 'inline_execution_description_wysiwyg' %}" data-data='{"execution_id": "{{ execution.get_execution_id }}", "submit_url": "{% url 'update_execution_api' %}" }'>
+                            <span class="glyphicon glyphicon-edit"></span>
+                        </button>
+                    </div>
+                    <div class="clearfix"></div>
+
+                    <div id="venue_status">
+                        <br/>
+                        <table class="table table-striped">
+                            <tbody>
+
+                            {% if venue.name %}
+                                <tr>
+                                    <td>Name</td>
+                                    <td><a href="{% url 'venue_detail_page' venue.get_venue_id %}">{{ venue.name }}</a>
+                                    </td>
+                                </tr>
+                            {% endif %}
+
+                            {% if venue.description %}
+                                <tr>
+                                    <td>Description</td>
+                                    <td>{{ venue.description }}</td>
+                                </tr>
+                            {% endif %}
+
+                            {% if venue.type %}
+                                <tr>
+                                    <td>Type</td>
+                                    <td>{{ venue.type }}</td>
+                                </tr>
+                            {% endif %}
+
+                            {% if venue.location %}
+                                <tr>
+                                    <td>Location</td>
+                                    <td>{{ venue.location }}</td>
+                                </tr>
+                            {% endif %}
+
+                            {% if venue.ampcs_address %}
+                                <tr>
+                                    <td>AMPCS Address</td>
+                                    <td>{{ venue.ampcs_address }}</td>
+                                </tr>
+                            {% endif %}
+
+                            {% if venue.sse_address %}
+                                <tr>
+                                    <td>SSE Address</td>
+                                    <td>{{ venue.sse_address }}</td>
+                                </tr>
+                            {% endif %}
+
+                            {% if venue.get_execution_id %}
+                                <tr>
+                                    <td>Execution Record</td>
+                                    <td>{{ venue.get_execution_id }}</td>
+                                </tr>
+                            {% endif %}
+
+                            {% if venue.get_test_conductor %}
+                                <tr>
+                                    <td>Test Conductor</td>
+                                    <td>{{ venue.get_test_conductor }}</td>
+                                </tr>
+                            {% endif %}
+
+                            {% if venue.get_test_started_on %}
+                                <tr>
+                                    <td>Test Start Date/Time</td>
+                                    <td>{{ venue.get_test_started_on }}</td>
+                                </tr>
+                            {% endif %}
+
+                            {% if venue.get_test_started_on %}
+                                <tr>
+                                    <td>Current Runtime</td>
+                                    <td>{{ venue.get_test_started_on|timesince }}</td>
+                                </tr>
+                            {% endif %}
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <br/>
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <h2 style="display:inline-block;margin:0;">Execution</h2>
+                        <div style="display:flex;text-align:right;">
+                            <div class="form-group" style="margin:0;">
+                                <label for="toggle_detail_all">Execution Details</label>
+                                <br/>
+                                <input type="checkbox" id="toggle_detail_all" checked/>
+                            </div>
+                            {#                            &nbsp; &nbsp; &nbsp;#}
+                            {#                            <div class="form-group" style="margin:0;">#}
+                            {#                                <label for="toggle_comment_all">Comments</label>#}
+                            {#                                <br/>#}
+                            {#                                <input type="checkbox" id="toggle_comment_all"/>#}
+                            {#                            </div>#}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <br/>
+
+            <ol class="steps_list" id="steps_canvas">
+                <input type="hidden" id="get_venue_id" value="{{ venue.get_venue_id }}" />
+                {% for element in elements.get_children %}
+                    {% include "ui/elements/generic/step_outer.html" with type="canvas" execution_id=execution.get_execution_id %}
+                {% endfor %}
+
+            </ol>
+
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="hidden" id="steps_javascript">
+            {{ elements.get_all_execution_javascript }}
+        </div>
+
+
+    </div>
+
+    <script src="{% static 'js/execution.js' %}"></script>
+
+{% endblock %}

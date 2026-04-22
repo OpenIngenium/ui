@@ -1,0 +1,43 @@
+<div class="step_history">
+
+    <div class="row">
+        <div class="col-sm-9">
+            <h4 style="margin-bottom: 0;">{{ element.get_step_number }}
+                <a name="{{ element.get_element_id }}"></a>{% if element.get_title %}{{ element.get_title }}{% else %}
+                    <i>No Title</i>{% endif %}</h4>
+        </div>
+        <div class="col-sm-3">
+            {% if execution.is_complete and not print_friendly %}
+                <button class="btn btn-default step_comment_button pull-right">
+                    <span><span style="margin-left: -5px;" class="badge badge-info comment_badge_count">{{ element.get_comment_count }}</span> Comments</span>
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if show_comments %}
+        <div class="step_comment" style="display: none">
+            {% include 'ui/elements/comments/comments.html' with comments=element.get_comments element_id=element.get_element_id execution_id=execution.get_execution_id %}
+        </div>
+    {% endif %}
+
+    <div style="padding-left: 15px;">{{ element.get_description|safe }}</div>
+
+    {# If there is a History template associated with this step then include it here. #}
+    {% if element.get_history_template_path %}
+        <div style="padding: 0 0 20px 0">
+            {% include element.get_history_template_path %}
+        </div>
+    {% endif %}
+
+    {# If there are embeded steps then recursively iterate through #}
+    {% if element.has_children %}
+        <div style="padding-left: 20px;">
+            {% for child in element.get_children %}
+                {% with element=child template_name="ui/pages/execute/execute_history_step_detail.html" show_comments=show_comments %}
+                    {% include template_name %}
+                {% endwith %}
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

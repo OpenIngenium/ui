@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Execution</title>
+
+    <link href="{% static "jpl_theme/lib/font-awesome-4.7.0/css/font-awesome.min.css" %}?version={{ theme_settings.version }}" rel="stylesheet" type="text/css"/>
+
+    <script type="text/javascript" src="{% static "jpl_theme/lib/jQuery-3.1.0/jquery-3.1.0.min.js" %}?version={{ theme_settings.version }}"></script>
+
+    <script type="text/javascript" src="{% static "jpl_theme/lib/jQuery-3.1.0/plugins/jquery.cookie/jquery.cookie.min.js" %}?version={{ theme_settings.version }}"></script>
+
+    <link href="{% static "jpl_theme/lib/jquery-ui-1.12.1/css/jquery-ui.min.css" %}?version={{ theme_settings.version }}" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="{% static "jpl_theme/lib/jquery-ui-1.12.1/js/jquery-ui.min.js" %}?version={{ theme_settings.version }}"></script>
+
+    <link href="{% static "jpl_theme/lib/bootstrap-3.3.7/css/bootstrap.min.css" %}?version={{ theme_settings.version }}" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="{% static "jpl_theme/lib/bootstrap-3.3.7/js/bootstrap.min.js" %}?version={{ theme_settings.version }}"></script>
+
+    <link href="{% static "jpl_theme/lib/bootstrap-datepicker/css/bootstrap-datepicker.min.css" %}" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="{% static "jpl_theme/lib/bootstrap-datepicker/js/bootstrap-datepicker.min.js" %}"></script>
+
+    <script type="text/javascript" src="{% static "jpl_theme/lib/jquery.highlight/jquery.hightlight-5.min.js" %}"></script>
+
+    <link href="{% static "jpl_theme/css/theme.css" %}?version={{ theme_settings.version }}" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="{% static "jpl_theme/js/global.js" %}?version={{ theme_settings.version }}"></script>
+
+    {% include 'layouts/ingenium_head_block.html' %}
+
+</head>
+<body>
+
+<div class="container-fluid main-content">
+    <div class="row">
+        <div class="col-sm-12">
+            <h3>Execution</h3>
+            {% include 'ui/pages/execute/execute_information.html' %}
+        </div>
+    </div>
+
+    <hr/>
+
+    <div class="row">
+        <div class="col-lg-12">
+            {# Print Elements #}
+            <div class="history_panel">
+                {% for element in as_run_history.get_children %}
+                    {% include "ui/pages/execute/execute_history_step_detail.html" %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        window.print();
+    });
+</script>
+
+</body>
+</html>
+
+
+
+

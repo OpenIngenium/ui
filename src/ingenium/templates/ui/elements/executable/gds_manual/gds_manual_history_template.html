@@ -1,0 +1,16 @@
+{% include 'ui/elements/executable/execution_results.html' %}
+
+{% if element.get_user_inputs.entries %}
+    <table class="table table-striped">
+        <tr>
+            <th>Data Path</th>
+            <th>Session ID</th>
+        </tr>
+        {% for entry in element.get_user_inputs.entries %}
+            <tr>
+                <td>{{ entry.data_path }}</td>
+                <td>{{ entry.session_id }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}

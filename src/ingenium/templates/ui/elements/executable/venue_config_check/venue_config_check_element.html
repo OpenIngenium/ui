@@ -1,0 +1,47 @@
+<div class="dynamic_element check_venue_configuration_element">
+    <div class="row">
+        <div class="col-xs-2 form-group">
+            <div>
+                <input name="element_name" value="{{ entry.config_elem_name }}" type="text" class="form-control execution-input" />
+            </div>
+        </div>
+        <div class="col-xs-2 form-group">
+            <div class="form-group">
+                <select class="form-control" name="field_type">
+                    {% for key, label in element.FIELD_OPTIONS %}
+                        <option {% if entry.field_name == key  %}selected{% endif %} value="{{ key }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-xs-2 form-group">
+            <div class="form-group">
+                <select class="form-control" name="verification_condition">
+                    {% for key, label in element.VERIFICATION_CONDITION_OPTIONS %}
+                        <option {% if entry.verification_condition == key  %}selected{% endif %} value="{{ key }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-xs-2 form-group">
+            <div class="form-group">
+                <select class="form-control" name="verification_value">
+                    {% for option in element.VERIFICATION_VALUE_OPTIONS %}
+                        <option {% if entry.verification_value == option.value  %}selected{% endif %} value="{{ option.value }}" data-group="{{ option.field_option }}">{{ option.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-xs-2 form-group">
+            <div>
+                [...]
+            </div>
+        </div>
+        <div class="col-xs-2 form-group">
+            <div>
+                <span class="glyphicon glyphicon-time disabled" />
+            </div>
+        </div>
+
+    </div>
+</div>

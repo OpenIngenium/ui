@@ -1,0 +1,16 @@
+<div class="dynamic_element gds_element">
+    <div class="row">
+        <div class="col-xs-8">
+            <label>Data Path</label>
+            <input name="data_path" value="{{ entry.data_path }}" type="text" class="form-control execution-input"/>
+        </div>
+
+        <div class="col-xs-4">
+            {# only show in execution view #}
+            {% if execution_id != 'None' %}
+                <label>Session ID</label>
+                <input name="session_id" value="{{ entry.session_id }}" type="text" class="form-control execution-input"/>
+            {% endif %}
+        </div>
+    </div>
+</div>

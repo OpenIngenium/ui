@@ -1,0 +1,35 @@
+<table class="table">
+    <thead>
+    <tr>
+        <th>Venue</th>
+        <th>Conductor</th>
+        <th>Date/Time</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for execution in latest_executions %}
+        <tr>
+            <td><a href="{% url 'venue_detail_page' execution.get_venue_id %}">{{ execution.get_venue_name }}</a></td>
+            <td>{{ execution.get_test_conductors }}</td>
+            <td>{{ execution.get_time_complete_date }}</td>
+        </tr>
+
+    {% empty %}
+        {% if latest_executions == None %}
+            <tr>
+                <td style="text-align: center" colspan="3">There was an error connecting to server</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td style="text-align: center" colspan="3">There has been no recent activity</td>
+            </tr>
+        {% endif %}
+    {% endfor %}
+    </tbody>
+</table>
+
+{% if latest_executions %}
+    <div class="pull-right"><a href="{% url 'executions_page' %}">See More
+        <span class="glyphicon glyphicon-share"></span></a></div>
+{% endif %}

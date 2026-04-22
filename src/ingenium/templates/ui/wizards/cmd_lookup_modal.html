@@ -1,0 +1,43 @@
+{% load data_tables_tags %}
+
+{% block modal_title %}
+    <h4 class="modal-title">Lookup CMD</h4>
+{% endblock %}
+
+{% block modal_body %}
+
+    <div class="alert alert-info"><span class="glyphicon glyphicon-random"></span> Currently searching {{ dictionary_type|upper }} Dictionary Version {{ dictionary_version }}</div>
+    <div style="min-height: 600px;">
+        {% if data_table %}
+            {% render_data_table data_table %}
+        {% else %}
+            <div class="alert alert-danger">There is no {{ dictionary_type|upper }} version defined.</div>
+        {% endif %}
+    </div>
+    {% if dictionary_type == 'flight' %}
+        <div class="cmd_builder_component"
+             data-dictionary-type="{{ dictionary_type }}"
+             data-dictionary-version="{{ dictionary_version }}"
+             data-command-string="{{ command_string }}"
+             data-element-id="{{ element_id }}"
+             data-dynamic-element-id="{{ dynamic_element_id }}">
+            <h4 style="margin: 16px 0 20px 16px;"><span class="glyphicon glyphicon-wrench"></span>&nbsp;Construct Command</h4>
+            <div class="cmd_builder_container">
+                <div class="alert alert-danger alert-dismissible fade in center-block" style="display: none; width: 600px; margin-bottom: -12px;">
+                    <button type="button" data-dismiss="alert" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    <span>Existing command was not found in the current dictionary. <strong>Choosing a new command will overwrite your existing command string.</strong></span>
+                </div>
+                <div class="cmd_builder_placeholder">
+                    <i class="fa fa-chevron-circle-up" style="font-size: 96px; color: #CCCCCC;"></i>
+                    <span style="display: inline-block;">Choose command from table above to begin constructing</span>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block modal_footer %}
+    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+    <button type="button" class="btn btn-primary pull-right cmd_builder_save_btn" disabled="disabled">Save</button>
+{% endblock %}

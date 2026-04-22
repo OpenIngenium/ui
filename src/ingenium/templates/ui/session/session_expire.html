@@ -1,0 +1,177 @@
+{# If the user is not authenticated then there is no session to secure ! #}
+{% if request.user.is_authenticated %}
+
+    <div class="modal fade" id="sessionExpireModal" tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Your session is about to expire</h4>
+                </div>
+                <div class="modal-body">
+                    Your session is about to expire. If you don't take action in
+                    <span id="seconds_to_take_action"></span> seconds you will be logged out.
+                </div>
+                <div class="modal-footer">
+                    <button id="continue_session_button" type="button" class="btn btn-primary">Continue working</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ING_CLIENT_TIME_OFFSET_SECS = 'ING_CLIENT_TIME_OFFSET_SECS';
+        var inactivityTime = function () {
+            var time;
+            window.onload = refreshToken;
+            // DOM Events
+            document.onmousemove = refreshToken;
+            document.onkeypress = refreshToken;
+
+            function refresh() {
+                var expiration_date = new Date(1000 * $.cookie('expiration_date'));
+                let offset_sec = parseInt(localStorage.getItem(ING_CLIENT_TIME_OFFSET_SECS));
+                if (isNaN(offset_sec)) {
+                    offset_sec = 0;
+                }
+                var now = new Date();
+                const remaining_msec = expiration_date - now;
+                if((remaining_msec - 1000*offset_sec) > 0) {
+                    $.ajax({
+                        beforeSend: function (xhr, settings) {
+                            xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                        },
+                        url: `{% url 'renew_token' %}?next=${window.location.pathname + window.location.search}`,
+                        method: "POST",
+                        data: "",
+                        dataType: "JSON",
+                        success: function (result, status) {
+                            $("#sessionExpireModal").modal('hide');
+
+                            // Destroy Timer for Logout
+                            if (logout_timer) {
+                                clearInterval(logout_timer);
+                            }
+                            // Update HTTP auth header used by axios in Vue app
+                            if (window.updateApiToken) {
+                                window.updateApiToken();
+                            }
+                        },
+                        error: function (result, textStatus, errorThrown) {
+                        },
+                        complete: function (result, status) {
+                        }
+                    });
+                }
+            }
+
+            // This function is called whenever there is user action.
+            // This will trigger refresh (to renew the token) after 30 seconds of the last user keyboard/mouse action.
+            // Effectively a throttle mechanism.  
+            //   1) renew user session as long as there is user action 
+            //   2) do not call it everytime user keyboard/mouse action happens
+            function refreshToken() {
+                clearTimeout(time);
+                time = setTimeout(refresh, 30000);
+            }
+        };
+
+        {# loaded inactivityTime #}
+        window.onload = () => {
+            inactivityTime();
+        }
+
+        {#  Used to log people out if the Modal popups up warning them to renew their session #}
+        var logout_timer = null;
+
+        {# Modal Renew button Pushed #}
+        $("#continue_session_button").on('click', function() {
+            $.ajax({
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                },
+                url: `{% url 'renew_token' %}?next=${window.location.pathname + window.location.search}`,
+                method: "POST",
+                data: "",
+                dataType: "JSON",
+                success: function (result, status) {
+                    $("#sessionExpireModal").modal('hide');
+
+                    // Destroy Timer for Logout
+                    if (logout_timer) {
+                        clearInterval(logout_timer);
+                    }
+
+                    window.location.replace(`${window.location.origin}/login?next=${window.location.pathname + window.location.search}`);
+                },
+                error: function (result, textStatus, errorThrown) {
+                },
+                complete: function (result, status) {
+                }
+            });
+        });
+
+        {# This will check every 15 seconds to see if the Session is going to expire soon #}
+        {# We have to poll this since the cookie can be renewed on AJAX or on page load #}
+        window.setInterval(function () {
+
+            {# DateTime of when the Cookie Expires #}
+            var expiration_date = new Date(1000 * $.cookie('expiration_date'));
+
+            {# How many seconds until the Token Expires #}
+            let offset_sec = parseInt(localStorage.getItem(ING_CLIENT_TIME_OFFSET_SECS));
+            if (isNaN(offset_sec)) {
+                offset_sec = 0;
+            }
+            var seconds_till_expiration = ((expiration_date - new Date())/1000) - offset_sec;
+
+            {# if its time to remind the user to renew session and the Overlay is not already visible #}
+            if (seconds_till_expiration < {{ SESSION_WARNING_EXPIRATION_IN_SECONDS }} && !$('#sessionExpireModal').is(':visible')) {
+                $("#sessionExpireModal").modal('show');
+
+                $("#seconds_to_take_action").html(seconds_till_expiration);
+                var timer_countdown = (seconds_till_expiration-5) * 1000;
+                logout_timer = setInterval(function () {
+                    var $sessionExpireModal = $("#sessionExpireModal");
+                    $sessionExpireModal.find(".modal-title").text("Your session has expired");
+                    $sessionExpireModal.find(".modal-body").text("You have automatically been logged out after the inactivity period.");
+                    
+                    const proc_id = sessionStorage.getItem('locked_procedure_id');
+                    if (proc_id) {
+                        $.ajax({
+                            beforeSend: function (xhr, settings) {
+                                xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                            },
+                            async: false,
+                            url: '/procedures/',
+                            method: 'POST',
+                            data: { 
+                                'locked_by': "",
+                                'procedure_id': proc_id
+                            },
+                            success: function(response){
+                                sessionStorage.removeItem('locked_procedure_id');
+                                _wasPageCleanedUp = true;
+                            },
+                            error: function(error){
+                                console.log(error);
+                            }
+                        });
+                    };
+
+                    var $sessionActionButton = $sessionExpireModal.find("#continue_session_button");
+                    $sessionActionButton.text("Login");
+                    // remove existing handlers
+                    $sessionActionButton.off("click");
+                    $sessionActionButton.on("click", function() {
+                        // window.location.replace(window.location.href);
+                        window.location.replace(`${window.location.origin}/login?next=${window.location.pathname + window.location.search}`);
+                    });
+                }, timer_countdown);
+
+            }
+        }, 15000);
+
+    </script>
+{% endif %}

@@ -1,0 +1,36 @@
+.ing-long-dropdown-menu {
+    height: 300px;
+    overflow: scroll;
+}
+
+.mod-added {
+    border: solid;
+    border-color: lightgreen;
+    border-width: 4px;
+}
+
+.mod-deleted {
+    border: solid;
+    border-color: orangered;
+    border-width: 4px;
+}
+
+.mod-changed-del {
+    border: solid;
+    border-color: orangered;
+    border-width: 4px;
+    background-color: lightcoral !important;
+}
+
+.mod-changed-add {
+    border: solid;
+    border-color: darkgreen;
+    border-width: 4px;
+    background-color: lightgreen !important;
+}
+
+.ing-tooltip {
+    color:black;
+    /* Fix for ING-2945 */ 
+    z-index: 0 !important;
+}

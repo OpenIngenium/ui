@@ -1,0 +1,57 @@
+{% block step_content %}
+    <form id="cmd_scmf_{{ element.get_element_id }}" class="cmd_scmf_form execution_form">
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+
+        <div class="row">
+            <div class="col-xs-12">
+                <label for="data_path_{{ element.get_element_id }}">Data Path</label>
+                <input id="data_path_{{ element.get_element_id }}" name="data_path" value="{{ element.get_data_path|default:"" }}" type="text" class="form-control execution-input"/>
+            </div>
+        </div>
+
+        <br />
+
+        <div class="dynamic_elements cmd_scmf_elements">
+            {% for entry in element.get_user_inputs.entries %}
+                {% include "ui/elements/executable/cmd_scmf/cmd_scmf_element.html" %}
+            {% empty %}
+                {% include "ui/elements/executable/cmd_scmf/cmd_scmf_element.html" %}
+            {% endfor %}
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block javascript_content %}
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+
+        $(document).on('up.added', '.cmd_scmf_form', function (event, element) {
+            /* because we're listening to 'document' for up.added and then rely on event bubbling to alert us when an
+             * $element was added to the document, we must make sure that the $element we get back is the same $element
+             * that we're listening for, and not a child of the $element that we're listening for */
+            if (this === element) {
+                $(element).each(function (index, form) {
+                    if (!$(form).data('cmd-scmf-initialized')) {
+                        $(form).data('cmd-scmf-initialized', true);
+
+                        var $form = $(form);
+
+                        /* dynamic_element */
+                        $form.children('.cmd_scmf_elements').dynamic_element({
+                            url: "{% url 'cmd_scmf_data_row_html' %}",
+                            data: {'element_type_id': '{{ element.get_element_type_id }}'}
+                        }).on('dynamic_element.changed', function () {
+                            $(this).closest('.cmd_scmf_form').trigger('change');
+                        });
+
+                        ING.execution.change_step_form($form);
+                    }
+                });
+            }
+        });
+
+    </script>
+{% endblock %}

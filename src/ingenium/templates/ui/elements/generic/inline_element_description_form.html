@@ -1,0 +1,18 @@
+<form id="description_form" data-enable_file_upload="{{ enable_file_upload|default:"false" }}" data-toolbar_set="{{ toolbar_set|default:"basic" }}">
+
+    <input name="element_id" type="hidden" value="{{ element_id }}" />
+    <input name="element_type_id" type="hidden" value="{{ element_type_id }}" />
+    <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+    <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+    <input name="field_name" type="hidden" value="description" />
+
+    {% for field in wysiwyg_form %}
+        {{ field }}
+    {% endfor %}
+
+    <br />
+    <button type="button" id="description_form_submit" class="btn btn-primary pull-right" data-url="{{ submit_url }}">Submit</button>
+    <button type="button" id="description_form_cancel" class="btn btn-default pull-right">Cancel</button>
+    <div class="clearfix"></div>
+
+</form>

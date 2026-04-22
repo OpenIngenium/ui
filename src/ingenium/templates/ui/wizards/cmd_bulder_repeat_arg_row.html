@@ -1,0 +1,31 @@
+{% load ingenium_tags %}
+
+<div class="dynamic_element cmd_builder_arg_row">
+    {% for argument in repeat_args %}
+    <div class="row">
+        <div class="col-xs-4 form-group">
+            {% if argument.enumerations %}
+                <select class="form-control" name="arg_enumeration" style="margin-bottom: 6px;">
+                    <option value="">Select Enumeration</option>
+                     {% for enumeration in argument.enumerations %}
+                         <option {% if enumeration.symbol == values|get_at_index:forloop.parentloop.counter0 %}selected{% endif %}
+                                 value="{{ enumeration.symbol }}">{{ enumeration.symbol }}
+                         </option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                <input type="text"
+                       value="{{ values|get_at_index:forloop.counter0 }}"
+                       class="form-control"
+                       name="arg_input"
+                       style="margin-bottom: 6px;">
+            {% endif %}
+        </div>
+        <div class="col-xs-1">{{ argument.argument_type }}</div>
+        <div class="col-xs-1">{{ argument.argument_size }}</div>
+        <div class="col-xs-1">{{ argument.repeat_arg }}</div>
+        <div class="col-xs-2"></div>
+        <div class="col-xs-3">{{ argument.argument_description }}</div>
+    </div>
+    {% endfor %}
+</div>

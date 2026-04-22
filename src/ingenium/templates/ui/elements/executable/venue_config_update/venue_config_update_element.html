@@ -1,0 +1,38 @@
+<div class="dynamic_element update_venue_configuration_element">
+    <div class="row">
+        <div class="col-xs-2 form-group">
+            <div>
+                <input name="element_name" value="{{ entry.config_elem_name }}" type="text" class="form-control execution-input" />
+            </div>
+        </div>
+        <div class="col-xs-2">
+            <div class="form-group">
+                <select class="form-control" name="field_type">
+                    {% for key, label in element.TYPE_OPTIONS %}
+                        <option {% if entry.type == key  %}selected{% endif %} value="{{ key }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-xs-2 form-group">
+            <div class="form-group">
+                <select class="form-control" name="status">
+                    {% for key, label in element.STATUS_OPTIONS %}
+                        <option {% if entry.status == key  %}selected{% endif %} value="{{ key }}">{{ label }}</option>
+                    {% endfor %}
+
+                </select>
+            </div>
+        </div>
+        <div class="col-xs-3 form-group">
+            <div>
+                <input name="serial" value="{{ entry.serial }}" type="text" class="form-control execution-input" />
+            </div>
+        </div>
+        <div class="col-xs-3 form-group">
+            <div>
+                <input name="note" value="{{ entry.notes }}" type="text" class="form-control execution-input" />
+            </div>
+        </div>
+    </div>
+</div>

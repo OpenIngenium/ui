@@ -1,0 +1,68 @@
+{% load static %}
+{% load data_tables_tags %}
+{% load up_tools_tags %}
+
+<script>
+    {# Doing this so we can use this throughout the JS without having to render the tag #}
+    var CSRF_TOKEN = "{{ csrf_token }}";
+</script>
+
+<link rel="shortcut icon" type="image/png" href="{{ STATIC_URL }}images/favicon.png"/>
+{% add_data_tables_css_js_dependencies %}
+{% add_all_django_up_tool_libraries %}
+
+<script src="{% static "lib/bootbox-4.4.0/js/bootbox.min.js" %}"></script>
+<link href="{% static "lib/bootstrap-switch-3.3.4/css/bootstrap-switch.min.css" %}" rel="stylesheet" type="text/css"/>
+<script src="{% static "lib/bootstrap-switch-3.3.4/js/bootstrap-switch.min.js" %}"></script>
+<link href="{% static "lib/jquery-sortable-0.9.13/css/jquery-sortable.css" %}" rel="stylesheet" type="text/css"/>
+<script src="{% static "lib/jquery-sortable-0.9.13/js/jquery-sortable-min.js" %}"></script>
+<script src="{% static "lib/jquery-scrollto-2.1.2/js/jquery.scrollTo.min.js" %}"></script>
+<link href="{% static "lib/jquery-ui-1.12.1/css/jquery-ui.min.css" %}" rel="stylesheet" type="text/css"/>
+<script src="{% static "lib/jquery-ui-1.12.1/js/jquery-ui.min.js" %}"></script>
+<script src="{% static "lib/moment-2.19.4/js/moment.min.js" %}"></script>
+<link href="{% static "lib/select2-4.0.3/css/select2.min.css" %}" rel="stylesheet" type="text/css"/>
+<script src="{% static "lib/select2-4.0.3/js/select2.min.js" %}"></script>
+<link href="{% static "lib/x-editable-1.5.1/css/bootstrap-editable.css" %}" rel="stylesheet" type="text/css"/>
+<script src="{% static "lib/x-editable-1.5.1/js/bootstrap-editable.min.js" %}"></script>
+<link href="{% static "lib/wysihtml5-0.3.0/css/bootstrap-wysihtml5.css" %}" rel="stylesheet" type="text/css"/>
+<script src="{% static "lib/wysihtml5-0.3.0/js/bootstrap-wysihtml5.js" %}"></script>
+<script src="{% static "lib/wysihtml5-0.3.0/js/wysihtml5-0.3.0.min.js" %}"></script>
+
+<link href="{% static "jpl_theme/lib/bootstrap-formvalidation/css/formValidation.min.css" %}" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="{% static "jpl_theme/lib/bootstrap-formvalidation/js/formValidation.min.js" %}"></script>
+
+<script src="{% static "lib/jquery-cookie-1.4.1/jquery.cookie.js" %}"></script>
+<script src="{% static "lib/canvasjs_1.9.10/canvasjs.min.js" %}"></script>
+
+{# WYSIWYG & Plugins #}
+<link href="{{ STATIC_URL }}froala_editor/css/froala_editor.min.css" type="text/css" media="all" rel="stylesheet"/>
+<link href="{{ STATIC_URL }}froala_editor/css/froala_style.min.css" type="text/css" media="all" rel="stylesheet"/>
+<link href="{{ STATIC_URL }}froala_editor/css/plugins/table.min.css" type="text/css" media="all" rel="stylesheet"/>
+<link href="{{ STATIC_URL }}froala_editor/css/plugins/image.css" type="text/css" media="all" rel="stylesheet"/>
+<link href="{{ STATIC_URL }}froala_editor/css/plugins/file.css" type="text/css" media="all" rel="stylesheet"/>
+
+
+<script type="text/javascript" src="{{ STATIC_URL }}froala_editor/js/froala_editor.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}froala_editor/js/froala-django.js"></script>
+
+<script type="text/javascript" src="{{ STATIC_URL }}froala_editor/js/plugins/image.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}froala_editor/js/plugins/file.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}froala_editor/js/plugins/table.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}froala_editor/js/plugins/lists.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}froala_editor/js/plugins/align.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}froala_editor/js/plugins/colors.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}froala_editor/js/plugins/link.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}froala_editor/js/plugins/special_characters.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}froala_editor/js/plugins/font_size.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}froala_editor/js/plugins/font_family.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}froala_editor/js/plugins/paragraph_style.min.js"></script>
+
+
+{# Global Files #}
+<link href="{% static 'css/global.css' %}" rel="stylesheet" type="text/css"/>
+<script src="{% static 'js/global.js' %}"></script>
+<script src="{% static 'js/utils.js' %}"></script>
+
+{# Webpack CSS Bundle #}
+<link href="{% static 'main.css' %}"></link>
+

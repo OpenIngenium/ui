@@ -1,0 +1,22 @@
+{% load up_tools_tags %}
+<div class="dynamic_element wait_dynamic_element">
+    <div class="row">
+        <div class="col-xs-4 form-group">
+            <select name="wait_type" class="form-control execution-input">
+                {% for option in element.WAIT_TYPES %}
+                    <option {% if element.get_wait_type == option.0 %}selected{% endif %} value="{{ option.0 }}">{{ option.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-xs-8 form-group">
+            <div>
+                <input name="time_value" value="{{ element.get_time_value }}" type="text" class="form-control execution-input"/>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+</script>

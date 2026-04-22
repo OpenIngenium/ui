@@ -1,0 +1,25 @@
+{% include 'ui/elements/executable/execution_results.html' %}
+
+{% if element.get_user_inputs.entries %}
+
+    <table class="table table-striped">
+        <tr>
+            <th>File Path</th>
+            <th>Onboard Path</th>
+            <th>File Type</th>
+            <th>Timeout (sec)</th>
+            <th>Verify Receipt</th>
+            <th>Overwrite</th>
+        </tr>
+        {% for entry in element.get_user_inputs.entries %}
+            <tr>
+                <td>{{ entry.file_path }}</td>
+                <td>{{ entry.onboard_path }}</td>
+                <td>{{ entry.file_type }}</td>
+                <td>{{ entry.timeout }}</td>
+                <td>{{ entry.verify }}</td>
+                <td>{{ entry.overwrite }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}

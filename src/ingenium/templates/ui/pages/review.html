@@ -1,0 +1,28 @@
+{% extends "layouts/ingenium_template.html" %}
+{% load data_tables_tags %}
+
+{% block html_title %}
+    Review
+{% endblock %}
+
+{% block page_label %}
+    Review
+{% endblock %}
+
+{% block page_content %}
+    <script type="text/javascript">
+        var csrf_token_js = "{{ csrf_token }}";
+        var user_scopes = [{% for scope in scopes %} "{{ scope }}", {% endfor %}];
+        var validVenues = [
+            {% for venue in venues %}
+                { 
+                    venue_id: '{{ venue.venue_id }}',
+                    venue_name: '{{ venue.name }}',
+                    status: '{{ venue.get_status }}',
+                    type: '{{ venue.type }}'
+                },
+            {% endfor %}
+        ];
+    </script>
+    {% render_data_table data_table %}
+{% endblock %}

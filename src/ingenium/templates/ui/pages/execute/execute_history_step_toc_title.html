@@ -1,0 +1,12 @@
+<li role="presentation">
+    <a href="#{{ element.get_element_id }}"> {% if element.get_step_number %}{{ element.get_step_number }}.{% endif %} {% if element.get_title %}{{ element.get_title }}{% else %}<i>No Title</i>{% endif %}</a>
+    {% if element.has_children %}
+        <ul class="nav">
+            {% for child in element.get_children %}
+                {% with element=child template_name="ui/pages/execute/execute_history_step_toc_title.html" %}
+                    {% include template_name %}
+                {% endwith %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>

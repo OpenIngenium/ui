@@ -1,0 +1,101 @@
+{% extends "layouts/admin_template.html" %}
+
+{% block admin_page_title %}
+    Manage Dictionary Parsers
+{% endblock %}
+
+{% block admin_page_content %}
+    {% if sse_parsers is None or flight_parsers is None %}
+        <div class="alert alert-danger">There was an issue connecting to the Dictionary Service</div>
+
+    {% else %}
+        <br/>
+        <form id="parser_form">
+            <div class="row">
+                <div class="col-xs-6">
+                    <div class="form-group">
+                        <label for="active_sse_dictionary_parser">Active SSE Dictionary Parser</label>
+                        <select id="active_sse_dictionary_parser" name="active_sse_dictionary_parser" class="form-control" placeholder="Select a SSE Dictionary Parser">
+                            <option disabled value="">Select a SSE Dictionary Parser</option>
+
+                            {% for parser in sse_parsers %}
+                                <option {% if parser.is_active %}selected{% endif %} value="{{ parser.get_name }}">{{ parser.get_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-xs-6">
+                    <div class="form-group">
+                        <label for="active_flight_dictionary_parser">Active Flight Dictionary Parser</label>
+                        <select id="active_flight_dictionary_parser" name="active_flight_dictionary_parser" class="form-control" placeholder="Select a Flight Dictionary Parser">
+                            <option disabled value="">Select a Flight Dictionary Parser</option>
+
+                            {% for parser in flight_parsers %}
+                                <option {% if parser.is_active %}selected{% endif %} value="{{ parser.get_name }}">{{ parser.get_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <script>
+
+            var $sse_selection_element = $("#active_sse_dictionary_parser");
+            $sse_selection_element.data('pre', $sse_selection_element.val());
+
+            $sse_selection_element.on('change', function () {
+                $.ajax({
+                    beforeSend: function (xhr, settings) {
+                        xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                    },
+                    url: "{% url 'update_sse_parser' %}",
+                    method: "POST",
+                    data: $("#parser_form").serialize(),
+                    dataType: "JSON",
+                    success: function (result, status) {
+                        $.notify_status('updated', {dismissible: true, details: 'Updated'});
+                    },
+                    error: function (result, textStatus, errorThrown) {
+                        $.notify_status('error', {dismissible: true, details: 'Error updating'});
+
+                        {# Change the selection back to the previous value #}
+                        var before_change =  $sse_selection_element.data('pre');
+                        $sse_selection_element.find('option[value=' + before_change + ']').prop('selected', true);
+                    },
+                    complete: function (result, status) {
+                    }
+                });
+            });
+
+
+            var $flight_selection_element = $("#active_flight_dictionary_parser");
+            $flight_selection_element.data('pre', $flight_selection_element.val());
+            $flight_selection_element.on('change', function () {
+                $.ajax({
+                    beforeSend: function (xhr, settings) {
+                        xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                    },
+                    url: "{% url 'update_flight_parser' %}",
+                    method: "POST",
+                    data: $("#parser_form").serialize(),
+                    dataType: "JSON",
+                    success: function (result, status) {
+                        $.notify_status('updated', {dismissible: true, details: 'Updated'});
+                    },
+                    error: function (result, textStatus, errorThrown) {
+                        $.notify_status('error', {dismissible: true, details: 'Error updating'});
+
+                        {# Change the selection back to the previous value #}
+                        var before_change =  $sse_selection_element.data('pre');
+                        $flight_selection_element.find('option[value=' + before_change + ']').prop('selected', true);
+                    },
+                    complete: function (result, status) {
+                    }
+                });
+            });
+
+        </script>
+    {% endif %}
+{% endblock %}

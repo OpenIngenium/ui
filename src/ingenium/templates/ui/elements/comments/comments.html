@@ -1,0 +1,27 @@
+<hr style="margin-top: 0">
+<h4><span class="glyphicon glyphicon-comment"></span> Comments</h4>
+<hr style="border-top: dotted 1px;"/>
+{% for comment in comments %}
+    <div style="padding: 5px;">
+        <b>{{ comment.get_username }}</b> posted on <i>{{ comment.get_timestamp }}</i> <br/>
+        {{ comment.get_comment|safe }}
+    </div>
+{% endfor %}
+
+<div class="add_comment">
+    <form id="comment_form" data-enable_file_upload="false" data-toolbar_set="basic">
+        <input type="hidden" name="element_id" value="{{ element_id }}"/>
+        <input type="hidden" name="execution_id" value="{{ execution_id }}"/>
+
+        {% for field in wysiwyg_form %}
+            {{ field }}
+        {% endfor %}
+
+        <br/>
+
+        <button type="button" id="comment_form_submit" class="btn btn-primary pull-right" data-url="{% url 'add_comments_element_api' %}">Add Comment</button>
+
+        <div class="clearfix"></div>
+
+    </form>
+</div>

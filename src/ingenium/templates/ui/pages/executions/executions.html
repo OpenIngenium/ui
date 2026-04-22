@@ -1,0 +1,19 @@
+{% extends "layouts/ingenium_spa_template.html" %}
+
+{% load static %}
+{% block html_title %}
+    Executions
+{% endblock %}
+
+{% block page_label %}
+    Executions
+{% endblock %}
+
+{% block page_content %}
+    <link href="{% static "css/steps_spa.css" %}" rel="stylesheet" type="text/css"/>
+
+    {# Vue Dashboard Component #}
+    <div id="spa-test-page"></div>
+    <script src="{% static executions_js_bundle %}"></script>
+
+{% endblock %}

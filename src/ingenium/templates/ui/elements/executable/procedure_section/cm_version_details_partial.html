@@ -1,0 +1,42 @@
+<div class="procedure_config_management">
+    <div class="row">
+        <div class="col-sm-4"><strong>Version</strong></div>
+        <div class="col-sm-8">{{ procedure_version.get_version }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>Title</strong></div>
+        <div class="col-sm-8">{{ procedure_version.get_title }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>Status</strong></div>
+        <div class="col-sm-8">{{ procedure_version.get_status }}</div>
+    </div>    
+    <div class="row">
+        <div class="col-sm-4"><strong>Author</strong></div>
+        <div class="col-sm-8">{{ procedure_version.get_version_author }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>Locked</strong></div>
+        <div class="col-sm-8">NA</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>API Ver</strong></div>
+        <div class="col-sm-8">{{ procedure_version.get_api_version }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>JPL. Ver.</strong></div>
+        <div class="col-sm-8">{{ procedure_version.get_institutional_release_id }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>Versioned</strong></div>
+        <div class="col-sm-8">{{ procedure_version.get_time_versioned }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>Released</strong></div>
+        <div class="col-sm-8">{{ procedure_version.get_time_released }}</div>
+    </div>
+    <div style="margin-top: 10px;">
+        <h5>Description</h5>
+        <p>{{ procedure_version.get_version_description }}</p>
+    </div>
+</div>

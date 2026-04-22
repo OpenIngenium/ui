@@ -1,0 +1,153 @@
+<div class="cmd_builder_string_container">
+    <div class="form-group">
+        <label for="command_string" class="control-label">Command String</label>&nbsp;
+        <span style="font-size: 12px;">(Use inputs in table below to populate arguments, if applicable)</span>
+        <input type="text" class="form-control" name="command_string" value="{{ command_string }}"
+               disabled="disabled"
+               placeholder="{{ command_stem }}"
+               data-command-stem="{{ command_stem }}">
+    </div>
+</div>
+
+<form class="cmd_builder_arguments_form container">
+    {% if non_repeat_args_vals or repeat_args %}
+        <div class="row titles-row">
+            <div class="col-xs-4">Input</div>
+            <div class="col-xs-1">Type</div>
+            <div class="col-xs-1">Size</div>
+            <div class="col-xs-1">Repeat</div>
+            <div class="col-xs-2">Ranges</div>
+            <div class="col-xs-3">Description</div>
+        </div>
+        <div class="cmd_builder_arg_rows">
+            {% for argument, value in non_repeat_args_vals %}
+                <div class="cmd_builder_arg_row">
+                    <div class="row">
+                        <div class="col-xs-4 form-group">
+                            {% if argument.enumerations %}
+                                <select class="form-control" name="arg_enumeration">
+                                    <option value="">Select Enumeration</option>
+                                     {% for enumeration in argument.enumerations %}
+                                         <option {% if enumeration.symbol == value %}selected{% endif %}
+                                                 value="{{ enumeration.symbol }}">{{ enumeration.symbol }}
+                                         </option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <input type="text"
+                                       value="{{ value }}"
+                                       class="form-control"
+                                       name="arg_input"
+                                       style="margin-bottom: 6px;">
+                            {% endif %}
+                        </div>
+                        <div class="col-xs-1">{{ argument.argument_type }}</div>
+                        <div class="col-xs-1">{{ argument.argument_size }}</div>
+                        <div class="col-xs-1">{{ argument.repeat_arg }}</div>
+                        <div class="col-xs-2">
+                            <ul class="ranges-list">
+                            {% for allowable_range in argument.allowable_ranges %}
+                                <li>
+                                {% for range_key,  range_value in allowable_range.items %}
+                                    {{ range_key }}&nbsp;:&nbsp;{{ range_value }}
+                                {% endfor %}
+                                </li>
+                            {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-xs-3">{{ argument.argument_description }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="dynamic_elements cmd_builder_arg_rows">
+            {% if repeat_args %}
+                {% for repeat_set, repeat_values in repeat_sets_values %}
+                    {% with repeat_args=repeat_args values=repeat_values template_name="ui/wizards/cmd_bulder_repeat_arg_row.html" %}
+                        {% include template_name %}
+                    {% endwith %}
+                {% endfor %}
+
+            {% endif %}
+        </div>
+    {% else %}
+        <div style="margin: 50px 0; font-size: 16px; font-weight: bold; text-align: center;">No Arguments</div>
+    {% endif %}
+</form>
+
+<div style="padding: 0 16px;">
+    <table class="table cmd_builder_table" style="margin-top: 20px;">
+        <thead>
+            <tr>
+                <th>Operations</th>
+                <th>Command Type</th>
+                <th>Repeat Min / Max</th>
+                <th>Restricted Modes</th>
+                <th style="width: 35%;">Command Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ operations_category }}</td>
+                <td>{{ cmd_type }}</td>
+                <td>{{ repeat_min }}/{{ repeat_max }}</td>
+                <td>
+                    <ul class="cmd-details-list">
+                    {% for restricted_mode in restricted_modes %}
+                        <li>{{ restricted_mode }}</li>
+                    {% endfor %}
+                    </ul>
+                </td>
+                <td>{{ cmd_description }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+$(function() {
+    let $form = $(".cmd_builder_arguments_form");
+    let validationRules = {
+        framework: 'bootstrap',
+        fields: {
+            arg_input: {
+                trigger: 'change blur keyup',
+                validators: {
+                    notEmpty: {
+                        message: 'Required <strong>argument value</strong>'
+                    }
+                },
+            },
+            arg_enumeration: {
+                validators: {
+                    notEmpty: {
+                        message: 'Required <strong>argument enumeration</strong>'
+                    }
+                }
+            }
+        }
+    };
+
+    $(".dynamic_elements.cmd_builder_arg_rows").dynamic_element({
+        url: "{% url 'cmd_builder_repeat_arg_row_html' %}",
+        data: {
+            dictionary_type: "{{ dictionary_type }}",
+            dictionary_version: "{{ dictionary_version }}",
+            command_stem: "{{ command_stem }}"
+        },
+        method: "POST",
+        min_elements: {{ repeat_min }},
+        max_elements: {{ repeat_max }}
+    }).on('dynamic_element.changed', function(event, dynamic_element) {
+        /* re-initialize form validation */
+        $form.data('formValidation').destroy();
+        $form.formValidation(validationRules);
+    });
+
+    /* enable the save button, now that the builder is loaded */
+    $(".cmd_builder_save_btn").prop( "disabled", false );
+
+    /* setup initial form validation */
+    $form.formValidation(validationRules);
+
+});
+</script>

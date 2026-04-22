@@ -1,0 +1,105 @@
+<style>
+    ul.restricted-modes-list {
+        padding-left: 4px;
+        -moz-column-count: 2;
+        -moz-column-gap: 1px;
+        -moz-column-fill: auto;
+        -webkit-column-count: 2;
+        -webkit-column-gap: 1px;
+        -webkit-column-fill: auto;
+        column-count: 2;
+        column-gap: 1px;
+        column-fill: auto;
+        list-style: disc inside;
+        columns: 2;
+        -webkit-columns: 2;
+        -moz-columns: 2;
+        font-size: 13px;
+    }
+
+    ul.cmd-details-list {
+        list-style: none;
+        padding-left: 10px;
+        font-size: 12px;
+    }
+
+    ul.cmd-details-list li {
+        margin-bottom: 10px;
+        border-bottom: 1px dashed #80808057;
+    }
+</style>
+<h5>Command Stem</h5>
+{{ command_stem }}
+
+<h5>Operations Category</h5>
+{{ operations_category }}
+
+<h5>Command Type</h5>
+{{ cmd_type }}
+
+<h5>Repeat Min / Max</h5>
+{{  repeat_min }} / {{ repeat_max }}
+
+{%  if restricted_modes %}
+    <h5>Restricted Modes</h5>
+    <ul class="restricted-modes-list">
+    {% for mode in restricted_modes %}
+        <li>{{ mode }}</li>
+    {%  endfor %}
+    </ul>
+{% endif %}
+
+{%  if cmd_description %}
+    <h5>Command Description</h5>
+    {{ cmd_description }}
+{% endif %}
+
+{%  if arguments %}
+    <h5 style="margin-top: 10px;">Arguments</h5>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Repeat</th>
+                <th>Ranges</th>
+                <th>Enumerations</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for argument in arguments %}
+                <tr>
+                    <td>{{ argument.argument_type }}</td>
+                    <td>{{ argument.argument_size }}</td>
+                    <td>{{ argument.repeat_arg }}</td>
+                    <td>
+                        {#  support dynamic key value pairs #}
+                        <ul class="cmd-details-list">
+                        {% for allowable_range in argument.allowable_ranges %}
+                            <li>
+                            {% for range_key,  range_value in allowable_range.items %}
+                                {{ range_key }}&nbsp;:&nbsp;{{ range_value }}
+                            {% endfor %}
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    </td>
+                    <td>
+                        {#  support dynamic key value pairs #}
+                        <ul class="cmd-details-list">
+                        {% for enumeration in argument.enumerations %}
+                            <li>
+                            {% for enum_key, enum_value in enumeration.items %}
+                                {{ enum_key }}&nbsp;:&nbsp;{{ enum_value }}
+                            {% endfor %}
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    </td>
+                    <td>{{ argument.argument_description }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{%  endif %}

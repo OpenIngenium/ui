@@ -1,0 +1,97 @@
+{% block modal_title %}
+    <h4 class="modal-title"><span class="glyphicon glyphicon-eye-open"></span> Preview</h4>
+{% endblock %}
+
+{% block modal_body %}
+    {% load staticfiles %}
+    {% load static %}
+
+    <ol class="steps_list preview-modal" id="steps_canvas" style="overflow-y: scroll; max-height:calc(100vh - 300px)">
+        {% for element in elements.get_children %}
+            {% include "ui/elements/generic/step_outer.html" with type="canvas" procedure_id=procedure_id %}
+        {% empty %}
+            <h3 style="padding: 8px;">Please select steps to see a preview.</h3>
+        {% endfor %}
+    </ol>
+    <script src="{% static 'js/manual_input.js' %}"></script>
+    <script>
+        $(document).on('up.added', '#steps_canvas.preview-modal', function (event, element) {
+            if (this === element) {
+
+                var $element = $(element);
+
+                $element.find('.step').each(function () {
+                    const $step = $(this);
+                    ING.execution.step_initialize($step);
+                    const element_type = $step.data('element-type-id');
+
+                    let $form = $element.find('form');
+                    let $dynamic_elements = $form.children('.dynamic_elements');
+
+                    /* show verification fields in manual input step */
+                    if (element_type === 'manual_input') {
+                        ING.manual_input.initialize_dynamic_elements($dynamic_elements);
+                    }
+
+                    /* HIDE ALL DYNAMIC ELEMENT ADD/REMOVE BUTTONS */
+                    /* try to remove dynamic elements synchronously */
+                    $dynamic_elements.find('.dynamic_element_remove_button, .dynamic_element_add_button').remove();
+                    
+                    /* if the dynamic elements arent on the page on load, remove after they're initialized */
+                    $dynamic_elements.on('dynamic_element.initialized', function (event, wrapper, dynamic_elements) {
+                        $dynamic_elements.find('.dynamic_element_remove_button, .dynamic_element_add_button').remove();
+                    });
+                    
+                    /* Manual verification case needs to show its froala content */
+                    if ($step.find("textarea").hasClass("manual_input_verification_text")) {
+
+                        const $editor = $step.find("textarea.manual_input_verification_text");
+                        const verification_text = $step.find('div.verification_text_onload').data('text');
+
+                        /* Load froala editor with blank options and editing disabled */
+                        $editor.froalaEditor(ING.external.setup_froala_options());
+                        $editor.froalaEditor('html.set', verification_text);
+                        $editor.froalaEditor('edit.off');
+
+                    }
+                });
+
+                $("#up_modal.up_modal_md").find(".modal-dialog").css({"max-width": "1000px"});
+                
+                /* Disable moving elements */
+                $(".preview-modal").sortable("disable"); 
+                /* Iterate over each step */
+                /* Disable each input in the step */
+                $element.find(":input").each(function(index) {
+                    /* Keep the hide/show button */
+                    if(!$(this).hasClass("hide_step_detail_button")) {
+                        $(this).prop('disabled', true);
+                    }
+                });            
+                $element.find(":button.description_wysiwyg_button").each(function(index, el) {
+                    /* Disable Froala */
+                    $(el).replaceWith($(el).clone()).hide();
+                });
+                
+                /* Hide certain step buttons */
+                $element.find(":button.hide_step_detail_button").hide();
+                $element.find(":button.show_step_detail_button").hide();
+
+                $element.find(":button.step_move_button").hide();
+                $element.find(":button.step_remove_button").hide();
+                $element.find(":button.step_comment_button").hide();
+
+                /* Froala content */
+                $element.find("form#description_form").froalaEditor('edit.off');
+                $element.find("form#description_form").hide();
+                $element.find(".step_title").each(function(index, el){
+                    $(el).editable({'disabled': true});
+                });
+            }
+        });
+    </script>
+{% endblock %}
+
+{% block modal_footer %}
+    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+{% endblock %}

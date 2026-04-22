@@ -1,0 +1,93 @@
+{% if element.get_is_executable %}
+    <div class="step_execution_box step_execution_box_active">
+        <div class="step_execution_box_button_container">
+            <button class="execution_previous_step_button" data-toggle="tooltip" data-data-trigger="hover" onclick="$(this).tooltip('hide');"
+onclick="$(this).tooltip('hide');" title="" data-original-title="Jump to previous not-executed executable step"></button>
+            <button class="execution_next_step_button" data-toggle="tooltip" data-data-trigger="hover" onclick="$(this).tooltip('hide');"
+onclick="$(this).tooltip('hide');" title="" data-original-title="Jump to next not-executed executable step"></button>
+            <button class="execution_execute_step_button" data-toggle="tooltip" data-data-trigger="hover" onclick="$(this).tooltip('hide');"
+onclick="$(this).tooltip('hide');" title="" data-original-title="Execute this step" data-params='{"element_id": "{{ element.get_element_id }}", "execution_id": "{{ execution_id }}", "element_type_id": "{{ element.get_element_type_id }}"}'></button>
+        </div>
+    </div>
+    <div class="step_execution_box step_execution_box_pending">
+        <div class="step_execution_box_button_container">
+            <button class="execution_jump_to_step_button" data-toggle="tooltip" data-data-trigger="hover" onclick="$(this).tooltip('hide');"
+onclick="$(this).tooltip('hide');" title="" data-original-title="Jump to this executable step"></button>
+        </div>
+    </div>
+{% endif %}
+
+<div class="step_number">{{ element.get_step_number }}</div>
+<div class="step_title" data-type="text" data-pk="{{ element.get_element_id }}" data-params="{'field_name':'title', 'execution_id': '{{ execution_id|default_if_none:"" }}', 'procedure_id': '{{ procedure_id|default_if_none:"" }}', 'element_type_id':'{{ element.get_element_type_id }}'}">{{ element.get_title }}</div>
+
+{% if not element.has_executed or element.get_is_content_only %}
+    <button class="step_remove_button" data-toggle="tooltip" data-data-trigger="hover" onclick="$(this).tooltip('hide');"
+onclick="$(this).tooltip('hide');" title="Remove"></button>
+{% endif %}
+<button class="step_move_button" data-toggle="tooltip" data-data-trigger="hover" onclick="$(this).tooltip('hide');"
+onclick="$(this).tooltip('hide');" title="Move"></button>
+{#{% if element.get_has_options %}#}
+{#    <button class="step_options_button" data-toggle="tooltip" data-data-trigger="hover" onclick="$(this).tooltip('hide');"
+onclick="$(this).tooltip('hide');" title="Options"></button>#}
+{#{% endif %}#}
+<button class="show_step_detail_button" data-toggle="tooltip" data-data-trigger="hover" onclick="$(this).tooltip('hide');"
+onclick="$(this).tooltip('hide');" title="Show/Hide Details"></button>
+
+{% if execution_id %}
+    <button class="step_comment_button" data-toggle="tooltip" data-data-trigger="hover" onclick="$(this).tooltip('hide');"
+onclick="$(this).tooltip('hide');" title="Show/Hide Comments">
+        <span style="margin-left: -5px;" class="badge badge-info comment_badge_count">{{ element.get_comment_count }}</span>
+    </button>
+{% endif %}
+
+<div class="clearfix"></div>
+
+<div class="step_type step_show_details">{{ element.get_name }}</div>
+
+<div class="clearfix"></div>
+
+{% spaceless %}
+    <div class="step_description description_wysiwyg step_show_details" style="margin-top:10px;">
+        <div class="description_wysiwyg_content">{{ element.get_description|safe }}</div>
+        <button class="btn btn-sm btn-primary description_wysiwyg_button" type="button" data-url="{% url 'inline_element_description_wysiwyg' %}" data-data='{"element_id": "{{ element.get_element_id }}", "element_type_id": "{{ element.get_element_type_id }}", "execution_id": "{{ execution_id|default_if_none:'' }}", "procedure_id": "{{ procedure_id|default_if_none:'' }}", "submit_url": "{% url 'update_base_element_api' %}" }'>
+            <span class="glyphicon glyphicon-edit"></span>
+        </button>
+    </div>
+    <div class="clearfix"></div>
+{% endspaceless %}
+
+{% if element.get_is_executable %}
+    <div class="step_status step_show_details" style="position: relative;">
+        {% include element.get_execution_result_template_path %}
+    </div>
+{% endif %}
+
+{% spaceless %}
+    {% if element.get_is_content_only %}
+        <div class="step_detail step_show_details">{{ element.render_step_content }}</div>
+    {% else %}
+        <div class="step_detail step_show_details hidden">{{ element.render_step_content }}</div>
+    {% endif %}
+{% endspaceless %}
+
+{% spaceless %}
+    <div class="step_comment step_show_details"></div>
+{% endspaceless %}
+
+{% if element.get_is_nestable %}
+    <ol class="step_nested">
+        {% if element.has_children %}
+            {% for child in element.get_children %}
+                {% with element=child type="canvas" template_name="ui/elements/generic/step_outer.html" %}
+                    {% include template_name %}
+                {% endwith %}
+            {% endfor %}
+        {% endif %}
+    </ol>
+    <div class="step_empty_list_message"><strong>Empty</strong>: Drag and drop step(s) here</div>
+{% endif %}
+
+<div style="padding-top: 15px;">
+    <div class="last_updated_time step_show_details"></div>
+    <div class="last_updated_error step_show_details" style="display: none;"></div>
+</div>

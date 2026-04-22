@@ -1,0 +1,45 @@
+# THIS DOCKERFILE IS USED BY SWARM
+FROM cae-artifactory.jpl.nasa.gov:17001/node:8.11.1-alpine as node
+
+RUN mkdir /src;
+COPY ./src /src
+
+WORKDIR /src/client
+
+RUN npm cache verify && \
+    npm install --unsafe-perm && \
+    npm run build
+
+
+FROM cae-artifactory.jpl.nasa.gov:17001/python:3.8.2 as django
+
+ENV PYTHONUNBUFFERED 1
+ENV CORE_API_URL=${CORE_API_URL}
+ENV AUTH_API_URL=${AUTH_API_URL}
+ENV VENUE_CONFIG_API_URL=${VENUE_CONFIG_API_URL}
+ENV DICT_API_URL=${DICT_API_URL}
+ENV EXECUTION_SERVER_URL=${EXECUTION_SERVER_URL}
+ENV ARCHIVE_API_URL=${ARCHIVE_API_URL}
+ENV EXECUTION_MONITOR_API_URL=${EXECUTION_MONITOR_API_URL}
+ENV SERVER_ENVIRONMENT="prod"
+
+COPY --from=node /src /src
+RUN mkdir /config
+RUN mkdir /static
+ADD config/requirements.txt /config/
+RUN pip install --trusted-host cae-artifactory.jpl.nasa.gov -r /config/requirements.txt
+
+WORKDIR /src
+
+RUN python manage.py collectstatic --noinput
+
+FROM cae-artifactory.jpl.nasa.gov:17001/nginx:1.20.1-alpine
+
+COPY eval_file_prod.sh /usr/local/bin/
+COPY ./nginx.conf /etc/nginx/nginx.conf
+COPY ./ingenium.conf /etc/nginx/conf.d/ingenium.template.conf
+COPY --from=django /src/static /src/static
+
+EXPOSE 8011
+
+CMD ["/bin/sh", "-c", "eval_file_prod.sh /etc/nginx/conf.d/ingenium.template.conf > /etc/nginx/conf.d/ingenium.conf && rm /etc/nginx/conf.d/ingenium.template.conf && exec nginx -g 'daemon off;'"]

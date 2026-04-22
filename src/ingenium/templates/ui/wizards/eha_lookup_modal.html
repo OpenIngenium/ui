@@ -1,0 +1,20 @@
+{% load data_tables_tags %}
+
+{% block modal_title %}
+    <h4 class="modal-title">Lookup EHA</h4>
+{% endblock %}
+
+{% block modal_body %}
+
+    <div class="alert alert-info"><span class="glyphicon glyphicon-random"></span> Currently searching {{ dictionary_type|upper }} Dictionary Version {{ dictionary_version }}</div>
+
+    {% if data_table %}
+        {% render_data_table data_table %}
+    {% else %}
+        <div class="alert alert-danger">There is no {{ dictionary_type|upper }} version defined.</div>
+    {% endif %}
+{% endblock %}
+
+{% block modal_footer %}
+    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+{% endblock %}

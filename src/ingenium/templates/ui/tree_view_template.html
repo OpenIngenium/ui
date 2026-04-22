@@ -1,0 +1,23 @@
+<li data-number="{{node.number}}">
+    <input  type="checkbox" 
+            class="select-step-checkbox"
+            name="{{node.number}}" 
+            data-title="{{node.title}}"
+            data-elem-id="{{node.elem_id}}"
+            data-elem-type="{{node.elem_type}}"
+            data-number="{{node.number}}"
+            checked 
+            data-parent="{{parent_number}}"> 
+    <span>{{node.number}} - {{node.title}}</span>
+    </br>
+    <b style="text-indent: 16px; font-size: 8px;">{{node.elem_type}}</b>
+    {%if node.children %}
+        <ul style="list-style: none;">
+            {%for child in node.children %}
+                {%with parent_number=node.number node=child template_name="ui/tree_view_template.html" %}
+                    {%include template_name%}
+                {%endwith%}
+            {%endfor%}
+         </ul>
+    {%endif%}
+</li>

@@ -1,0 +1,24 @@
+<div class="step_status step_show_details">
+    <div class="alert alert-info">
+        <div class="row execution-results-row" style="margin-top: 15px;">
+            <div class="col-xs-12">
+                {% if element.get_user_inputs %}
+                    <table class="table execution-results-table info">
+                        <tbody>
+                            <tr>
+                                <th>Procedure Title</th>
+                                <th>Procedure ID</th>
+                                <th>Procedure Version</th>
+                            </tr>
+                            <tr>
+                                <td>{{ element.get_user_inputs.reference_procedure_title }}</td>
+                                <td>{{ element.get_user_inputs.reference_procedure_id }}</td>
+                                <td>{{ element.get_user_inputs.reference_procedure_version }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,37 @@
+{% load up_tools_tags %}
+{% random_hash as unique_name %}
+<div class="dynamic_element cmd_scmf_element">
+    <input type="hidden" name="row_id" value="{{ unique_name }}"/>
+    <div class="row">
+        <div class="col-xs-3">
+            <label data-toggle="tooltip" title="The full path and name of the SCMF file on the venue. (Example: /home/swanchr/test.scmf)"> File Path</label>
+            <input name="file_path" value="{{ entry.file_path|default:"" }}" type="text" class="form-control execution-input"/>
+        </div>
+
+        <div class="col-xs-3">
+            <label data-toggle="tooltip" title="The file type contained within the SCMF. Use 'immediate' and 'hardware' for non binary types. (note that specific file types will change from mission to mission)"> File Type</label>
+            <input name="file_type" value="{{ entry.file_type|default:"" }}" type="text" class="form-control execution-input"/>
+        </div>
+
+        <div class="col-xs-2">
+            <label>Timeout (sec)</label>
+            <input name="timeout" value="{{ entry.timeout|default:"" }}" type="number" class="form-control execution-input"/>
+        </div>
+
+        <div class="col-xs-2">
+            <label>
+                <span aria-hidden="true" data-toggle="tooltip" data-placement="top" title="Will verify the command/file was received by the spacecraft."></span>
+                Verify Receipt? <br /><input name="verify_{{ unique_name }}" {% if entry.verify %}checked{% endif %} type="checkbox" class="execution-input"/>
+            </label>
+        </div>
+
+        <div class="col-xs-2">
+
+            <label>
+                <span aria-hidden="true" data-toggle="tooltip" data-placement="top" title="Disable ground checks on SCMFs prior to radiation."></span>
+                Disable Checks? <br /><input name="disable_checks_{{ unique_name }}" {% if entry.disable_checks %}checked{% endif %} type="checkbox" class="execution-input"/>
+            </label>
+        </div>
+    </div>
+
+</div>

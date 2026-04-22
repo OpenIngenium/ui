@@ -1,0 +1,55 @@
+{% extends "layouts/ingenium_template.html" %}
+{% load static %}
+
+{% block html_title %}
+    Watching: {{ execution.venue_name }}
+{% endblock %}
+
+{% block page_label %}
+    Watching: {{ execution.venue_name }}
+{% endblock %}
+
+{% block page_content %}
+    <link href="{% static "css/toc.css" %}" rel="stylesheet" type="text/css"/>
+
+    <h3>Watching Execution</h3>
+    {% include 'ui/pages/execute/execute_information.html' %}
+    <br/>
+    <div class="alert alert-warning">Page last updated: <span id="last_updated_elements">Retrieving Data</span></div>
+
+    <div id="execution_steps_div"></div>
+
+    <script>
+
+        refresh_elements();
+
+        function refresh_elements() {
+            $.ajax({
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                },
+                url: "{% url 'get_run_as_html' execution.get_execution_id %}",
+                method: "POST",
+                data: "",
+                dataType: "JSON",
+                success: function (result, status) {
+                    $("#execution_steps_div").html(result.html);
+                    $("#last_updated_elements").html(new Date());
+
+                    {# Refresh Elements #}
+                    setTimeout(refresh_elements, 15000);
+
+                    if(result.execution_status === "CLOSED") {
+                        window.location.replace("{% url 'execution_history_page' execution.get_execution_id %}");
+                    }
+
+                },
+                error: function (result, textStatus, errorThrown) {
+                },
+                complete: function (result, status) {
+                }
+            });
+        }
+    </script>
+
+{% endblock %}

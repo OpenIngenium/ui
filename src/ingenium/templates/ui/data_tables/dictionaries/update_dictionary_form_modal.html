@@ -1,0 +1,42 @@
+{% block modal_title %}
+    <h4 class="modal-title">{% if dictionary.get_version %}Update{% else %}Add{% endif %} {{ dictionary.get_type }} Dictionary</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="dictionary_form" enctype="multipart/form-data">
+        <input type="hidden" name="version_number" value="{{ dictionary.get_version }}" />
+
+        <div class="form-group">
+            <label for="version" class="control-label">Version</label>
+            <input {% if dictionary.get_version %}disabled{% endif %} class="form-control" id="version" name="version" value="{{ dictionary.get_version|default:"" }}"/>
+        </div>
+
+        <div class="form-group">
+            <label for="state" class="control-label">State</label>
+            <select id="state" name="state" class="form-control">
+                <option value="">-= Select State =-</option>
+                {% for key, label in dictionary.STATES %}
+                    <option {% if key == dictionary.get_state %}selected{% endif %} value="{{ key }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="dictionary_file" class="control-label">Upload Dictionary</label> <span class="pull-right"><i><strong>Parser</strong>: {{ active_parser.get_name }}</i></span>
+            <input type="file" name="dictionary_file" id="dictionary_file" />
+        </div>
+
+        <div class="form-group">
+            <label for="description" class="control-label">Description</label>
+            <textarea class="form-control" rows="5" id="description" name="description">{{ dictionary.get_description|default:"" }}</textarea>
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-default pull-left">Cancel</button>
+    {# This modal is used for New/UPdate forms on both SSE and FLIGHT so thats why this thing is below #}
+    <button class="btn btn-primary"  data-url="{% if dictionary.get_version %}{% if dictionary.is_sse_dictionary %}{% url 'update_sse_dictionary' %}{% else %}{% url 'update_flight_dictionary' %}{% endif %}{% else %}{% if dictionary.is_sse_dictionary %}{% url 'add_sse_dictionary' %}{% else %}{% url 'add_flight_dictionary' %}{% endif %}{% endif %}" data-form-id="dictionary_form">
+        {% if dictionary.get_version %}Update{% else %}Create{% endif %} </button>
+{% endblock %}

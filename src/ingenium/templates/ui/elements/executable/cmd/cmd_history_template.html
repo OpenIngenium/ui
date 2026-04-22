@@ -1,0 +1,20 @@
+{% include 'ui/elements/executable/execution_results.html' %}
+
+{% if element.get_user_inputs.entries %}
+    <table class="table table-striped">
+        <tr>
+            <th>HW/FSW</th>
+            <th>Command String</th>
+            <th>Timeout (sec)</th>
+            <th>Verify Receipt</th>
+        </tr>
+        {% for entry in element.get_user_inputs.entries %}
+            <tr>
+                <td>{{ entry.hw_fsw }}</td>
+                <td>{{ entry.cmd_string }}</td>
+                <td>{{ entry.timeout }}</td>
+                <td>{{ entry.verify }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}

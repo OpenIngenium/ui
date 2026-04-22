@@ -1,0 +1,86 @@
+{% block step_content %}
+    <form id="manual_verification_{{ element.get_element_id }}"
+          class="manual_verification_form execution_form"
+          data-enable_file_upload="{{ enable_file_upload|default:"false" }}"
+          data-toolbar_set="{{ toolbar_set|default:"basic" }}">
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+        {# only show in execution view #}
+        {% if execution_id %}
+            <div class="row">
+                <div class="col-xs-4">
+                    <label>Verification Status</label>
+                </div>
+                <div class="col-xs-8"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-4 form-group">
+                    <select name="verification_status" class="form-control execution-input">
+                        {% for option in element.VERIFICATION_TYPES %}
+                            <option {% if element.get_verification_status == option.0 %}selected{% endif %} value="{{ option.0 }}">{{ option.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-xs-8 form-group"></div>
+            </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-xs-12">
+                <label>Verification Text</label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12 form-group">
+                <div>
+                    <textarea name="verification_text" class="manual_input_verification_text form-control execution-input"></textarea>
+                    <div class="verification_text_onload" data-text="{{ element.get_verification_text|default_if_none:""  }}" hidden></div>
+                </div>
+            </div>
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block javascript_content %}
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+
+        $(document).on('up.added', '.manual_verification_form', function (event, element) {
+            /* because we're listening to 'document' for up.added and then rely on event bubbling to alert us when an
+             * $element was added to the document, we must make sure that the $element we get back is the same $element
+             * that we're listening for, and not a child of the $element that we're listening for */
+            if (this === element) {
+                $(element).each(function (index, form) {
+                    if (!$(form).data('manual_verification-initialized')) {
+                        $(form).data('manual_verification-initialized', true);
+
+                        const $form = $(form);
+
+                        ING.execution.change_step_form($form);
+
+                        const $editor = $form.find('.manual_input_verification_text');
+                        const execution_id = $form.find('[name=execution_id]').val();
+                        const element_id = $form.find('[name=element_id]').val();
+                        const verification_text = $form.find('div.verification_text_onload').data('text');
+
+                        const enable_file_upload = $form.data("enable_file_upload");
+                        const toolbar_set = $form.data("toolbar_set");
+                        $editor.froalaEditor(ING.external.setup_froala_options(enable_file_upload, toolbar_set, execution_id, element_id));
+                        $editor.froalaEditor('html.set', verification_text);
+                        /* VALUE MUST BE SET IN TEXTAREA IN ADDITION TO FROALA TO CORRECTLY SERIALIZE FORM */ 
+                        $editor.val(verification_text);
+
+                        $editor.on('froalaEditor.contentChanged', function(e, editor) {
+                            $form.trigger('change');
+                        });
+                    }
+                });
+            }
+        });
+
+    </script>
+{% endblock %}

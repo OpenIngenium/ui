@@ -1,0 +1,189 @@
+{% block step_content %}
+    <form id="cmd_sse_{{ element.get_element_id }}" class="cmd_sse_form execution_form">
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+
+        <div class="row">
+            <div class="col-xs-12">
+                <label for="data_path_{{ element.get_element_id }}">Data Path</label>
+                <input id="data_path_{{ element.get_element_id }}" name="data_path" value="{{ element.get_data_path|default:"" }}" type="text" class="form-control execution-input"/>
+            </div>
+        </div>
+
+        <br/>
+
+        <div class="dynamic_elements cmd_sse_elements">
+            {% for entry in element.get_user_inputs.entries %}
+                {% include "ui/elements/executable/cmd_sse/cmd_sse_element.html" %}
+            {% empty %}
+                {% include "ui/elements/executable/cmd_sse/cmd_sse_element.html" %}
+            {% endfor %}
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block javascript_content %}
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+
+        $(document).on('up.added', 'button.select-cmd-sse-button', function (event, element) {
+            if (this === element) {
+                /* attach listener to each 'Select' button in the wizard popup */
+                $(element).each(function(index, button) {
+                    $(button).on('click', function () {
+                        $('form#cmd_sse_' + $(this).data('element-id'))
+                            .find('#' + $(this).data('dynamic-element-id'))
+                            .find('input[name="cmd_string"]')
+                            .typeahead('val', $(this).data('cmdStem'))
+                            .end()
+                            .trigger('change');
+                        $.up_modal('hide');
+                    });
+                })
+            }
+        });
+
+        $(document).on('up.added', 'button.details-cmd-button', function (event, element) {
+            if (this === element) {
+                /* attach listener to each 'Details' button in the wizard modal */
+                $(element).each(function(index, button) {
+                    let $button = $(button);
+                    let $details_dropdown = $($button.next('.details-cmd-dropdown'));
+
+                    /* grab the default loading html fragment for resetting */
+                    let loading_html = $details_dropdown.find(".loading-indicator").clone();
+
+                    $button.on('click', function(event) {
+                        /* work around so dropdown displays inside modal */
+                        let buttonCoords = $button.position();
+                        $details_dropdown.css("top", buttonCoords.top + 33);
+                        $details_dropdown.css("left", 0);
+
+                        const data = {
+                            element_id: $button.data('element-id'),
+                            dynamic_element_id: $button.data('dynamic-element-id'),
+                            cmd_stem: $button.data('cmd-stem'),
+                            dictionary_type: $button.data('dictionary-type'),
+                            dictionary_version: $button.data('dictionary-version'),
+                        };
+
+                        /* determine if user is opening or closing dropdown */
+                        if($button.attr("aria-expanded") === "false") {
+                            /* fetch template and replace dropdown with contents of template partial */
+                             $.ajax({
+                                beforeSend: function (xhr, settings) {
+                                    xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                                },
+                                url: "{% url 'get_cmd_details_html' %}",
+                                method: "POST",
+                                data: data,
+                                dataType: "JSON",
+                                success: function (result, status) {
+                                    $details_dropdown.html(result.html);
+                                },
+                                error: function (result, textStatus, errorThrown) {
+                                    $details_dropdown.html('<div style="text-align: center; margin-top: 15px;"><h2>Error Loading Details!</h2></div>');
+                                }
+                            });
+                        } else {
+                            /* reset contents back to loading state */
+                            $details_dropdown.html(loading_html);
+                        }
+                    });
+                })
+            }
+        });
+
+        $(document).on('up.added', '.cmd_sse_form', function (event, element) {
+            /* because we're listening to 'document' for up.added and then rely on event bubbling to alert us when an
+             * $element was added to the document, we must make sure that the $element we get back is the same $element
+             * that we're listening for, and not a child of the $element that we're listening for */
+            if (this === element) {
+                $(element).each(function (index, form) {
+                    if (!$(form).data('cmd-sse-initialized')) {
+                        $(form).data('cmd-sse-initialized', true);
+
+                        var $form = $(form);
+
+                        /* dynamic_element */
+                        $form.children('.cmd_sse_elements').dynamic_element({
+                            url: "{% url 'cmd_sse_data_row_html' %}",
+                            data: {'element_type_id': '{{ element.get_element_type_id }}'}
+                        }).on('dynamic_element.changed', function () {
+                            $(this).closest('.cmd_sse_form').trigger('change');
+                        }).on('dynamic_element.initialized', function (event, wrapper, dynamic_elements) {
+                            initialize_cmd_sse_elements($(dynamic_elements));
+                        }).on('dynamic_element.added', function (event, dynamic_element) {
+                            initialize_cmd_sse_elements($(dynamic_element));
+                        });
+
+                        /* ajax save request */
+                        ING.execution.change_step_form($form);
+
+                        function initialize_cmd_sse_elements($elements) {
+                            $elements.each(function(i, element) {
+
+                                /* initialize up_typeahead */
+                                $(element).find('input[name="cmd_string"]').up_typeahead({
+                                    url: '{% url 'lookup_cmd_names' %}',
+                                    map_dict: {
+                                        "name": "command_stem",
+                                        "category": "operations_category",
+                                        "description": "cmd_description"
+                                    },
+                                    typeahead_options: {
+                                        highlight: false
+                                    },
+                                    typeahead_datasets: {
+                                        templates: {
+                                            suggestion: function (option) {
+                                                return '<div class="step_typeahead_suggestion">' +
+                                                    '<div>' +
+                                                    '<h4>' + option.name + '</h4>' +
+                                                    '<h4>' + option.category + '</h4>' +
+                                                    '</div>' +
+                                                    '<p>' + option.description + '</p>' +
+                                                    '</div>';
+                                            }
+                                        }
+                                    }
+                                }).on('before_send', function () {
+                                    $(this).up_typeahead('update_data', get_cmd_sse_data());
+                                });
+
+                                /* initialize up_modal_request */
+                                $(element).find('button.command-sse-lookup').up_modal_request({
+                                    url: '{% url 'lookup_cmd_modal' %}',
+                                    up_modal_options: {
+                                        'size': 'lg',
+                                        'dismissible': false
+                                    },
+                                    first_ajax_request_before_ajax: function ($button) {
+                                        var data = $.extend(true, get_cmd_sse_data(), {
+                                            'dynamic_element_id': $button.closest('.cmd_sse_element').attr('id')
+                                        });
+                                        $button.up_modal_request('update_data', data);
+                                    }
+                                });
+
+                            });
+                        }
+
+                        function get_cmd_sse_data() {
+                            return {
+                                'dictionary_type': 'SSE',
+                                'sse_dictionary_version': $('#sse_dictionary_version').val(),
+                                'flight_dictionary_version': $('#flight_dictionary_version').val(),
+                                'element_id': $form.find('input[name="element_id"]').val()
+                            };
+                        }
+
+                    }
+                });
+            }
+        });
+
+    </script>
+{% endblock %}

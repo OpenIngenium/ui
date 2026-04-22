@@ -1,0 +1,7 @@
+<div class="procedure_config_management choose-steps" style="overflow-y: scroll;">
+    {% for step in steps %}
+        {% include "ui/elements/executable/procedure_section/steps_partial.html" %}
+    {% empty %}
+        No Steps/Sections Chosen.
+    {% endfor %}
+</div>

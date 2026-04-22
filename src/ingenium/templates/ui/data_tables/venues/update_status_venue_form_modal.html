@@ -1,0 +1,29 @@
+{% block modal_title %}
+    <h4 class="modal-title">Change Status Venue</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="venue_form">
+        <input id="venue_id" name="venue_id" type="hidden" value="{{ venue.get_venue_id }}"/>
+
+        <div class="form-group">
+            <label for="status" class="control-label">Status</label>
+            <select id="status" name="status" class="form-control">
+                <option value="">-= Select Status =-</option>
+
+                {% for key, label in venue.VENUE_STATUS_LABELS.items %}
+                    {% if venue.get_status != key and key != 'IN_USE' %}
+                        <option value="{{ key }}">{{ label }}</option>
+                    {% endif %}
+                {% endfor %}
+
+            </select>
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-default pull-left">Cancel</button>
+    <button class="btn btn-primary" data-data='{"venue_id":"{{ venue.get_venue_id }}"}' data-url="{% url 'update_status_venue' %}" data-form-id="venue_form">Update</button>
+{% endblock %}

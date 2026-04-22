@@ -1,0 +1,16 @@
+{% extends 'ui/elements/executable/execution_result_container.html' %}
+{% load ingenium_tags %}
+
+{% block results %}
+    <table class="table execution-results-table {% execution_result_status_css_class execution_record %}">
+        <tr>
+            <th>Wait Type</th>
+            <th>Time Value</th>
+        </tr>
+        <tr>
+            <td>{{ execution_record.get_results.wait_type }}</td>
+            <td>{{ execution_record.get_results.time_value }}</td>
+        </tr>
+    </table>
+
+{% endblock %}

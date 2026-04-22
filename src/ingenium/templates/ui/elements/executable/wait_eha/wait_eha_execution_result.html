@@ -1,0 +1,51 @@
+{% extends 'ui/elements/executable/execution_result_container.html' %}
+{% load ingenium_tags %}
+
+{% block results %}
+    <table class="table execution-results-table {% execution_result_status_css_class execution_record %}">
+        <tr>
+            <th>Venue Name</th>
+            <th>Venue ID</th>
+            <th>AMPCS Address</th>
+        </tr>
+        <tr>
+            <td>{{ execution_record.get_results.venue_name }}</td>
+            <td>{{ execution_record.get_results.venue_id }}</td>
+            <td>{{ execution_record.get_results.venue_ampcs_address }}</td>
+        </tr>
+    </table>
+
+    <br /><br />
+
+    <table class="table execution-results-table {% execution_result_status_css_class execution_record %}">
+        <tr>
+            <th>Flight/SSE</th>
+            <th>Data Path</th>
+            <th>Channel</th>
+            <th>DN/EU</th>
+            <th>Verify On</th>
+            <th>Verify Condition</th>
+            <th>Verification Value</th>
+            <th>Actual Value</th>
+            <th>Status</th>
+        </tr>
+        {% for entry in execution_record.get_results.entries %}
+            <tr>
+                <td>{{ entry.channel_type }}</td>
+                <td>{{ entry.data_path }}</td>
+                <td>{{ entry.channel_name }}</td>
+                <td>{{ entry.dn_eu }}</td>
+                <td>{{ entry.verify_on }}</td>
+                <td>{{ entry.verification_condition }}</td>
+                <td>{{ entry.verification_values.0 }}{% if entry.verification_values.1  %} - {{ entry.verification_values.1 }}{% endif %}</td>
+                <td>{{ entry.actual_value }}</td>
+                <td>{% if entry.verification_status == 'PASS'%}
+                        <span class="glyphicon glyphicon-ok success"></span>
+                    {% else %} 
+                        <span class="glyphicon glyphicon-remove danger"></span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

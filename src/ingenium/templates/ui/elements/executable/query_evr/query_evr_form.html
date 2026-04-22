@@ -1,0 +1,234 @@
+{% block step_content %}
+
+    <form id="query_evr_form_{{ element.get_element_id }}" class="query_evr_form execution_form">
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+
+        <div class="row">
+            <div class="col-xs-6">
+                <label for="data_path_{{ element.get_element_id }}">Data Path</label>
+                <input id="data_path_{{ element.get_element_id }}" name="data_path" value="{{ element.get_data_path|default:"" }}" type="text" class="form-control execution-input"/>
+            </div>
+
+            <div class="col-xs-3">
+                <label for="verification_condition_{{ element.get_element_id }}">Verification Condition</label>
+                <select id="verification_condition_{{ element.get_element_id }}" name="verification_condition" class="form-control execution-input">
+                    {% for condition in element.VERIFICATION_CONDITIONS %}
+                        <option {% if element.get_verification_condition == condition.0 %}selected{% endif %} value="{{ condition.0 }}">{{ condition.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-xs-3 verification_value_div">
+                <label for="verification_value_{{ element.get_element_id }}" data-toggle="tooltip" title="Number of EVRs expected to meet the filter criteria."> Verification Value</label>
+                <input id="verification_value_{{ element.get_element_id }}" name="verification_value" value="{{ element.get_verification_value|default:"" }}" type="number" class="form-control execution-input"/>
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class="row">
+            <div class="col-xs-6">
+                <label for="evr_name_{{ element.get_element_id }}" data-toggle="tooltip" data-placement="right" title="For wild card queries please use: %. (example: EHA_EVR_%)"> EVR Name</label>
+                <button type="button"  class="btn btn-xs btn-info pull-right evr-lookup">
+                    <span class="glyphicon glyphicon-search"></span> Lookup
+                </button>
+                <input id="evr_name_{{ element.get_element_id }}" name="evr_name" value="{{ element.get_evr_name|default:"" }}" type="text" class="form-control execution-input" data-value='{"label":"{{ element.get_evr_name|default:"" }}","value":"{{ element.get_evr_id|default:"" }}"}'/>
+            </div>
+
+            <div class="col-xs-3">
+                <label for="evr_level_{{ element.get_element_id }}">EVR Level</label>
+                <input id="evr_level_{{ element.get_element_id }}" name="evr_level" value="{{ element.get_evr_level|default:"" }}" type="text" class="form-control execution-input"/>
+            </div>
+
+            <div class="col-xs-3">
+                <label for="evr_type_{{ element.get_element_id }}">EVR Type</label>
+                <select id="evr_type_{{ element.get_element_id }}" name="evr_type" class="form-control execution-input" data-prev="{{ element.get_evr_type }}">
+                    {% for evr_type in element.EVR_TYPE %}
+                        <option {% if element.get_evr_type == evr_type.0 %}selected{% endif %} value="{{ evr_type.0 }}">{{ evr_type.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <br/>
+
+        <div class="row">
+            <div class="col-xs-3">
+                <label
+                    for="start_time_{{ element.get_element_id }}"
+                    data-toggle="tooltip"
+                    data-placement="right"
+                    title="Allowable formats include: SCLK (example: 0565999907.12500), ERT/SCET - DOY format (2017-234T10:23:12.329), or one of the following defined Time Constants: CURRENT_TIME, LAST_STEP_START, LAST_STEP_END, CURRENT_STEP_START">
+                    Start Time</label>
+                <input id="start_time_{{ element.get_element_id }}" name="start_time" value="{{ element.get_start_time|default:"" }}" type="text" class="form-control execution-input"/>
+            </div>
+
+            <div class="col-xs-3">
+                <label
+                    for="end_time_{{ element.get_element_id }}"
+                    data-toggle="tooltip"
+                    title="Allowable formats include: SCLK (example: 0565999907.12500), ERT/SCET - DOY format (2017-234T10:23:12.329), or one of the following defined Time Constants: CURRENT_TIME, LAST_STEP_START, LAST_STEP_END, CURRENT_STEP_START">
+                    End Time</label>
+                <input id="end_time_{{ element.get_element_id }}" name="end_time" value="{{ element.get_end_time|default:"" }}" type="text" class="form-control execution-input"/>
+            </div>
+
+            <div class="col-xs-3">
+                <label for="duration_{{ element.get_element_id }}">Duration (sec)</label>
+                <input id="duration_{{ element.get_element_id }}" name="duration" value="{{ element.get_duration|default:"" }}" type="number" class="form-control execution-input"/>
+            </div>
+
+            <div class="col-xs-3">
+                <label for="time_type_{{ element.get_element_id }}">Time Type</label>
+                <select id="time_type_{{ element.get_element_id }}" name="time_type" class="form-control execution-input">
+                    {% for time_type in element.TIME_TYPE %}
+                        <option {% if element.get_time_type == time_type.0 %}selected{% endif %} value="{{ time_type.0 }}">{{ time_type.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <br/>
+
+        <div class="row">
+            <div class="col-xs-3">
+                <label for="timeout_{{ element.get_element_id }}">Timeout (sec)</label>
+                <input id="timeout_{{ element.get_element_id }}" name="timeout" value="{{ element.get_timeout|default:"" }}" type="number" class="form-control execution-input"/>
+            </div>
+
+            <div class="col-xs-9">
+                <label for="message_filter_{{ element.get_element_id }}" data-toggle="tooltip" title="Only return EVRs that have the following in their message."> Message Filter</label>
+                <input id="message_filter_{{ element.get_element_id }}" name="message_filter" value="{{ element.get_message_filter|default:"" }}" type="text" class="form-control execution-input"/>
+            </div>
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block javascript_content %}
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+
+        $(document).on('up.added', 'button.select-evr-button', function (event, element) {
+            if (this === element) {
+
+                {# Attach Listener to each "Select" Button in the wizard popup #}
+                $(element).each(function (index, form) {
+                    $(element).on('click', function () {
+                        var name = $(this).data('name');
+                        var level = $(this).data('level');
+                        var element_id = $(this).data('element-id');
+                        var id = $(this).data('id');
+
+                        var $form = $("#query_evr_form_" + element_id);
+
+                        $.up_modal('hide');
+
+                        $form.find('input[name="evr_name"]').typeahead("val", name);
+                        $form.find('input[name="evr_name_id"]').val(id);
+                        $form.find('input[name="evr_level"]').val(level);
+
+                        $form.trigger('change');
+                    });
+                })
+            }
+        });
+
+        $(document).on('up.added', '.query_evr_form', function (event, element) {
+            /* because we're listening to 'document' for up.added and then rely on event bubbling to alert us when an
+             * $element was added to the document, we must make sure that the $element we get back is the same $element
+             * that we're listening for, and not a child of the $element that we're listening for */
+            if (this === element) {
+
+                $(element).each(function (index, form) {
+                    if (!$(form).data('query-evr-initialized')) {
+                        $(form).data('query-evr-initialized', true);
+
+                        var $form = $(form);
+
+                        ING.execution.change_step_form($form);
+
+                        /* Helper method to construct data parameters to send in the typeahead, other requests */
+                        function get_query_evr_data() {
+                            return {
+                                'dictionary_type': $form.find('select[name="evr_type"]').val(),
+                                'sse_dictionary_version': $("#sse_dictionary_version").val(),
+                                'flight_dictionary_version': $("#flight_dictionary_version").val(),
+                                'element_id': $form.find('input[name="element_id"]').val()
+                            };
+                        }
+
+                        function initialize_type_ahead_evr_name() {
+                            $form.find('input[name="evr_name"]').up_typeahead({
+                                url: '{% url 'lookup_evr_names' %}',
+                                hidden_id: true,
+                                hidden_id_field_name: 'evr_name_id',
+                                map_dict: {
+                                    name: 'evr_name',
+                                    id: 'evr_id',
+                                    description: 'evr_message',
+                                    level: 'evr_level'
+                                },
+                                typeahead_options: {
+                                    highlight: false
+                                },
+                                typeahead_datasets: {
+                                    templates: {
+                                        suggestion: function (option) {
+                                            return '<div class="step_typeahead_suggestion">' +
+                                                '<div>' +
+                                                '<h4>' + option.name + '</h4>' +
+                                                '<h4>' + option.level + '</h4>' +
+                                                '</div>' +
+                                                '<p>' + option.description + '</p>' +
+                                                '</div>';
+                                        }
+                                    }
+                                }
+                            }).on('before_send', function () {
+                                $(this).up_typeahead('update_data', get_query_evr_data());
+                            });
+                        }
+
+                        {# Typeahead For EVR Name #}
+                        initialize_type_ahead_evr_name();
+
+                        /* Changing Verification Condition will hide/show Verification Value based on selection */
+                        $form.find('select[name="verification_condition"]').on('change verification_condition_loaded', function () {
+                            $form.find('.verification_value_div').toggle($(this).val() !== 'RECORD');
+                        }).trigger('verification_condition_loaded');
+
+
+                        /* Switching to/from SSE to/from FSW should clear evr_name and evr_name_id */
+                        $form.find('select[name="evr_type"]').change(function () {
+                            var previous_value = $(this).data('prev'),
+                                current_value = $(this).val();
+                            if (previous_value === 'SSE' || (previous_value !== 'SSE' && current_value.indexOf('FSW') === -1)) {
+                                $form.find('input[name="evr_name"]').typeahead('val', '');
+                                $form.find('input[name="evr_name_id"]').val('');
+                            }
+                            $(this).data('prev', current_value);
+                        });
+
+                        /* On Wizard launch get modal html and put it into a modal */
+                        $form.find('.evr-lookup').up_modal_request({
+                            url: '{% url 'lookup_evr_modal' %}',
+                            up_modal_options: {
+                                'size': 'lg',
+                                'dismissible': false
+                            },
+                            first_ajax_request_before_ajax: function ($button) {
+                                $button.up_modal_request('update_data', get_query_evr_data());
+                            },
+                            on_modal_close: function () {
+                                $("table#{{ data_table.get_table_name }}").DataTable().ajax.reload();
+                            }
+                        });
+
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

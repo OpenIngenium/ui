@@ -1,0 +1,13 @@
+# used to run Vue unit tests on CI
+
+FROM cae-artifactory.jpl.nasa.gov:17001/node:8.11.1-alpine as node
+
+RUN mkdir /src;
+COPY ./src/client /src/client
+
+WORKDIR /src/client
+
+RUN npm cache verify && \
+    npm install --unsafe-perm
+
+CMD npm run unit-ci

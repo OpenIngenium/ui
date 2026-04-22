@@ -1,0 +1,15 @@
+{% if step.selected %}
+    <li>
+        <span class="col-sm-12"><strong>{{ step.number }}</strong> - {{ step.title }}</span>
+        </br>
+        {%if step.children %}
+            <ul style="list-style: none;">
+                {%for child in step.children %}
+                    {%with step=child template_name="ui/elements/executable/procedure_section/steps_partial.html" %}
+                        {%include template_name%}
+                    {%endwith%}
+                {%endfor%}
+             </ul>
+        {%endif%}
+    </li>
+{% endif %}

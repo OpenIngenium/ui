@@ -1,0 +1,63 @@
+{% extends "ui/pages/execute/execute_history_layout.html" %}
+{% load static %}
+
+{% block history_content %}
+    <link href="{% static "css/toc.css" %}" rel="stylesheet" type="text/css"/>
+
+    <br/>
+    <div class="row">
+        <div class="col-sm-8">
+            <h2>Execution: As Run</h2>
+        </div>
+        <div style="vertical-align: middle;" class="col-sm-4">
+            <div class="pull-right">
+                <a href="{% url 'print_friendly_execution_page' execution.get_execution_id %}" target="_blank" class="btn btn-default"><span class="glyphicon glyphicon-print"> Print Friendly</span></a>
+                {% if execution.is_complete %}
+                    <button id="toggle_all_comments" data-show_all="false" class="btn btn-default">
+                        <span class="glyphicon glyphicon-eye-open"> Show All Comments</span></button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <hr/>
+
+    {% include "ui/pages/execute/execution_elements_display.html" %}
+
+    <script>
+        $(document).on('up.added', '.step_comment_button', function (event, element) {
+            /* because we're listening to 'document' for up.added and then rely on event bubbling to alert us when an
+             * $element was added to the document, we must make sure that the $element we get back is the same $element
+             * that we're listening for, and not a child of the $element that we're listening for */
+            if (this === element) {
+                $(this).each(function () {
+
+                    $(this).on('click', function () {
+                        var $step_comment = $(this).closest('.step_history').find('.step_comment').first();
+                        if ($step_comment.is(':visible')) {
+                            $step_comment.slideUp("fast");
+                        } else {
+                            // TODO: HARB LOAD AJAX HTML INTO $step_comment.html()
+                            $step_comment.slideDown("fast");
+                        }
+
+                    });
+
+                });
+            }
+        });
+
+        $("#toggle_all_comments").on('click', function () {
+            var show_all = $(this).data('show_all');
+
+            if (show_all) {
+                $(".step_comment").slideUp("fast");
+                $(this).data('show_all', false).html("<span class=\"glyphicon glyphicon-eye-open\"> Show All Comments</span>");
+            } else {
+                $(".step_comment").slideDown("fast");
+                $(this).data('show_all', true).html("<span class=\"glyphicon glyphicon-eye-close\"> Hide All Comments</span>");
+            }
+        })
+
+    </script>
+{% endblock %}

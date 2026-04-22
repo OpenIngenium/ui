@@ -1,0 +1,11 @@
+/* make admin view full width */
+.container-fluid {
+    max-width: 100% !important;
+}
+
+div#admin-spa {
+    width:100%;
+}
+div#admin-spa > div {
+    margin:0 auto;
+}

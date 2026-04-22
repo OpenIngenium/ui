@@ -1,0 +1,12 @@
+<button class="btn btn-default procedure-version-actions-btn"
+        data-title="{{ procedure_version.get_version_description|truncatechars:25 }}"
+        data-version="{{ procedure_version.get_version }}" 
+        data-status="{{ procedure_version.get_status }}" 
+        data-author="{{ procedure_version.get_version_author }}" 
+        data-institutional-release-id="{{ procedure_version.get_institutional_release_id }}" 
+        data-api-version="{{ procedure_version.get_api_version }}" 
+        data-time-released="{{ time_released }}" 
+        data-time-versioned="{{ time_versioned }}" 
+        data-description="{{ procedure_version.get_version_description }}" 
+        data-trigger="focus">Details
+</button>

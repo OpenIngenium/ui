@@ -1,0 +1,19 @@
+--extra-index-url https://cae-artifactory.jpl.nasa.gov/artifactory/api/pypi/pypi-release-virtual/simple
+
+django==1.11.6
+djangorestframework==3.8.2
+gunicorn==19.9.0
+greenlet==1.1.2
+gevent==21.12.0
+requests==2.18.4
+django-secure==1.0.1
+requests_jwt==0.4
+PyJWT==1.5.2
+python-dateutil
+django-froala-editor==2.7.5
+django-js-reverse==0.8.1
+cryptography==2.2.2
+django_data_tables==2.3.1
+django_up_tools==1.21.10
+django_login_required==1.1.0
+django-redis==4.10.0

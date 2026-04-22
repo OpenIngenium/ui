@@ -1,0 +1,127 @@
+{% block step_content %}
+    <form id="manual_input_{{ element.get_element_id }}" class="manual_input_form execution_form">
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+        <div class="row">
+            <div class="col-xs-2">
+                <label>Name</label>
+            </div>
+            <div class="col-xs-2">
+                <label>Verify On</label>
+            </div>
+            <div class="col-xs-2">
+                <label>Verification Condition</label>
+            </div>
+            <div class="col-xs-2">
+                <label>Value Type</label>
+            </div>
+            <div class="col-xs-2">
+                <label>Verification Value</label>
+            </div>
+            {# only show in execution view #}
+            <div class="col-xs-2">
+                {% if execution_id %}
+                    <label>Actual Value</label>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="dynamic_elements manual_input_elements">
+            {% for entry in element.get_user_inputs.entries %}
+                {% include "ui/elements/executable/manual_input/manual_input_element.html" %}
+            {% empty %}
+                {% include "ui/elements/executable/manual_input/manual_input_element.html" %}
+            {% endfor %}
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block javascript_content %}
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+
+        /*
+         * Creating an array of objects from VERIFY_CONDITION_OPTIONS in verify_eha_element.py. Not the best solution;
+         * this allows us to know what type of verification_value to expect from the selected verification_condition.
+         * For example, 'EXCLUSIVE_RANGE' takes 'RANGE', while 'LESS_THAN_OR_EQUAL' takes 'INPUT'.
+         */
+        var manual_input_verification_conditions = [];
+        {% for option in element.VERIFY_CONDITION_OPTIONS %}
+            manual_input_verification_conditions.push({'condition':'{{ option.0 }}', 'friendly':'{{ option.1 }}', 'field_type':'{{ option.2 }}'});
+        {% endfor %}
+
+        $(document).on('up.added', '.manual_input_form', function (event, element) {
+            /* because we're listening to 'document' for up.added and then rely on event bubbling to alert us when an
+             * $element was added to the document, we must make sure that the $element we get back is the same $element
+             * that we're listening for, and not a child of the $element that we're listening for */
+            if (this === element) {
+                $(element).each(function (index, form) {
+                    if (!$(form).data('manual-input-initialized')) {
+                        $(form).data('manual-input-initialized', true);
+
+                        var $form = $(form);
+                        const executionId = $form.find("input[name=execution_id]").val();
+
+                        /* Custom validators */
+                        /* Boolean validator (IIFE syntax to add to jQuery module) */
+                        (function($) {
+                            FormValidation.Validator.boolean = {
+                                validate: function(validator, $field, options) {
+                                    const inputVal = $field.val().toLowerCase();
+                                    /* Only validate if there is actual input */
+                                    if(!inputVal) {
+                                      return true;
+                                    }
+                                    return inputVal === 'true' || inputVal === 'false';
+                                }
+                            };
+                        }(window.jQuery));
+
+                        /* dynamic_element */
+                        $form.children('.manual_input_elements').dynamic_element({
+                            url: "{% url 'manual_input_add_row_html' %}",
+                            data: {
+                                'element_type_id': '{{ element.get_element_type_id }}',
+                                'execution_id': '{{ execution_id }}'
+                            }
+                        }).on('dynamic_element.changed', function () {
+                            $(this).closest('.manual_input_form').trigger('change');
+                        }).on('dynamic_element.initialized', function (event, wrapper, dynamic_elements) {
+                            initialize_manual_input_elements($(dynamic_elements));
+                        }).on('dynamic_element.added', function (event, dynamic_element) {
+                            initialize_manual_input_elements($(dynamic_element));
+                        });
+
+                        /* initialize whatever needs to be initialized inside .manual_input_elements */
+                        function initialize_manual_input_elements($elements) {
+                            $elements.each(function(i, element) {
+
+                                /* initialize change listener for changing verification_condition */
+                                $(element).find('select[name="verification_condition"]').change(function() {
+                                    var option = {};
+                                    for (var i=0; i < manual_input_verification_conditions.length; i++) {
+                                        if (manual_input_verification_conditions[i].condition === $(this).val()) {
+                                            option = manual_input_verification_conditions[i];
+                                        }
+                                    }
+
+                                    /* hide show verification value fields based on verification condition */
+                                    $(element).find('input.verification_value').toggle(option.field_type == 'INPUT' || option.field_type == 'RANGE');
+                                    $(element).find('span.verification_value_range').toggle(option.field_type == 'RANGE');
+                                    $(element).find('input.verification_value_to').toggle(option.field_type == 'RANGE');
+                                    $(element).find('label.verification_value_none').toggle(option.field_type == 'NONE');
+                                }).trigger('change');
+
+                            });
+                            ING.execution.change_step_form($form);
+
+                        }
+                    }
+                });
+            }
+        });
+
+    </script>
+{% endblock %}

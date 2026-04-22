@@ -1,0 +1,21 @@
+{% extends "layouts/ingenium_template.html" %}
+
+{% load static %}
+
+{% block html_title %}
+    Search
+{% endblock %}
+
+{% block page_label %}
+    Search
+{% endblock %}
+
+{% block page_content %}
+
+    {# Vue Search Component #}
+    <div id="spa-search"></div>
+
+    <script src="{% static search_js_bundle %}"></script>
+
+{% endblock %}
+

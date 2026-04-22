@@ -1,0 +1,18 @@
+<div class="btn-group">
+    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Actions <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+        <li class="edit_venue_btn" data-data='{"venue_id":"{{ venue.get_venue_id }}"}'><a href="#"> <span class="glyphicon glyphicon-pencil"></span> Update</a></li>
+
+        {% if venue.is_retired or venue.is_available or venue.is_offline or venue.is_unknown %}
+            <li class="update_status_venue_btn" data-data='{"venue_id":"{{ venue.get_venue_id }}"}'><a href="#"> <span class="glyphicon glyphicon-tag"></span> Change Status</a></li>
+        {% endif %}
+
+        {% if venue.is_in_use %}
+            <li class="stop_execution_venue_btn" data-data='{"venue_id":"{{ venue.get_venue_id }}"}'><a href="#"> <span class="glyphicon glyphicon-stop"></span> Stop Execution</a></li>
+        {% endif %}
+
+        <li class="delete_venue_btn" data-data='{"venue_id":"{{ venue.get_venue_id }}"}'><a href="#"> <span class="glyphicon glyphicon-trash"></span> Delete</a></li>
+    </ul>
+</div>

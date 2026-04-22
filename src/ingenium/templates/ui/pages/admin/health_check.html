@@ -1,0 +1,16 @@
+{% extends "layouts/admin_template.html" %}
+{% load data_tables_tags %}
+
+{% block admin_page_content %}
+    {% render_data_table data_table %}
+
+    <script>
+        var $table = $("table#{{ data_table.get_table_name }}");
+
+        $table.on('draw.dt', function () {
+            setTimeout(function () {
+                $table.DataTable().ajax.reload();
+            }, 10000);
+        });
+    </script>
+{% endblock %}

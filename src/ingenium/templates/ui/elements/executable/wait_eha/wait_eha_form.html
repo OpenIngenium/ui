@@ -1,0 +1,198 @@
+{% block step_content %}
+    <form id="wait_eha_{{ element.get_element_id }}" class="wait_eha_form execution_form">
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+
+        <div class="row">
+            <div class="col-xs-4">
+                <label for="start_time_{{ element.get_element_id }}">Start Time</label>
+                <input id="start_time_{{ element.get_element_id }}" name="start_time" value="{{ element.get_start_time|default:"CURRENT_TIME" }}" type="text" class="form-control execution-input"/>
+            </div>
+
+            <div class="col-xs-4">
+                <label for="lookback_{{ element.get_element_id }}">Lookback (sec)</label>
+                <input id="lookback_{{ element.get_element_id }}" name="lookback" value="{{ element.get_lookback|default:"" }}" type="text" class="form-control execution-input"/>
+            </div>
+
+            <div class="col-xs-4">
+                <label for="timeout_{{ element.get_element_id }}">Timeout (sec)</label>
+                <input id="timeout_{{ element.get_element_id }}" name="timeout" value="{{ element.get_timeout|default:"" }}" type="text" class="form-control execution-input"/>
+            </div>
+        </div>
+
+        <br />
+
+        <div class="dynamic_elements wait_eha_elements" data-url="{% url 'wait_eha_data_row_html' %}">
+            {% for entry in element.get_user_inputs.entries %}
+                {% include "ui/elements/executable/wait_eha/wait_eha_element.html" %}
+            {% empty %}
+                {% include "ui/elements/executable/wait_eha/wait_eha_element.html" %}
+            {% endfor %}
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block javascript_content %}
+    <!--suppress JSUnresolvedVariable -->
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+
+        /**
+         * Creating an array of objects from VERIFY_CONDITION_OPTIONS in verify_eha_element.py. Not the best solution;
+         * this allows us to know what type of verification_value to expect from the selected verification_condition.
+         * For example, 'EXCLUSIVE_RANGE' takes 'RANGE', while 'LESS_THAN_OR_EQUAL' takes 'INPUT'.
+         */
+        var wait_eha_verification_conditions = [];
+        {% for option in element.VERIFY_CONDITION_OPTIONS %}
+            wait_eha_verification_conditions.push({'condition':'{{ option.0 }}','friendly':'{{ option.1 }}','type':'{{ option.2 }}'});
+        {% endfor %}
+
+        /**
+         * Listen for existence of any instance of element .wait_eha_form; initialize if it's not already initialized.
+         */
+        $(document).on('up.added', '.wait_eha_form', function (event, element) {
+            if (this === element) {
+                $(element).each(function (index, form) {
+                    if (!$(form).data('initialized')) {
+                        $(form).data('initialized', true);
+                        initialize_wait_eha_step(form);
+                    }
+                });
+            }
+        });
+
+        /**
+         * Initialize whatever needs to be initialized, except for things inside .wait_eha_element.
+         *
+         * @param form      <form> element in wait_eha step
+         */
+        function initialize_wait_eha_step(form) {
+
+            ING.execution.change_step_form($(form));
+
+            /* initialize dynamic_element plugin on .wait_eha_elements element */
+            $(form).children('.wait_eha_elements').dynamic_element({
+                url:  $(form).find('.wait_eha_elements').first().data('url'),
+                data: {'element_type_id': $(form).closest('.step').first().data('element-type-id')}
+            }).on('dynamic_element.changed', function () {
+                $(form).trigger('change');
+            }).on('dynamic_element.initialized', function (event, wrapper, dynamic_elements) {
+                initialize_wait_eha_dynamic_elements($(dynamic_elements));
+            }).on('dynamic_element.added', function (event, dynamic_element) {
+                initialize_wait_eha_dynamic_elements($(dynamic_element));
+            });
+
+        }
+
+        /**
+         * Initialize whatever needs to be initialized inside .wait_eha_element.
+         *
+         * @param elements  .wait_eha_element object or array of .wait_eha_element objects
+         */
+        function initialize_wait_eha_dynamic_elements(elements) {
+            $(elements).each(function(i, element) {
+
+                /* initialize up_typeahead */
+                $(element).find('input[name="channel_name"]').up_typeahead({
+                    url: '{% url 'lookup_eha_names' %}',
+                    force_selection: true,
+                    hidden_id: true,
+                    hidden_id_field_name: 'channel_id',
+                    map_dict: {
+                        "name": "eha_name",
+                        "id": "channel_id",
+                        "description": "eha_description"
+                    },
+                    typeahead_options: {
+                        highlight: false
+                    },
+                    typeahead_datasets: {
+                        templates: {
+                            suggestion: function (option) {
+                                return '<div class="step_typeahead_suggestion">' +
+                                    '<div>' +
+                                    '<h4>' + option.name + '</h4>' +
+                                    '<h4>' + option.id + '</h4>' +
+                                    '</div>' +
+                                    '<p>' + option.description + '</p>' +
+                                    '</div>';
+                            }
+                        }
+                    }
+                }).on('before_send', function () {
+                    $(this).up_typeahead('update_data', get_wait_eha_data($(this)));
+                });
+
+                /* initialize up_modal_request */
+                $(element).find('button.eha-lookup').up_modal_request({
+                    url: '{% url 'lookup_eha_modal' %}',
+                    up_modal_options: {
+                        'size': 'lg',
+                        'dismissible': false
+                    },
+                    first_ajax_request_before_ajax: function ($button) {
+                        var data = $.extend(true, get_wait_eha_data($button), {
+                            'dynamic_element_id': $button.closest('.wait_eha_element').attr('id')
+                        });
+                        $button.up_modal_request('update_data', data);
+                    },
+                    on_modal_open: function(title, body) {
+
+                        /* attach listener to each 'Select' button in the wizard popup */
+                        $(body).find('table.data_table_element').on('draw.dt', function() {
+                            $(this).find('button.select-eha-button').each(function(i, button) {
+                                $(button).on('click', function () {
+                                    $('#' + $(this).data('dynamic-element-id'))
+                                        .find('input[name="channel_id"]').val($(this).data('id')).end()
+                                        .find('input[name="channel_name"]').typeahead('val', $(this).data('name')).trigger('change');
+                                    $.up_modal('hide');
+                                });
+                            });
+                        });
+
+                    }
+                });
+
+                /* initialize change listener on flight_sse to clear channel name/id */
+                $(element).find('select[name="flight_sse"]').change(function() {
+                    $(element).find('input[name="channel_name"]').typeahead('val', '');
+                    $(element).find('input[name="channel_id"]').val('');
+                });
+
+                /* initialize change listener for changing verify_condition */
+                $(element).find('select[name="verify_condition"]').on('change verification_condition_loaded', function() {
+                    var option = {};
+                    for (var i=0; i < wait_eha_verification_conditions.length; i++) {
+                        if (wait_eha_verification_conditions[i].condition === $(this).val()) {
+                            option = wait_eha_verification_conditions[i];
+                        }
+                    }
+                    $(element).find('input.verification_value').toggle(option.type == 'INPUT' || option.type == 'RANGE');
+                    $(element).find('span.verification_value_range').toggle(option.type == 'RANGE');
+                    $(element).find('input.verification_value_to').toggle(option.type == 'RANGE');
+                    $(element).find('label.verification_value_none').toggle(option.type == 'NONE');
+                }).triggerHandler('verification_condition_loaded');
+
+            });
+
+        }
+
+        /**
+         * Plugins like up_typeahead and up_modal_request need to know a few things about where requests are coming
+         * from.  This function gathers that information and structures it into a dictionary.
+         *
+         * @param _element  Any random element inside of dynamic_element
+         */
+        function get_wait_eha_data(_element) {
+            return {
+                'dictionary_type': $(_element).closest('.wait_eha_element').find('select[name="flight_sse"]').val(),
+                'sse_dictionary_version': $('#sse_dictionary_version').val(),
+                'flight_dictionary_version': $('#flight_dictionary_version').val(),
+                'element_id': $(_element).closest('.step').first().data('element-id')
+            };
+        }
+
+    </script>
+{% endblock %}

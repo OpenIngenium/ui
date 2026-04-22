@@ -1,0 +1,29 @@
+<div class="all-venues all-venues-tile">
+    <div class="row">
+        {% for venue in venues %}
+            <div class="col-md-4 col-sm-4 col-xs-6">
+                <div class="venue-dummy"></div>
+                <div class="venue">
+                    <span class="glyphicon glyphicon-hdd"></span>
+                    <hr />
+                    <h1><a href="{% url 'venue_detail_page' venue.get_venue_id %}">{{ venue.name }}</a></h1>
+                    <h2>
+                        <span class="status-dot {% if venue.is_available %}status-dot-green{% elif venue.is_in_use %}status-dot-yellow{% elif venue.is_offline %}status-dot-red{% else %}status-dot-grey{% endif %}" style="margin-bottom:-2px;"></span>&nbsp;
+                        {{ venue.get_friendly_status }}
+                    </h2>
+                    {% if venue.is_available %}
+                        <h4><a href="{% url 'execution_page' venue.get_venue_id %}"><span class="glyphicon glyphicon-play-circle"></span> Execute</a></h4>
+                    {% elif venue.is_in_use and venue.get_test_conductor == request.user.get_username %}
+                        <h3><span class="glyphicon glyphicon-time"></span>&nbsp; {{ venue.get_test_started_on|timesince }}</h3>
+                        <h3><span class="glyphicon glyphicon-user"></span>&nbsp; {{ venue.get_test_conductor }}</h3>
+                        <h4><a href="{% url 'execution_page' venue.get_venue_id %}"><span class="glyphicon glyphicon-play-circle"></span> Continue Executing</a></h4>
+                    {% elif venue.is_in_use and venue.get_execution_id %}
+                        <h3><span class="glyphicon glyphicon-time"></span>&nbsp; {{ venue.get_test_started_on|timesince }}</h3>
+                        <h3><span class="glyphicon glyphicon-user"></span>&nbsp; {{ venue.get_test_conductor }}</h3>
+                        <h4><a href="{% url 'watching_execution_page' venue.get_execution_id %}"><span class="glyphicon glyphicon-eye-open"></span>  Watch Now</a></h4>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>

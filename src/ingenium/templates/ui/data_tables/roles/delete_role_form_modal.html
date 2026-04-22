@@ -1,0 +1,19 @@
+{% block modal_title %}
+    <h4 class="modal-title">Delete Role</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="role_form">
+        <input id="role_id" name="role_id" type="hidden" value="{{ role.id }}"/>
+
+        <div class="alert alert-danger">
+            You are about to delete the "{{ role.get_name }}" role.  Please note there is no undo after this action has taken place
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-default pull-left">Cancel</button>
+    <button class="btn btn-primary" data-data='{"role_id":"{{ role.id }}"}' data-url="{% url 'delete_role' %}" data-form-id="role_form">Confirm Delete</button>
+{% endblock %}

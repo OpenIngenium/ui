@@ -1,0 +1,21 @@
+{% extends "layouts/ingenium_spa_template.html" %}
+
+{% load static %}
+
+{% block html_title %}
+    Venue Detail
+{% endblock %}
+
+{% block page_label %}
+    Venue Detail
+{% endblock %}
+
+{% block page_content %}
+    
+    {# Vue Dashboard Component #}
+    <div id="venue-id" data-venue-id="{{ venue_id}}"></div>
+    <div id="spa-venue-detail"></div>
+
+    <script src="{% static venue_detail_js_bundle %}"></script>
+
+{% endblock %}

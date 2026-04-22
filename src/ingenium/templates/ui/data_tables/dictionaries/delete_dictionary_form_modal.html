@@ -1,0 +1,20 @@
+{% block modal_title %}
+    <h4 class="modal-title">Delete {{ dictionary_type }} Dictionary Version {{ dictionary_version }}</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="dictionary_form">
+        <input id="type" name="type" type="hidden" value="{{ dictionary_type }}"/>
+        <input id="version" name="version" type="hidden" value="{{ dictionary_version }}"/>
+
+        <div class="alert alert-danger">
+            You are about to delete the {{ dictionary_type }} dictionary version {{ dictionary_version }}. There is no undo after taking this action.
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-default pull-left">Cancel</button>
+    <button class="btn btn-primary" data-url="{% url 'delete_dictionary' %}" data-form-id="dictionary_form">Confirm Delete</button>
+{% endblock %}

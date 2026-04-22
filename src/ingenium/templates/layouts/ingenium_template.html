@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        {% block meta %}{% endblock %}
+        <title>{% block html_title %}{% endblock %}</title>
+
+        <link rel="icon" type="image/png" href="{{ STATIC_URL }}images/favicon.png"/>
+        
+        <link href="{% static "/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
+        <link href="{% static "/css/theme.min.css" %}" rel="stylesheet" type="text/css"/>
+        <link href="{% static "/css/global.css" %}" rel="stylesheet" type="text/css"/>
+
+        <script type="text/javascript" src="{% static "/js/jquery-3.5.1.min.js" %}?version=3.0.15"></script>
+        <script type="text/javascript" src="{% static "/js/jquery.cookie.min.js" %}?version=3.0.15"></script>
+        <script type="text/javascript" src="{% static "/js/jquery-ui.min.js" %}?version=3.0.15"></script>
+        <script type="text/javascript" src="{% static "/js/bootstrap.min.js" %}?version=3.0.15"></script>
+        <script type="text/javascript" src="{% static "/js/global.min.js" %}?version=3.0.15"></script>
+
+    </head>
+
+    <body class="up-body mw-100 position-relative" style="min-height: auto;">
+    <!-- <body> -->
+
+        <header class="up-header"></header>
+
+    {% block hero_content %}{% endblock %}
+
+    <div class="container-fluid main-content mb-5 mt-4 pt-2">{% block page_content %}{% endblock %}</div>
+
+    {% if theme_settings.include_footer %}
+        <footer class="up-footer">{% block footer %}{% endblock %}</footer>
+    {% endif %}
+
+    {% block after_footer %}{% endblock %}
+
+    {% block app_js_include %}{% endblock %}
+    {% block page_js_include %}{% endblock %}
+
+    <div id="dynamic_js_include">{% block dynamic_js_include %}{% endblock %}</div>
+
+    <script>
+        window.applicationTitle = "{{ APPLICATION_TITLE }}";
+    </script>
+
+    {% include 'ui/session/session_expire.html' %}
+    <script src="/static/{{ HEADER_JS_BUNDLE }}"></script>
+
+    </body>
+</html>

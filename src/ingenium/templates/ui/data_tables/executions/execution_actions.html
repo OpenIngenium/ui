@@ -1,0 +1,107 @@
+{% load ingenium_tags %}
+<div class="btn-group">
+    <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="glyphicon glyphicon-option-vertical"></i>
+    </button>
+    <ul class="dropdown-menu">
+        {% if execution.get_status_enum == 'SUSPENDED' %}
+            <li 
+                class="resume_execution_modal" 
+                data-data='{"venue_id":"{{ venue.get_venue_id }}"}'>
+                <a href="#" class="resume_execution_modal_click" onclick="$('#resumeExecution-{{ execution.execution_id }}').modal('show');"><i class="glyphicon glyphicon-play"></i> Resume</a>
+            </li>
+        {% endif %}
+        <li class="edit_venue_btn" data-data='{"venue_id":"{{ venue.get_venue_id }}"}'><a href="/execute/as_run/{{ execution.execution_id }}"> <span class="glyphicon glyphicon-eye-open"></span> View</a></li>
+    </ul>
+</div>
+
+{% if execution.get_status_enum == 'SUSPENDED' %}
+    <div class="modal fade" id='resumeExecution-{{ execution.execution_id }}' tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Resume Execution</h4>
+                </div>
+                <div class="modal-body">
+                    Choose which venue you would like to resume <b>{{ execution.execution_id }}</b> on.<br />
+                    (<b>{{ execution.execution_id }}</b> was last executed on <b>{{ execution.get_venue_name }}</b> which is currently <b class='venue-status-indicator-{{ execution.execution_id }}'></b>)
+                    <br /><br />
+                    <div class="btn-group">
+                        <select class="form-control" id="venues-dropdown-menu-{{ execution.execution_id }}">
+                            <option disabled selected value="">-- select --</option>
+                        </select>
+                        <script type="text/javascript">
+                            function resumeExecution_{{ execution.execution_id|dash_to_underscore }}(execution_id, venue_id) {
+                                $.ajax({
+                                    type: "POST",
+                                    beforeSend: function (xhr, settings) {
+                                        xhr.setRequestHeader("X-CSRFToken", csrf_token_js);
+                                    },
+                                    url: "{% url 'resume_execution_api' execution.execution_id %}",
+                                    data: {
+                                        venue_id: venue_id
+                                    },
+                                    success: function (result, status) {
+                                        $('#resumeExecution-{{ execution.execution_id }}').modal('hide');
+                                        
+                                        window.location = `/execute_spa/${venue_id}/${execution_id}`;
+                                    },
+                                    dataType: "JSON",
+                                    error: function (result, textStatus, errorThrown) {
+                                        console.log("result: ", result, " textStatus: ", textStatus, " errorThrown: ", errorThrown);
+                                        $("#resume_exec_error-{{execution.execution_id}}").text(`
+                                            ${result.responseJSON.message}: ${result.responseJSON.details.join(', ')}
+                                        `);
+                                        $("#resume_exec_error-{{execution.execution_id}}").show();
+                                    },
+                                    complete: function (result, status) {
+                                    }
+                                });
+                            }
+
+                            (function() {
+                                if(validVenues) {
+                                    let venuesDropdowns = document.querySelectorAll("#venues-dropdown-menu-{{ execution.execution_id }}");
+                                    venuesDropdowns.forEach(venuesDropdown => {
+                                        validVenues.forEach(venue => {
+                                            /*
+                                              WSTS => execute:wsts
+                                              Testbed => execute:testbed 
+                                              Other => execute:other
+                                              ATLO => execute:sit
+                                            */
+                                            const requires_scope = `execute:${venue.type === 'ATLO' ? 'sit' : venue.type.toLowerCase()}`; 
+                                            if(venue.status == 'AVAILABLE' && user_scopes.includes(requires_scope)) {
+                                                var dropdownItem = document.createElement('option'); // is a node
+
+                                                dropdownItem.className = 'venue';
+                                                dropdownItem.value = venue.venue_id;
+                                                dropdownItem.innerHTML = venue.venue_name;
+
+                                                var isDefaultVenueAvailable = validVenues.filter(venue => venue.status == 'AVAILABLE').map(venue => venue.venue_id).includes('{{ execution.get_venue_id }}');
+                                                if(isDefaultVenueAvailable) {
+                                                    venue.venue_id === '{{ execution.get_venue_id }}' ? dropdownItem.selected = "selected" : null;
+                                                }
+
+                                                venuesDropdown.appendChild(dropdownItem);
+                                            }
+                                        });
+                                    });
+                                    $(".venue-status-indicator-{{ execution.execution_id }}").text(`${validVenues.filter(venue => venue.venue_id === '{{ execution.get_venue_id }}')[0].status}`);
+                                }
+                            })();
+                        </script>
+                        <button type="button" class="btn btn-primary" onclick="resumeExecution_{{ execution.execution_id|dash_to_underscore }}('{{ execution.execution_id }}', $('#venues-dropdown-menu-{{ execution.execution_id }}').val())">Resume Execution</button>
+                    </div>
+                    <div id="resume_exec_error-{{ execution.execution_id }}" class="alert alert-danger" role="alert" style="display: none; margin-top: 20px;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button id="continue_session_button" type="button" class="btn btn-default" onclick="$('#resumeExecution-{{ execution.execution_id }}').modal('hide');">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+

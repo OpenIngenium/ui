@@ -1,0 +1,109 @@
+{% extends 'ui/elements/executable/execution_result_container.html' %}
+{% load ingenium_tags %}
+
+{% block results %}
+    <table class="table execution-results-table {% execution_result_status_css_class execution_record %}">
+        <tr>
+            <th class="col-sm-3">Field</th>
+            <th>Value</th>
+        </tr>
+
+        {% if execution_record.get_results.data_path %}
+            <tr>
+                <td>Data Path</td>
+                <td>{{ execution_record.get_results.data_path }}</td>
+            </tr>
+        {% endif %}
+
+        {% if execution_record.get_results.evr_type %}
+            <tr>
+                <td>EVR Type</td>
+                <td>{{ execution_record.get_results.evr_type }}</td>
+            </tr>
+        {% endif %}
+
+        {% if execution_record.get_results.start_time %}
+            <tr>
+                <td>Start Time</td>
+                <td>{{ execution_record.get_results.start_time }}</td>
+            </tr>
+        {% endif %}
+
+        {% if execution_record.get_results.duration %}
+            <tr>
+                <td>Duration</td>
+                <td>{{ execution_record.get_results.duration|default:"" }}</td>
+            </tr>
+        {% endif %}
+
+        {% if execution_record.get_results.time_type %}
+            <tr>
+                <td>Time Type</td>
+                <td>{{ execution_record.get_results.time_type }}</td>
+            </tr>
+        {% endif %}
+
+        {% if execution_record.get_results.verification_value %}
+            <tr>
+                <td>Verification Value</td>
+                <td>{{ execution_record.get_results.verification_value }}</td>
+            </tr>
+        {% endif %}
+
+        {% if execution_record.get_results.verification_condition %}
+            <tr>
+                <td>Verification Condition</td>
+                <td>{{ execution_record.get_results.verification_condition }}</td>
+            </tr>
+        {% endif %}
+
+        {% if execution_record.get_results.verification_status %}
+            <tr>
+                <td>Evaluation</td>
+                <td>{{ execution_record.get_results.verification_status }}</td>
+            </tr>
+        {% endif %}
+
+    </table>
+
+    <br/><br/>
+
+    {% if execution_record.get_results.evr_data %}
+        <table class="table execution-results-table {% execution_result_status_css_class execution_record %}">
+            <tr>
+                <td>EVR Information</td>
+                <td class="col-sm-3">Time</td>
+                <td>Message</td>
+            </tr>
+            {% for data in execution_record.get_results.evr_data %}
+                <tr>
+                    <td>
+                        {{ data.event_id }} <br/>
+                        {{ data.evr_name }} <br/>
+                        {{ data.evr_level }} <br/>
+                        SSE: {{ data.from_sse|yesno:"Yes,No" }} <br/>
+                        Is Recorded: {{ data.is_recorded|yesno:"Yes,No" }}
+                    </td>
+
+                    <td>
+                        <div>
+                            <strong>SCLK</strong> <br/>
+                            {{ data.sclk }}
+                        </div>
+
+                        <div>
+                            <strong>SCET</strong> <br/>
+                            {{ data.scet }}
+                        </div>
+
+                        <div>
+                            <strong>ERT</strong> <br/>
+                            {{ data.ert }}
+                        </div>
+                    </td>
+                    <td>{{ data.evr_message }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endblock %}

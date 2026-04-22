@@ -1,0 +1,66 @@
+{% load up_tools_tags %}
+{% random_hash as unique_name %}
+<div class="dynamic_element verify_eha_element" id="{{ unique_name }}">
+    <div class="row">
+        <div class="col-xs-3">
+            <label>Flight/SSE</label>
+            <select name="flight_sse" class="form-control execution-input">
+                {% for option in element.FLIGHT_SSE_OPTIONS %}
+                    <option {% if entry.channel_type == option.0 %}selected{% endif %} value="{{ option.0 }}">{{ option.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-xs-3">
+            <label>Data Path</label>
+            <input name="data_path" value="{{ entry.data_path|default:"" }}" type="text" class="form-control execution-input"/>
+        </div>
+
+        <div class="col-xs-4">
+            <label data-toggle="tooltip" title="Channel Name."> Channel</label>
+            <button type="button"  class="btn btn-xs btn-info pull-right eha-lookup">
+                <span class="glyphicon glyphicon-search"></span> Lookup
+            </button>
+            <input name="channel_name" value="{{ entry.channel_name|default:"" }}" type="text" class="form-control execution-input" data-value='{"label":"{{ entry.channel_name|default:"" }}","value":"{{ entry.channel_id|default:"" }}"}' />
+        </div>
+
+        <div class="col-xs-2">
+            <label>DN/EU</label>
+            <select name="dn_eu" class="form-control execution-input">
+                {% for option in element.DN_EU_OPTIONS %}
+                    <option {% if entry.dn_eu == option.0 %}selected{% endif %} value="{{ option.0 }}">{{ option.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <br/>
+    <div class="row">
+        <div class="col-xs-3">
+            <label>Verify On</label>
+            <select name="verify_on" class="form-control execution-input">
+                {% for option in element.VERIFY_ON_OPTIONS %}
+                    <option {% if entry.verify_on == option.0 %}selected{% endif %} value="{{ option.0 }}">{{ option.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-xs-3">
+            <label>Verify Condition</label>
+            <select name="verify_condition" class="form-control execution-input">
+                {% for option in element.VERIFY_CONDITION_OPTIONS %}
+                    <option {% if entry.verification_condition == option.0 %}selected{% endif %} value="{{ option.0 }}" data-type="{{ option.2 }}">{{ option.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-xs-6">
+            <label>Verification Value</label>
+            <div class="input-group">
+                <input class="verification_value form-control" type="text" name="verification_value" value="{{ entry.verification_values.0|default:"" }}" style="display: none;" />
+                <label class="verification_value_none" style="display: none;">N/A</label>
+                <span  class="verification_value_range input-group-addon" style="display: none;">to</span>
+                <input class="verification_value_to form-control" type="text" name="verification_value_to" value="{{ entry.verification_values.1|default:"" }}" style="display: none;" />
+            </div>
+        </div>
+    </div>
+</div>

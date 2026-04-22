@@ -1,0 +1,671 @@
+body {
+    scroll-behavior: smooth;
+}
+div.main-content {
+    width:100%;
+    max-width:100%;
+    margin:0;
+    padding-left: 0px;
+    padding-right: 7px;
+}
+div#execution-spa {
+    width:100%;
+}
+div#execution-spa > div {
+    margin:0 auto;
+}
+
+div#as-run-spa {
+    width:100%;
+}
+div#as-run-spa > div {
+    margin:0 auto;
+    margin-top: -30px;
+}
+
+div#authoring-spa {
+    width:100%;
+}
+div#authoring-spa > div {
+    margin:0 auto;
+    margin-top: -30px;
+}
+
+.step_type.step_organization {
+    margin-left:10px;
+}
+
+div.step_empty_list_message {
+    display: none;
+    text-align: center;
+    font-size: 24px;
+    opacity: 0.35;
+    margin: -130px 0 130px;
+}
+
+.required-field:after {
+    color: red;
+    content:" *";
+}
+
+ol.steps_list,
+ol.steps_list ol.step_nested,
+ol.steps_list ol.steps_list{
+    list-style-type: none;
+    padding: 0;
+}
+
+ol.steps_list#steps_canvas {
+    padding: 0px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-height: 155px;
+    background: repeating-linear-gradient(
+            -45deg,
+            #fafafa,
+            #fafafa 3px,
+            #f4f4f4 3px,
+            #f4f4f4 6px
+    );
+    
+    /* -webkit-user-select: none;      
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none; */
+}
+
+ol.steps_list#steps_canvas li.step {
+    margin: 0;
+    min-height: 65px;
+    padding: 10px;
+    position: static;
+}
+
+ol.steps_list#steps_canvas li.step:last-of-type {
+    margin-bottom: 0;
+}
+
+li.step .trailing-ellipsis > * {
+    float: left;
+    margin-right: 5px;
+}
+li.step .trailing-ellipsis:after {
+    content: ' ';
+    width: auto;
+    border-bottom: 1px dotted;
+    overflow: hidden;
+    display: block;
+    height: 15px;
+}
+li.step.step_organization .trailing-ellipsis:after {
+    border-bottom-color: rgba(49,112,143,0.5); /* #31708f */
+}
+li.step.step_non_executable .trailing-ellipsis:after {
+    border-bottom-color: rgba(138,109,59,0.5); /* #8a6d3b */
+}
+li.step.step_executable .trailing-ellipsis:after {
+    border-bottom-color: rgba(60,118,61,0.5); /* #3c763d */
+}
+/*noinspection CssInvalidFunction*/
+ol.steps_list#steps_canvas li.step > .notify_status {
+    background: -moz-radial-gradient(center, ellipse cover, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.85) 33%, rgba(255, 255, 255, 0.15) 100%) !important;
+    background: -webkit-radial-gradient(center, ellipse cover, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.85) 33%, rgba(255, 255, 255, 0.15) 100%) !important;
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.85) 33%, rgba(255, 255, 255, 0.15) 100%) !important;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#d9ffffff', endColorstr='#26ffffff', GradientType=1) !important;
+}
+
+ol.steps_list#steps_canvas li.step.step_collapsed {
+    min-height: initial;
+}
+ol.steps_list#steps_canvas li.step.step_organization {
+    /* background-color: #ecf6fb;  */
+    background-color: white;
+    /* padding: 10px; */
+    padding:0px;
+    border: 1px solid lightgrey;
+}
+
+ol.steps_list#steps_canvas li.step.step_organization .step-draggable-area {
+    margin:10px 10px 0px 10px;
+}
+
+ol.steps_list#steps_canvas li.step.step_organization .step_description {
+    margin:0px 10px;
+}
+
+ol.steps_list#steps_canvas li.step.step_organization .step_detail .container-element{
+    margin:10px;
+}
+
+
+
+
+ol.steps_list#steps_canvas li.step.step_organization .step_executable .step-draggable-area {
+    margin:0px;
+}
+
+ol.steps_list#steps_canvas li.step.step_organization .step_executable .step_description {
+    margin:0px;
+}
+
+ol.steps_list#steps_canvas li.step.step_organization .step_executable .step_detail .container-element{
+    margin:10px 0px;
+}
+
+
+
+
+ol.steps_list#steps_canvas li.step.step_organization .step_non_executable .step-draggable-area {
+    margin:0px;
+}
+
+ol.steps_list#steps_canvas li.step.step_organization .step_non_executable .step_description {
+    margin:0px;
+}
+
+ol.steps_list#steps_canvas li.step.step_organization .step_non_executable .step_detail .container-element{
+    margin:10px 0px;
+}
+
+
+
+
+ol.steps_list#steps_canvas li.step.step_organization .step_description {
+    margin:0px 10px;
+}
+
+ol.steps_list#steps_canvas li.step.step_non_executable {
+    /* background-color: #fdfbf1;  */
+    background-color: white;
+}
+
+ol.steps_list#steps_canvas li.step.step_executable {
+    /* background-color: #eff7eb;  */
+    background-color: white;
+    /* border-left: 0px; */
+}
+
+/* when the step is activated for execution */
+ol.steps_list#steps_canvas li.step.step_executable.active {
+    background-color: #D5F8D3;
+    background-blend-mode: darken;
+}
+
+.execution_active ol.steps_list#steps_canvas li.step.step_executable {
+    position: relative;
+}
+
+ol.steps_list#steps_canvas li.step .step_type {
+    display: block;
+    font-size: 12px;
+}
+
+ol.steps_list#steps_canvas li.step .step_execution_details > .step_organization:before {
+    background-color: #31708f;
+    color: #ecf6fb;
+    content: 'O';
+    margin-right: 5px;
+    display: inline-block;
+    font-size: 10px;
+    text-align: center;
+    width: 20px;
+    border-radius: 50%;
+    height: 20px;
+    padding-top: 3px;
+}
+
+ol.steps_list#steps_canvas li.step .step_execution_details > .step_non_executable:before {
+    background-color: #8a6d3b;
+    color: #fdfbf1;
+    content: 'V';
+    margin-right: 5px;
+    display: inline-block;
+    font-size: 10px;
+    text-align: center;
+    width: 20px;
+    border-radius: 50%;
+    height: 20px;
+    padding-top: 3px;
+}
+
+ol.steps_list#steps_canvas li.step .step_execution_details > .step_executable:before {
+    background-color: #3c763d;
+    color: #eff7eb;
+    content: 'E';
+    margin-right: 5px;
+    display: inline-block;
+    font-size: 10px;
+    text-align: center;
+    width: 20px;
+    border-radius: 50%;
+    height: 20px;
+    padding-top: 3px;
+}
+
+ol.steps_list#steps_canvas li.step .step_detail {
+    /* border-top: 1px solid; */
+    margin-top: 10px;
+}
+ol.steps_list#steps_canvas li.step .step_detail {
+    /* border-top-color: #000; */
+    border-top-color: black;
+}
+ol.steps_list#steps_canvas li.step.step_organization .step_detail {
+    /* border-top-color: rgba(49,112,143,0.5);  */
+    border-top-color: black;
+}
+ol.steps_list#steps_canvas li.step.step_non_executable .step_detail {
+    /* border-top-color: rgba(138,109,59,0.5);  */
+    border-top-color: black;
+}
+ol.steps_list#steps_canvas li.step.step_executable .step_detail {
+    /* border-top-color: rgba(60,118,61,0.5); */
+    border-top-color: black;
+}
+
+ol.steps_list#steps_canvas li.step .step_detail:empty {
+    display: none !important;
+}
+
+ol.steps_list#steps_canvas li.step .step_comment:empty {
+    display: none !important;
+}
+
+ol.steps_list#steps_canvas li.step .step_comment {
+    margin: 20px 0 10px;
+}
+
+ol div.step_empty_list_message {
+    margin: 0;
+}
+
+ol li.step > button[class*="_button"], ol li.step > #step_move_icon, ol li.step button.toggle_button, ol li.step > div.step-draggable-area > button[class*="_button"] {
+    float: right;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    line-height: normal;
+    opacity: 0.5;
+    font-size: 18px;
+    margin: 0px 1px;
+    position: relative;
+    font-family: 'Glyphicons Halflings', sans-serif;
+}
+
+.step-draggable {
+    user-select: text;
+}
+
+ol li.step > button[class*="_button"]:hover, ol li.step > #step_move_icon:hover, ol li.step button.toggle_button {
+    outline: none;
+    opacity: 1;
+}
+
+ol li.step > button[class*="_button"]:focus, ol li.step > #step_move_icon:focus, ol li.step button.toggle_button {
+    outline: none;
+}
+
+ol li.step > .step_move_button:before, ol li.step > #step_move_icon  {
+    content: "\e068";
+}
+
+li.step button.step_comment_button > span.glyphicon-comment > span.comment-number {
+    position: absolute;
+    top: 2px;
+    color: white;
+    left: 6px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+li.step button.step_comment_button > span.glyphicon-comment > span.comment-number2 {
+    position: absolute;
+    top: 2px;
+    color: white;
+    left: 2px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+ol.steps_list li {
+    margin: 0;
+}
+
+ol.steps_list li.step {
+    border: 1px solid;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+ol.step_nested div.step-container li.step {
+    border-right: 0px;
+    border-left: 0px;
+    border-radius: 0px;
+}
+
+ol.step_nested > div.step-container > li.step_organization {
+    border-left: 0px !important; 
+    border-right: 0px !important;
+    border-radius: 0px !important;
+}
+
+ol.steps_list li.step .step_number {
+    display: block;
+    float: left;
+    font-size: 16px;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+ol.steps_list li.step .step_number:empty {
+    display: none;
+}
+
+ol.steps_list li.step .step_title {
+    display: inline-block;
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 80%;
+}
+
+ol.steps_list li.step .step_type {
+    display: inline;
+    font-size: 14px;
+}
+
+ol.steps_list li.step.step_organization {
+    /* color: #31708f;
+    border-color: #31708f; */
+    color: black;
+    border-color: lightgrey;
+    margin: 5px;
+}
+
+ol.steps_list li.step.step_non_executable {
+    /* color: #8a6d3b;
+    border-color: #8a6d3b; */
+    color: black; 
+    border-color: lightgrey;
+    /* border-left: 10px solid #c4b69d; */
+}
+
+ol.steps_list li.step.step_executable {
+    /* color: #3c763d;
+    border-color: #3c763d; */
+    color: black;
+    border-color: lightgrey;
+    /* border-left: 10px solid green; */
+}
+
+ol.steps_list li.step.step_organization hr {
+    border-color: #98b7c7; /* 50% opacity #31708f */
+}
+
+ol.steps_list li.step.step_non_executable hr {
+    border-color: #c4b69d; /* 50% opacity #8a6d3b */
+}
+
+ol.steps_list#steps_toolbar {
+    margin: 0;
+}
+
+ol.steps_list#steps_toolbar li {
+    margin-top: 5px;
+}
+
+ol.steps_list#steps_toolbar li.step.step_organization {
+    background-color: #d9edf7;
+}
+
+ol.steps_list#steps_toolbar li.step.step_non_executable {
+    background-color: #fcf8e3;
+}
+
+ol.steps_list#steps_toolbar li.step.step_executable {
+    background-color: #dff0d8;
+}
+
+ol.steps_list#steps_toolbar li.step .step_type:before {
+    display: inline-block;
+    font-size: 10px;
+    margin-right: 5px;
+    text-align: center;
+    width: 20px;
+    border-radius: 50%;
+    height: 20px;
+    padding-top: 3px;
+}
+
+ol.steps_list#steps_toolbar li.step.step_organization .step_type:before {
+    background-color: #31708f;
+    color: #ecf6fb;
+    content: 'O';
+}
+
+ol.steps_list#steps_toolbar li.step.step_non_executable .step_type:before {
+    background-color: #8a6d3b;
+    color: #fdfbf1;
+    content: 'NE';
+}
+
+ol.steps_list#steps_toolbar li.step.step_executable .step_type:before {
+    background-color: #3c763d;
+    color: #eff7eb;
+    content: 'E';
+}
+
+.step_detail label.glyphicon-question-sign {
+    font-weight: 700;
+}
+
+/* active execution */
+.execution_active #manual_button_play {
+    display: none;
+}
+
+#manual_button_halt {
+    display: none;
+}
+
+.execution_active #manual_button_halt {
+    display: inline-block;
+}
+
+.execution_active ol.steps_list#steps_canvas li.step.step_active .execution-input {
+    background-color: #fcf8e3;
+}
+
+.execution_active ol.steps_list#steps_canvas li.step.step_active > .step_execution_box_active {
+    visibility: visible;
+    opacity: 1;
+}
+
+.execution_active ol.steps_list#steps_canvas li.step:not(.step_active) > .step_execution_box_pending {
+    visibility: visible;
+    opacity: 1;
+}
+
+.description_wysiwyg, .vnv_form {
+    position: relative;
+}
+.description_wysiwyg > .description_wysiwyg_button, .vnv_form > .dng_login_button {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 11;
+}
+.description_wysiwyg:not(.description_wysiwyg_edit):hover > .description_wysiwyg_button, .vnv_form:hover > .dng_login_button {
+    display: block;
+}
+.description_wysiwyg > .description_wysiwyg_content:empty {
+    border-bottom: none;
+}
+.description_wysiwyg > .description_wysiwyg_content:empty:before {
+    border-bottom: dashed 1px #0088cc;
+    content: "Hover and click edit button to add description";
+    display: inline-block;
+    font-style: italic;
+    opacity: 0.5;
+}
+
+.dng_login_form {
+    display: none;
+}
+
+form#description_form {
+    margin-bottom: 0;
+}
+form#description_form button#description_form_submit {
+    margin-left: 5px;
+}
+
+/* TODO: should move this more globally */
+.editable-empty, .editable-empty:hover, .editable-empty:focus {
+    color: inherit;
+    opacity: 0.5;
+}
+
+/* Shared Step Styles */
+    /* Data output bar displayed in both collapsed and open views */
+    .data-bar-element {
+        padding: 5px 10px 5px 10px;
+    }
+
+    .data-bar-element .data-bar-contents-flex {
+        list-style: none;
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-evenly;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container-element {
+        margin-top: 10px;
+    }
+
+    .dynamic-element, .container-element {
+        color: #000000;
+        background-color: #F7F7F7;
+        border: 2px solid #D8D6D6;
+        border-radius: 8px;
+    }
+
+    .dynamic-element.edit, .container-element.edit {
+        margin-bottom: 20px;
+    }
+
+    .dynamic-element.read, .container-element.read {
+
+    }
+
+    .edit-container {
+        background-color: #E7E7E7;
+        padding: 10px 20px 10px 15px;
+        border-top: 1px solid #E0E0E0;
+    }
+
+    .edit-container label {
+        color: #545454;
+        margin: 0;
+    }
+
+    .edit-container input, label {
+        display: block;
+    }
+
+    .edit-container input[type=checkbox] {
+        display: inline-block;
+    }
+
+    .condensed {
+        font-weight: bold;
+    }
+
+    /* Form styles */
+    .element-form-flex-row {
+        display: flex;
+        flex-flow: row nowrap;
+        margin-bottom: 14px;
+    }
+
+    .element-form-flex-row > .element-form-flex-item {
+        margin: 0 6px;
+    }
+
+    .element-form-flex-row > .element-form-flex-item:first-child {
+        margin-left: 0;
+    }
+
+    .element-form-flex-row > .element-form-flex-item:last-child {
+        margin-right: 0;
+    }
+
+/* step-type specific */
+/* TODO: andy - can we add an additional block to each step type for css specific to that step-type, and then load it in as-needed, like we do with JS? */
+.dynamic_element.manual_input_element {
+    padding-right: 40px;
+}
+
+.dynamic_element.manual_input_element button.dynamic_element_remove_button,
+.dynamic_element.manual_input_element button.dynamic_element_add_button {
+    border-radius: 4px;
+    margin: 12px;
+    width: 24px;
+    height: 24px;
+}
+
+.dynamic_element.manual_input_element button.dynamic_element_remove_button {
+    border-radius: 0 4px 0 4px;
+}
+
+.dynamic_element.manual_input_element button.dynamic_element_add_button {
+    border-radius: 4px 0 4px 0;
+}
+
+/* Procedure Section Step */
+.procedure_config_management {
+    background-color: #F7F7F7;
+    margin-top: 4px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    font-size: 12px;
+    color: #797979;
+}
+
+.procedure_config_management .row > div:first-child:not(.description):after {
+    content: ' ';
+    height: 1px;
+    width: 19px;
+    border-bottom: 1px dotted;
+    display: block;
+    position: absolute;
+    right: -5px;
+    top: 8px;
+}
+
+textarea { resize: none; }
+
+#conversation .comment {
+    border-color: lightgray;
+}
+
+#conversation .data-review-comment {
+    border-color: #cd00cd;
+}
+
+#conversation .activity-report-comment {
+    border-color: #7cfc00;
+}
+
+.vdatetime-popup__header {
+    background-color: #b90c2e !important;
+}
+
+.vdatetime-calendar__month__day--selected:hover>span>span, .vdatetime-calendar__month__day--selected>span>span {
+    background-color: #b90c2e !important;
+}

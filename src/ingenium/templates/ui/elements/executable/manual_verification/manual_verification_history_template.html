@@ -1,0 +1,12 @@
+{% if element.get_user_inputs %}
+    <table class="table table-striped">
+        <tr>
+            <th>Verification Status</th>
+            <th>Verification Text</th>
+        </tr>
+        <tr>
+            <td>{{ element.get_user_inputs.verification_status }}</td>
+            <td>{{ element.get_user_inputs.verification_text|safe }}</td>
+        </tr>
+    </table>
+{% endif %}

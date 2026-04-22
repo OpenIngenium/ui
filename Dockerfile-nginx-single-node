@@ -1,0 +1,69 @@
+# This file builds the frontend for a "full" single node deployment.
+# 1. Builds the Vue.js frontend using Webpack
+# 2. Collects django static files
+# 3. Copies static files into NGINX container, and sets up proxy for backend services.
+
+# Generate version string from Git repo
+# The python image has git, which is used to generate the version string.
+FROM cae-artifactory.jpl.nasa.gov:17001/python:3.8.2 as python
+COPY . /ui
+# Need to copy hidden directory explicitly
+COPY .git /ui/.git
+RUN cd /ui && ./gen_version.sh
+
+FROM cae-artifactory.jpl.nasa.gov:17001/node:8.11.1-alpine as node
+
+RUN mkdir /src;
+COPY --from=python /ui/src /src
+
+WORKDIR /src/client
+
+RUN npm cache verify && \
+    npm rebuild node-sass && \
+    npm install --unsafe-perm && \
+    npm run build-single-node
+
+
+FROM cae-artifactory.jpl.nasa.gov:17001/python:3.8.2 as django
+
+ENV PYTHONUNBUFFERED 1
+ENV CORE_API_URL=${CORE_API_URL}
+ENV AUTH_API_URL=${AUTH_API_URL}
+ENV VENUE_CONFIG_API_URL=${VENUE_CONFIG_API_URL}
+ENV DICT_API_URL=${DICT_API_URL}
+ENV EXECUTION_SERVER_URL=${EXECUTION_SERVER_URL}
+ENV ARCHIVE_API_URL=${ARCHIVE_API_URL}
+ENV EXECUTION_MONITOR_API_URL=${EXECUTION_MONITOR_API_URL}
+ENV SERVER_ENVIRONMENT="prod"
+
+COPY --from=node /src /src
+RUN mkdir /config
+RUN mkdir /static
+ADD config/requirements.txt /config/
+RUN pip install --trusted-host cae-artifactory.jpl.nasa.gov -r /config/requirements.txt
+
+WORKDIR /src
+
+RUN python manage.py collectstatic --noinput
+
+
+FROM cae-artifactory.jpl.nasa.gov:17001/nginx:1.20.1-alpine
+
+ENV CORE_API_HOST=${CORE_API_HOST}
+ENV DJANGO_HOST=${DJANGO_HOST}
+ENV AUTH_API_HOST=${AUTH_API_HOST}
+ENV VENUE_CONFIG_API_HOST=${VENUE_CONFIG_API_HOST}
+ENV DICT_API_HOST=${DICT_API_HOST}
+ENV VNV_API_HOST=${VNV_API_HOST}
+ENV EXECUTION_API_HOST=${EXECUTION_API_HOST}
+ENV ARCHIVE_API_HOST=${ARCHIVE_API_HOST}
+ENV FILE_SERVER_API_HOST=${FILE_SERVER_API_HOST}
+ENV REPORT_API_URL=${REPORT_API_URL}
+ENV EXECUTION_MONITOR_API_HOST=${EXECUTION_MONITOR_API_HOST}
+
+COPY eval_file.sh /usr/local/bin/
+COPY ingenium-single-node.template.conf /etc/nginx/nginx.template.conf
+COPY --from=django /src/static /static
+CMD ["/bin/sh", "-c", "eval_file.sh /etc/nginx/nginx.template.conf > /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'"]
+
+EXPOSE 80

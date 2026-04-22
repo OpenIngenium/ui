@@ -1,0 +1,39 @@
+div#execution_page_right {
+    z-index: 0;
+}
+
+div#venue_status {
+    display: none;
+}
+
+div#execution_status {
+    font-size: 12px;
+}
+
+div#execution_status .row > div:first-child {
+    text-align: right;
+}
+
+div#execution_status .row > div:last-child {
+    text-align: left;
+}
+
+div#execution_status .row > div:first-child:after {
+    content: ' ';
+    height: 1px;
+    width: 19px;
+    border-bottom: 1px dotted;
+    display: block;
+    position: absolute;
+    right: -10px;
+    top: 8px;
+}
+
+td.table-wysiwyg-cell > p {
+  font-size: inherit !important;
+}
+
+.step_execution_details {
+    display: flex;
+    justify-content: space-between;
+}

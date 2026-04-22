@@ -1,0 +1,16 @@
+{% extends 'ui/elements/executable/execution_result_container.html' %}
+{% load ingenium_tags %}
+
+{% block results %}
+    <table class="table execution-results-table {% execution_result_status_css_class execution_record %}">
+        <tr>
+            <th>Verification Status</th>
+            <th>Verification Text</th>
+        </tr>
+        <tr>
+            <td>{{ execution_record.get_results.verification_status }}</td>
+            <td class="table-wysiwyg-cell">{{ execution_record.get_results.verification_text|safe }}</td>
+        </tr>
+    </table>
+
+{% endblock %}

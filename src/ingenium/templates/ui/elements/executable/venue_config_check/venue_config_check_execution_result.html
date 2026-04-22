@@ -1,0 +1,33 @@
+{% extends 'ui/elements/executable/execution_result_container.html' %}
+{% load ingenium_tags %}
+
+{% block results %}
+    <div class="pull-left">
+        Venue Name: {{ execution_record.get_results.venue_name }}
+    </div>
+    <table class="table execution-results-table {% execution_result_status_css_class execution_record %}">
+        <tr>
+            <th>Element</th>
+            <th>Field</th>
+            <th>Verif Condition</th>
+            <th>Verif Value</th>
+            <th>Actual Value</th>
+            <th>Status</th>
+        </tr>
+        {% for entry in execution_record.get_results.entries %}
+            <tr>
+                <td>{{ entry.config_elem_name }}</td>
+                <td>{{ entry.field_name }}</td>
+                <td>{{ entry.verification_condition }}</td>
+                <td>{{ entry.verification_value }}</td>
+                <td>{{ entry.actual_value }}</td>
+                <td>{% if entry.verify_status == 'PASS'%}
+                        <span class="glyphicon glyphicon-ok success"></span>
+                    {% else %} 
+                        <span class="glyphicon glyphicon-remove danger"></span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% include 'ui/elements/executable/execution_results.html' %}
+
+{% if element.get_user_inputs.entries %}
+    <table class="table table-striped">
+        <tr>
+            <th>Flight/SSE</th>
+            <th>Data Path</th>
+            <th>Channel</th>
+            <th>DN/EU</th>
+            <th>Verify On</th>
+            <th>Verify Condition</th>
+            <th>Verify Value</th>
+        </tr>
+        {% for entry in element.get_user_inputs.entries %}
+            <tr>
+                <td>{{ entry.channel_type }}</td>
+                <td>{{ entry.data_path }}</td>
+                <td>{{ entry.channel_name }}</td>
+                <td>{{ entry.dn_eu }}</td>
+                <td>{{ entry.verify_on }}</td>
+                <td>{{ entry.verification_condition }}</td>
+                <td>
+                    {{ entry.verification_values.0 }}{% if entry.verification_values.1 %} - {{ entry.verification_values.1 }}{% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}

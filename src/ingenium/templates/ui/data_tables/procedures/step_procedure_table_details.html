@@ -1,0 +1,11 @@
+<button class="btn btn-default procedure-actions-btn" 
+        data-title="{{ procedure.get_title|truncatechars:25 }}" 
+        data-author="{{ procedure.get_author }}" 
+        data-procedure-id="{{ procedure.get_procedure_id }}" 
+        data-institutional-id="{{ procedure.get_institutional_id }}" 
+        data-current-version="{{ procedure.get_current_version }}" 
+        data-created-at="{{ created_at }}" 
+        data-saved-at="{{ updated_at }}" 
+        data-description="{{ procedure.get_description }}" 
+        data-trigger="focus">Details
+</button>

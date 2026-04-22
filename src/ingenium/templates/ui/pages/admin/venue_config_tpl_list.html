@@ -1,0 +1,37 @@
+{% extends "layouts/admin_template.html" %}
+
+{% block admin_page_content %}
+<div style="margin-bottom: 10px;">
+    <span class="h2"><span class="glyphicon glyphicon-th-list"></span>&nbsp;Venue Configuration Templates</span>
+</div>
+<table class="table table-condensed">
+    <thead>
+        <tr><th>Venue Type</th><th>Last Modified</th><th>Last Modifier</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+        {% for venue_id, venue_name in VENUE_TYPES %}
+        <tr>
+            <td>{{ venue_name }}</td>
+            <td></td>
+            <td></td>
+            <td>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Actions <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li class="update_role_btn" data-data="{'venue_type':'{{ venue_name }}'}"><a href="{% url 'venue_config_tpl_editor_page' venue_name %}">
+                            <span class="glyphicon glyphicon-pencil"></span> Update</a>
+                        </li>
+                        <li class="delete_role_btn" data-data="{'venue_type':'{{ venue_name }}'}"><a href="{% url 'venue_configuration_config_index_page' venue_name %}">
+                            <span class="glyphicon glyphicon-th-list"></span> Instances</a>
+                        </li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

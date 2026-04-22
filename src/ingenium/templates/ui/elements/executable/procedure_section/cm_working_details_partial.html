@@ -1,0 +1,34 @@
+<div class="procedure_config_management">
+    <div class="row">
+        <div class="col-sm-4"><strong>Title</strong></div>
+        <div class="col-sm-8">{{ procedure.get_title }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>Author</strong></div>
+        <div class="col-sm-8">{{ procedure.get_author }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>Proc. ID</strong></div>
+        <div class="col-sm-8">{{ procedure.get_procedure_id }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>JPL ID</strong></div>
+        <div class="col-sm-8">{{ procedure.get_institutional_id }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>Cur. Ver.</strong></div>
+        <div class="col-sm-8">{{ procedure.get_current_version }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>Created</strong></div>
+        <div class="col-sm-8">{{ procedure.get_time_created }}</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4"><strong>Saved</strong></div>
+        <div class="col-sm-8">{{ procedure.get_time_saved }}</div>
+    </div>
+    <div style="margin-top: 10px;">
+        <h5>Description</h5>
+        <p>{{ procedure.get_description }}</p>
+    </div>
+</div>

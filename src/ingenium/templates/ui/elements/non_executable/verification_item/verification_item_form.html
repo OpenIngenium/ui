@@ -1,0 +1,775 @@
+{% block step_content %}
+    <form id="login_to_vnv_{{ element.get_element_id }}" class="dng_login_form">
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+        <div class="row">
+            <div class="col-sm-5">
+                <label for="username_{{ element.get_element_id }}">JPL Username</label>
+                <div class="input-group" id="login_widget_username">
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-user"></span>
+                    </span>
+                    <input id="username_{{ element.get_element_id }}" type="text" disabled class="form-control" value="{{ request.user.get_username }}">
+                </div>
+            </div>
+            <div class="col-sm-5">
+                <label for="password_{{ element.get_element_id }}" class="control-label">JPL Password</label>
+                <div class="input-group" id="login_widget_password">
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-lock"></span>
+                    </span>
+                    <input type="password" id="password_{{ element.get_element_id }}" name="password" class="form-control" autocomplete="off" placeholder="JPL Password">
+                </div>
+            </div>
+            <div class="col-sm-2 pull-left">
+                <label>&nbsp;</label>
+                <div class="input-group" id="login_widget_buttons">
+                    <button data-form="login_to_vnv_{{ element.get_element_id }}" type="submit" class="btn btn-large btn-primary authenticate_with_vnv_btn">Authenticate</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <form id="vnv_{{ element.get_element_id }}" class="vnv_form">
+        {% if not authorized %}
+            <button class="btn btn-sm btn-primary dng_login_button" type="button">
+                <span class="">Login to DoorsNG</span>
+            </button>
+        {% endif %}
+        <input type="hidden" name="element_id" value="{{ element.get_element_id }}">
+        <input type="hidden" name="element_type_id" value="{{ element.get_element_type_id }}">
+        <input type="hidden" name="execution_id" value="{{ execution_id|default_if_none:"" }}">
+        <input type="hidden" name="procedure_id" value="{{ procedure_id|default_if_none:"" }}">
+        <div class="row">
+            <div class="clearfix"></div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label for="requirements_vag_select_{{ element.get_element_id }}">Choose a VAG</label>
+                    <select id="requirements_vag_select_{{ element.get_element_id }}" name="requirements_vag_select" data-user_confirm_change="false" class="form-control execution-input" placeholder="Select a VAG"
+                    {% if not authorized %}
+                        disabled
+                    {% endif %}>
+                        <option value="-1">Select a VAG</option>
+                        {% for vag in vags %}
+                            <option value="{{ vag.get_vag_uri }}" data-name="{{ vag.get_name }}" data-uri="{{ vag.get_vag_uri }}" {% if vag.get_vag_uri == element.get_vag_uri %}selected{% endif %}>{{ vag.get_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <input type="hidden" id="requirements_vag_json_{{ element.get_element_id }}" name="requirements_vag_json" value='{% if element.get_vag_name != None and element.get_vag_name != "" %}[{"name":"{{ element.get_vag_name }}","uri":"{{ element.get_vag_uri }}"}]{% endif %}'/>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label for="requirements_va_select_{{ element.get_element_id }}">Choose a VA</label>
+                    <select id="requirements_va_select_{{ element.get_element_id }}" name="requirements_va_select" class="form-control execution-input" placeholder="Select a VA"
+                        {% if element.get_vag_name == None or element.get_vag_name == "" %}
+                            {% if element.get_va_name == None or element.get_va_name == "" %}
+                                disabled
+                            {% endif %}
+                        {% elif not authorized %}
+                            disabled
+                        {% endif %}>
+                        {% if element.get_va_name != None and element.get_va_name != '' %}
+                            <option value="{{ element.get_va_uri }}" data-name="{{ element.get_va_name }}" data-uri="{{ element.get_va_uri }}" data-name="{{ element.get_va_name }}" data-uri="{{ element.get_va_uri }}" selected>{{ element.get_va_name }}</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <input type="hidden" id="requirements_va_json_{{ element.get_element_id }}" name="requirements_va_json" value='{% if element.get_va_name != None and element.get_va_name != "" %}[{"name":"{{ element.get_va_name }}","uri":"{{ element.get_va_uri }}"}]{% endif %}'/>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label for="requirements_vi_select_{{ element.get_element_id }}">Choose VI(s)</label>
+                    <select id="requirements_vi_select_{{ element.get_element_id }}" name="requirements_vi_select" class="form-control execution-input" placeholder="Select a VI" multiple
+                        {% if element.get_va_name == None or element.get_va_name == "" %}
+                            {% if not element.get_vis %}
+                                disabled
+                            {% endif %}
+                        {% elif not authorized %}
+                            disabled
+                        {% endif %}>
+                        {% if element.get_vis != None %}
+                            {% for vi in element.get_vis %}
+                                <option value="{{ vi.id }}" data-name="{{ vi.name }}" data-uri="{{ vi.id }}" data-name="{{ vi.name }}" data-id="{{ vi.id }}" data-text="{{ vi.value }}" selected>{{ vi.name }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <input type="hidden" id="requirements_vi_json_{{ element.get_element_id }}" name="requirements_vi_json" value='{% if element.get_vis %}[{% for vi in element.get_vis %}{"name":"{{ vi.name }}","id":"{{ vi.id }}","text":"{{ vi.value }}"}{% if not forloop.last %},{% endif %}{% endfor %}]{% endif %}'/>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <table class="table vnv_table" {% if not element.get_vis %}style="display:none;"{% endif %}>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                    <tbody class="vnv_tbody">
+                    {% if element.get_vis %}
+                        {% for vi in element.get_vis %}
+                            <tr>
+                                <td>{{ vi.id }}</td>
+                                <td>{{ vi.name }}</td>
+                                <td>{{ vi.value }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="clearfix"></div>
+    </form>
+{% endblock %}
+
+{% block step_content_not_authorized %}
+    <div class="alert alert-danger">
+        Sorry, you don't have permission to access DoorsNG.
+        <hr/>
+        <strong>For access</strong>
+        <ul>
+            <li>Login into:
+                <a href="https://cae-jira.jpl.nasa.gov/projects/CAEJZ/issues/CAEJZ-456?filter=allopenissues" target="_blank">https://cae-jira.jpl.nasa.gov/projects/CAEJZ/issues/CAEJZ-456?filter=allopenissues</a>
+            </li>
+            <li>Create a Ticket:
+
+                <table class="table">
+                    <tr>
+                        <td class="col-sm-2">Project</td>
+                        <td>CAE JAZZ</td>
+                    </tr>
+                    <tr>
+                        <td>Summary</td>
+                        <td>Requesting read-access to the Mars 2020 project on https://cae-jazz.jpl.nasa.gov/rm</td>
+                    </tr>
+                    <tr>
+                        <td>Description</td>
+                        <td>Enter the reason you are requesting access.</td>
+                    </tr>
+                </table>
+            </li>
+            <li>
+                Once the request is approved an completed you will have access to the information from this interface.
+                <br/>
+                <strong><i>Note</i></strong>: Once access is granted if you are logged into Ingenium you will have to logout and back in.
+            </li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block javascript_content %}
+    <script data-element-type-id="{{ element.get_element_type_id }}">
+
+        $(document).on('up.added', '.vnv_form', function (event, element) {
+            /* because we're listening to 'document' for up.added and then rely on event bubbling to alert us when an
+             * $element was added to the document, we must make sure that the $element we get back is the same $element
+             * that we're listening for, and not a child of the $element that we're listening for */
+            if (this === element) {
+                $(element).each(function (index, form) {
+                    if (!$(form).data('verification-items-initialized')) {
+                        $(form).data('verification-items-initialized', true);
+
+                        /* retrieve the $form */
+                        var $form = $(form);
+                        var $last_updated_error = $form.closest('.step').first().find('.last_updated_error').first();
+                        var $last_updated_time = $form.closest('.step').first().find('.last_updated_time').first();
+                        var $step = $form.closest('.step').first();
+                        var $table = $step.find('.vnv_table').first();
+                        var $tbody = $step.find('.vnv_tbody').first();
+                        var $requirements_vag_select = $form.find('select[name="requirements_vag_select"]').first();
+                        var $requirements_vag_json = $form.find('input[name="requirements_vag_json"]').first();
+                        var $requirements_va_select = $form.find('select[name="requirements_va_select"]').first();
+                        var $requirements_va_json = $form.find('input[name="requirements_va_json"]').first();
+                        var $requirements_vi_select = $form.find('select[name="requirements_vi_select"]').first();
+                        var $requirements_vi_json = $form.find('input[name="requirements_vi_json"]').first();
+                        var $dng_login_button = $form.find('.dng_login_button').first();
+                        var $dng_login_form = $step.find('.dng_login_form').first();
+
+                        /* initialize form validation */
+                        $form.formValidation({
+                            framework: 'bootstrap',
+                            fields: {
+                                'requirements_vag_select': {
+                                    validators: {
+                                        callback: {
+                                            message: 'Must choose a <strong>VAG</strong>',
+                                            callback: function (value) {
+                                                return value !== '-1';
+                                            }
+                                        }
+                                    }
+                                },
+                                'requirements_va_select': {
+                                    validators: {
+                                        callback: {
+                                            message: 'Must choose a <strong>VA</strong>',
+                                            callback: function (value) {
+                                                return value !== '-1';
+                                            }
+                                        }
+                                    }
+                                },
+                                'requirements_vi_select': {
+                                    validators: {
+                                        callback: {
+                                            message: 'Must choose at least one <strong>VI</strong>',
+                                            callback: function (value) {
+                                                return value.length > 0;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }); 
+
+                        /* set listener to toggle doorsng login */
+                        $dng_login_button.on('click', function(){
+                            $dng_login_form.show();
+                            $dng_login_button.hide();
+                        });
+
+                        /* initialize select2 */
+                        $requirements_vag_select.select2({
+                            placeholder: "Select a VAG"
+                        });
+                        $requirements_va_select.select2({
+                            placeholder: "Select a VA"
+                        });
+                        $requirements_vi_select.select2({
+                            placeholder: "Select a VI"
+                        });
+
+                        /* handle actions taken on vag select */
+                        $requirements_vag_select.on('select2:select', function () {
+
+                            var vag_uri = $(this).val();
+
+                            /* empty and disable va select and vi select elements */
+                            clear_va_dropdown();
+                            clear_vi_dropdown();
+
+                            /* clear hidden fields */
+                            clear_vag_hidden_field();
+                            clear_va_hidden_field();
+                            clear_vi_hidden_field();
+
+                            /* hide table and empty tbody element */
+                            $table.hide();
+                            $tbody.empty();
+
+                            /* if default option, do nothing */
+                            if (vag_uri === '-1') {
+
+                                /* save form */
+                                vnv_save_form();
+
+                                /* just stop */
+                                return;
+
+                            }
+
+                            /* populate vag information into hidden field */
+                            populate_vag_hidden_field();
+
+                            /* populate va dropdown */
+                            populate_va_dropdown();
+
+                        });
+
+                        /* handle actions taken on va select */
+                        $requirements_va_select.on('select2:select', function () {
+
+                            var va_uri = $(this).val();
+
+                            /* empty and disable vi select element */
+                            clear_vi_dropdown();
+
+                            /* clear hidden fields */
+                            clear_va_hidden_field();
+                            clear_vi_hidden_field();
+
+                            /* hide table and empty tbody element */
+                            $table.hide();
+                            $tbody.empty();
+
+                            /* if default option, do nothing */
+                            if (va_uri === '-1') {
+
+                                /* save form */
+                                vnv_save_form();
+
+                                /* just stop */
+                                return;
+
+                            }
+
+                            /* populate va information into hidden field */
+                            populate_va_hidden_field();
+
+                            /* populate vi dropdown */
+                            populate_vi_dropdown();
+
+                        });
+
+                        /* handle actions taken on vi select */
+                        $requirements_vi_select.on('change', function () {
+
+                            /* clear hidden fields */
+                            clear_vi_hidden_field();
+
+                            /* hide table and empty tbody element */
+                            $table.hide();
+                            $tbody.empty();
+
+                            /* get selected $options */
+                            var $options = $requirements_vi_select.find('option:selected');
+
+                            /* if any $options are selected */
+                            if ($options.length > 0) {
+
+                                /* array that will contain json about all selected $options */
+                                var vi_array = [];
+
+                                /* iterate through all selected vi $options */
+                                $options.each(function (index, option) {
+
+                                    /* get information about $option */
+                                    var name = $(option).data('name');
+                                    var id = $(option).data('id');
+                                    var text = $(option).data('text');
+
+                                    /* populate each selected vi $option into array */
+                                    vi_array.push({
+                                        'name': vnv_escape_html(name),
+                                        'id': id,
+                                        'text': vnv_escape_html(text)
+                                    });
+
+                                    /* create a new $tr */
+                                    var $tr = $(jQuery.parseHTML(
+                                        '<tr>' +
+                                        '<td>' + id + '</td>' +
+                                        '<td>' + name + '</td>' +
+                                        '<td>' + text + '</td>' +
+                                        '</tr>'
+                                    ));
+
+                                    /* add $tr to $table */
+                                    $tbody.append($tr);
+
+                                });
+
+                                /* show $table */
+                                $table.show();
+
+                                /* populate vi information into hidden field */
+                                populate_vi_hidden_field(vi_array);
+
+                            }
+
+                            /* no $options are selected */
+                            else {
+
+                                /* hide $table */
+                                $table.hide();
+
+                            }
+
+                            /* save form */
+                            vnv_save_form();
+
+                        });
+
+                        /* check if VIs will be overwritten by new VA selection, and prompt user to confirm */
+                        $requirements_va_select.on('select2:opening', function (e) {
+                            if ($requirements_vi_json.val()) {
+                                if (!$requirements_va_select.data('populated')) {
+                                    bootbox.confirm("Selecting a new VA will clear your selected VIs.", function(confirmed) {
+                                        if (!confirmed) {
+                                             $requirements_va_select.select2("close");
+                                             return;
+                                        } else {
+                                            populate_va_dropdown();
+                                        }
+                                    }); 
+                                }
+                            }
+                        });
+
+                        /* check if VA and VIs will be overwritten by new VAG selection, and prompt user to confirm */
+                        $requirements_vag_select.on('select2:opening', function (e) {
+                            if ($requirements_va_json.val()) {
+                                if ($requirements_vag_select.data('user_confirm_change')) {
+                                    return;
+                                } else {
+                                    e.preventDefault();
+                                    bootbox.confirm("Selecting a new VAG will clear your selected VA and VIs.", function(confirmed) {
+                                        if (!confirmed) {
+                                             $requirements_vag_select.select2("close");
+                                             return;
+                                        }
+                                        $requirements_vag_select.data('user_confirm_change', true);
+                                        $requirements_vag_select.select2("open");
+                                    });
+                                }
+                            }
+                        });
+
+                        $requirements_vi_select.on('select2:open', function () {
+                            if (!$requirements_vi_select.data('populated')) {
+                                populate_vi_dropdown();
+                            }
+                        });
+
+                        /* populate va dropdown */
+                        function populate_va_dropdown() {
+
+                            var vag_uri = $requirements_vag_select.val();
+
+                            $.ajax({
+                                beforeSend: function (xhr, settings) {
+                                    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                                    $step.notify_status('loading', {
+                                        small: true,
+                                        details: 'This could take a moment'
+                                    });
+                                },
+                                url: '{% url 'retrieve_va_for_vag' %}',
+                                method: 'POST',
+                                data: {'vag_uri': vag_uri},
+                                dataType: 'JSON',
+                                success: function (results, status) {
+
+                                    /* success, and there is at least one VA */
+                                    if (typeof results !== 'undefined' && results.length > 0) {
+
+                                        /* add default option to $requirements_va_select */
+                                        $requirements_va_select.append(new Option('Select a VA', '-1'));
+
+                                        /* add each VA as an option to $requirements_va_select */
+                                        $(results).each(function (index, result) {
+
+                                            /* create a new $option */
+                                            var $option = $(new Option(result.name, result.uri));
+
+                                            /* add data to $option */
+                                            $option.data('name', result.name);
+                                            $option.data('uri', result.uri);
+
+                                            /* add $option to $requirements_vi_select */
+                                            $requirements_va_select.append($option);
+
+                                        });
+
+                                        /* select default for $requirements_va_select */
+                                        $requirements_va_select.val('-1').trigger('change');
+
+                                        /* enable va select element */
+                                        $requirements_va_select.prop('disabled', false);
+
+                                        /* mark va as populated */
+                                        $requirements_va_select.data('populated', true);
+
+                                        $step.notify_status('hide');
+
+                                        /* open $requirements_va_select */
+                                        $requirements_va_select.select2('open');
+
+                                    }
+
+                                    /* success, but there are no VAs */
+                                    else {
+
+                                        /* retrieve name of chosen VAG */
+                                        var name = $requirements_vag_select.find('option:selected').data('name');
+
+                                        /* show notify_status */
+                                        $step.notify_status('invalid', {
+                                            caption: 'Invalid VAG',
+                                            small: true,
+                                            dismissible: true,
+                                            details: '"' + name + '" has no VA(s)<br />Please choose a VAG that has VA(s)'
+                                        });
+
+                                        /* select default for $requirements_va_select */
+                                        $requirements_vag_select.val('-1').trigger('change');
+
+                                        clear_vag_hidden_field();
+                                        clear_va_hidden_field();
+                                        clear_vi_hidden_field();
+
+                                    }
+
+                                },
+                                error: function (result, textStatus, errorThrown) {
+                                    $step.notify_status('error', {
+                                        small: true,
+                                        dismissible: true,
+                                        details: 'There was an error retreiving VA(s)<br />Please try again'
+                                    });
+
+                                    clear_vag_hidden_field();
+                                    clear_va_hidden_field();
+                                    clear_vi_hidden_field();
+
+                                },
+                                complete: function (result, status) {
+
+                                    /* save form */
+                                    vnv_save_form();
+
+                                }
+                            });
+
+                        }
+
+                        /* populate vi dropdown */
+                        function populate_vi_dropdown() {
+
+                            var va_uri = $requirements_va_select.val();
+
+                            $.ajax({
+                                beforeSend: function (xhr, settings) {
+                                    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+
+                                    /* show notify_status */
+                                    $step.notify_status('loading', {
+                                        small: true,
+                                        details: 'This could take a moment'
+                                    });
+
+                                },
+                                url: '{% url 'retrieve_vi_for_va' %}',
+                                method: 'POST',
+                                data: {'va_uri': va_uri},
+                                dataType: 'JSON',
+                                success: function (results, status) {
+
+                                    /* success, and there is at least one VI */
+                                    if (typeof results !== 'undefined' && results.length > 0) {
+
+                                        /* add each VI as an option to $requirements_vi_select */
+                                        $(results).each(function (index, result) {
+
+                                            /* create a new $option */
+                                            var $option = $(new Option(result.name, result.id));
+
+                                            /* add data to $option */
+                                            $option.data('name', result.name);
+                                            $option.data('id', result.id);
+                                            $option.data('text', result.text);
+
+                                            /* add $option to $requirements_vi_select */
+                                            $requirements_vi_select.append($option);
+
+                                        });
+
+                                        /* enable vi select element */
+                                        $requirements_vi_select.prop('disabled', false);
+
+                                        /* mark vi as populated */
+                                        $requirements_vi_select.data('populated', true);
+
+                                        $step.notify_status('hide');
+
+                                        /* open $requirements_vi_select */
+                                        $requirements_vi_select.select2('close').select2('open');
+
+                                    }
+
+                                    /* success, but there are no VIs */
+                                    else {
+
+                                        /* retrieve name of chosen VA */
+                                        var name = $requirements_va_select.find('option:selected').data('name');
+
+                                        /* show notify_status */
+                                        $step.notify_status('invalid', {
+                                            caption: 'Invalid VA',
+                                            small: true,
+                                            dismissible: true,
+                                            details: '"' + name + '" has no VI(s)<br />Please choose a VA that has VI(s)'
+                                        });
+
+                                        /* select default for $requirements_va_select */
+                                        $requirements_va_select.val('-1').trigger('change');
+
+                                        clear_va_hidden_field();
+                                        clear_vi_hidden_field();
+
+                                    }
+
+                                },
+                                error: function (result, textStatus, errorThrown) {
+                                    $requirements_va_select.val('').trigger('change');
+                                    $step.notify_status('error', {
+                                        small: true,
+                                        dismissible: true,
+                                        details: 'There was an error retreiving VI(s)<br />Please try again'
+                                    });
+
+                                    clear_va_hidden_field();
+                                    clear_vi_hidden_field();
+                                },
+                                complete: function (result, status) {
+
+                                    /* save form */
+                                    vnv_save_form();
+
+                                }
+                            });
+
+                        }
+
+                        function clear_va_dropdown() {
+                            $requirements_va_select.empty().prop('disabled', true).data('populated', false);
+                        }
+
+                        function clear_vi_dropdown() {
+                            $requirements_vi_select.empty().prop('disabled', true).data('populated', false);
+                        }
+
+                        /* populate vag information into hidden field */
+                        function populate_vag_hidden_field() {
+                            var vag_array = [];
+                            $requirements_vag_select.find('option:selected').each(function () {
+                                vag_array.push({
+                                    'name': vnv_escape_html($(this).data('name')),
+                                    'uri': $(this).data('uri')
+                                });
+                            });
+                            $requirements_vag_json.val(JSON.stringify(vag_array)).trigger('change');
+                        }
+
+                        /* populate va information into hidden field */
+                        function populate_va_hidden_field() {
+                            var va_array = [];
+                            $requirements_va_select.find('option:selected').each(function () {
+                                va_array.push({
+                                    'name': vnv_escape_html($(this).data('name')),
+                                    'uri': $(this).data('uri')
+                                });
+                            });
+                            $requirements_va_json.val(JSON.stringify(va_array)).trigger('change');
+                        }
+
+                        /* populate vi information into hidden field */
+                        function populate_vi_hidden_field(vi_array) {
+                            $requirements_vi_json.val(JSON.stringify(vi_array)).trigger('change');
+                        }
+
+                        function clear_vag_hidden_field() {
+                            $requirements_vag_json.val('');
+                        }
+
+                        function clear_va_hidden_field() {
+                            $requirements_va_json.val('');
+                        }
+
+                        function clear_vi_hidden_field() {
+                            $requirements_vi_json.val('');
+                        }
+
+                        /* save any time something has changed */
+                        function vnv_save_form() {
+                            $.ajax({
+                                beforeSend: function (xhr, settings) {
+                                    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                                },
+                                url: '{% url 'update_element_step_content_api' %}',
+                                method: 'POST',
+                                data: $form.serialize(),
+                                dataType: 'JSON',
+                                success: function (result, status) {
+                                    $last_updated_error.empty().hide();
+                                    $last_updated_time.html("<span class='glyphicon glyphicon-floppy-disk'></span> Last Updated: " + result["last_updated"]);
+                                },
+                                error: function (response, textStatus, errorThrown) {
+                                    const result = $.parseJSON(response.responseText);
+                                    $last_updated_error.html(result.error).show();
+                                }
+                            });
+                        }
+
+                    }
+                });
+            }
+        });
+
+        $(document).on('click', '.authenticate_with_vnv_btn', function (event) {
+            event.preventDefault();
+
+            var form_name = $(this).data('form');
+            var data = $("#" + form_name).serialize();
+
+            var $step = $(this).closest('.step');
+
+            /* show notify_status */
+            $step.notify_status('loading', {
+                small: true,
+                caption: "Logging in to DoorsNG"
+            });
+
+            $.ajax({
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                },
+                url: '{% url 'authenticate_with_vnv' %}',
+                method: 'POST',
+                data: data,
+                dataType: 'JSON',
+                success: function (result, status) {
+                    if (result.status_code === 200) {
+                        $step.notify_status('updated', {
+                            small: true,
+                            caption: "Reload for updates"
+                        });
+                        bootbox.alert({
+                            size: "small",
+                            message: "Login Successfull",
+                            callback: function () {
+                                window.location.reload();
+                            }
+                        });
+                    } else {
+                        $step.notify_status('error', {
+                            small: true,
+                            dismissible: true,
+                            details: result.response_msg
+                        });
+                    }
+                },
+                error: function (result, textStatus, errorThrown) {
+                    $step.notify_status('error', {
+                        small: true,
+                        dismissible: true,
+                        details: result.response_msg
+                    });
+                }
+            });
+
+        });
+
+        function vnv_escape_html(string) {
+            return String(string).replace(/[&<>"'`=\t\n]/g, function fromEntityMap(s) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                    '`': '&#x60;',
+                    '=': '&#x3D;',
+                    '\t': ' ',
+                    '\n': ' '
+                }[s];
+            });
+        }
+
+    </script>
+{% endblock %}

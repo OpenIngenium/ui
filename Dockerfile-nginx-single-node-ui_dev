@@ -1,0 +1,25 @@
+# This container is for UI development with NGINX as proxy only. Static files are not served by NGINX with this configuration.
+
+FROM cae-artifactory.jpl.nasa.gov:17001/nginx:1.20.1-alpine
+
+ENV CORE_API_HOST=${CORE_API_HOST}
+ENV DJANGO_HOST=${DJANGO_HOST}
+ENV AUTH_API_HOST=${AUTH_API_HOST}
+ENV VENUE_CONFIG_API_HOST=${VENUE_CONFIG_API_HOST}
+ENV DICT_API_HOST=${DICT_API_HOST}
+ENV VNV_API_HOST=${VNV_API_HOST}
+ENV EXECUTION_API_HOST=${EXECUTION_API_HOST}
+ENV ARCHIVE_API_HOST=${ARCHIVE_API_HOST}
+ENV FILE_SERVER_API_HOST=${FILE_SERVER_API_HOST}
+ENV EXECUTION_MONITOR_API_HOST=${EXECUTION_MONITOR_API_HOST}
+ENV SEARCH_API_URL=${SEARCH_API_URL}
+ENV REPORT_API_URL=${REPORT_API_URL}
+
+COPY set_host_docker_internal.sh /usr/local/bin/
+COPY eval_file.sh /usr/local/bin/
+COPY ingenium-single-node-ui_dev.template.conf /etc/nginx/nginx.template.conf
+CMD ["/bin/sh", "-c", "env && cat -n /usr/local/bin/eval_file.sh && eval_file.sh /etc/nginx/nginx.template.conf > /etc/nginx/nginx.conf && cat -n /etc/nginx/nginx.conf && set_host_docker_internal.sh && exec nginx -g 'daemon off;'"]
+# For more logs from nginx, use the next line
+# CMD ["/bin/sh", "-c", "eval_file.sh /etc/nginx/nginx.template.conf > /etc/nginx/nginx.conf && set_host_docker_internal.sh && exec nginx-debug -g 'daemon off;'"]
+
+EXPOSE 80

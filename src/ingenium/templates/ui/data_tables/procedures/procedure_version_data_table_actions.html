@@ -1,0 +1,10 @@
+{% if procedure_version.get_status == 'VERSIONED' %}
+    <button class="btn btn-default procedure-version-btn" data-procedure-id="{{ procedure_version.get_procedure_id }}" data-version="{{ procedure_version.get_version }}" data-trigger="focus">Actions</button>
+
+{% elif procedure_version.get_status == 'RELEASED' %}
+    <button class="btn btn-default procedure-version-btn" data-procedure-id="{{ procedure_version.get_procedure_id }}" data-version="{{ procedure_version.get_version }}" data-trigger="focus">Actions</button>
+
+{% elif procedure_version.get_status == 'WORKING' %}
+    <button class="btn btn-default procedure-version-btn" data-procedure-id="{{ procedure_version.get_procedure_id }}" data-version="{{ procedure_version.get_version }}" data-can-edit="{{ can_edit }}" data-trigger="focus">Actions</button>
+{% endif %}
+

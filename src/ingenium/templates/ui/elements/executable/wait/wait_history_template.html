@@ -1,0 +1,12 @@
+{% if element.get_user_inputs %}
+    <table class="table table-striped">
+        <tr>
+            <th>Wait Type</th>
+            <th>Time Value</th>
+        </tr>
+        <tr>
+            <td>{{ element.get_user_inputs.wait_type }}</td>
+            <td>{{ element.get_user_inputs.time_value }}</td>
+        </tr>
+    </table>
+{% endif %}

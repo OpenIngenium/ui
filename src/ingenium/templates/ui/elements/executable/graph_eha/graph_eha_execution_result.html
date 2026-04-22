@@ -1,0 +1,43 @@
+{% extends 'ui/elements/executable/execution_result_container.html' %}
+{% load ingenium_tags %}
+
+{% block results %}
+
+    <table class="table execution-results-table {% execution_result_status_css_class execution_record %}">
+        <tr>
+            {#            <th width="20%">Channel Name</th>#}
+            <th width="20%">Channel Type</th>
+            <th width="20%">Channel ID</th>
+            <th width="20%">Data Path</th>
+            <th width="20%">DN/EU</th>
+        </tr>
+        <tr>
+            {#            <td>{{ execution_record.get_results.channel_name|default:"N/A" }}</td>#}
+            <td>{{ execution_record.get_results.channel_type|default:"N/A" }}</td>
+            <td>{{ execution_record.get_results.channel_id|default:"N/A" }}</td>
+            <td>{{ execution_record.get_results.data_path|default:"N/A" }}</td>
+            <td>{{ execution_record.get_results.dn_eu|default:"N/A" }}</td>
+        </tr>
+    </table>
+    <table class="table execution-results-table {% execution_result_status_css_class execution_record %}">
+        <tr>
+            <th width="20%">Timeout (sec)</th>
+            <th width="20%">Start Time</th>
+            <th width="20%">End Time</th>
+            <th width="20%">Duration (sec)</th>
+            <th width="20%">Time Type</th>
+        </tr>
+        <tr>
+            <td>{{ execution_record.get_results.timeout|default:"N/A" }}</td>
+            <td>{{ execution_record.get_results.start_time|default:"N/A" }}</td>
+            <td>{{ execution_record.get_results.end_time|default:"N/A" }}</td>
+            <td>{{ execution_record.get_results.duration|default:"N/A" }}</td>
+            <td>{{ execution_record.get_results.time_type|default:"N/A" }}</td>
+        </tr>
+    </table>
+
+    {% if  execution_record.get_results %}
+        <br/>
+        <div class="graph_eha_chart" data-data-points='[{% for foo in execution_record.get_results.channel_data %}{"x":"{{ foo.time }}","y":{{ foo.value }}}{% if not forloop.last %},{% endif %}{% endfor %}]'></div>
+    {% endif %}
+{% endblock %}

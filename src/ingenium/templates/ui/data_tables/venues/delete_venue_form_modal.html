@@ -1,0 +1,19 @@
+{% block modal_title %}
+    <h4 class="modal-title">Delete Venue</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="venue_form">
+        <input id="venue_id" name="venue_id" type="hidden" value="{{ venue.get_venue_id }}"/>
+
+        <div class="alert alert-danger">
+            You are about to delete the "{{ venue.get_name }}" venue. There is no undo after taking this action.
+        </div>
+
+    </form>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-default pull-left">Cancel</button>
+    <button class="btn btn-primary" data-data='{"venue_id":"{{ venue.get_venue_id }}"}' data-url="{% url 'delete_venue' %}" data-form-id="venue_form">Confirm Delete</button>
+{% endblock %}

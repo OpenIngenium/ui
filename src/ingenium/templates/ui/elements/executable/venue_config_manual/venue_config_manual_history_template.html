@@ -1,0 +1,34 @@
+{% include 'ui/elements/executable/execution_results.html' %}
+
+{% if element.get_fsw_version_input_value or element.get_sse_version_input_value or element.get_fsw_dictionary_input_value or element.get_sse_dictionary_input_value or element.get_gds_version_input_value %}
+    <table class="table">
+        <thead>
+        <tr>
+            <th style="text-align: left;" class="col-sm-3">Key</th>
+            <th style="text-align: left;">Value</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>fsw_version</td>
+            <td>{{ element.get_fsw_version_input_value|default:"" }}</td>
+        </tr>
+        <tr>
+            <td>sse_version</td>
+            <td>{{ element.get_sse_version_input_value|default:"" }}</td>
+        </tr>
+        <tr>
+            <td>fsw_dictionary</td>
+            <td>{{ element.get_fsw_dictionary_input_value|default:"" }}</td>
+        </tr>
+        <tr>
+            <td>sse_dictionary</td>
+            <td>{{ element.get_sse_dictionary_input_value|default:"" }}</td>
+        </tr>
+        <tr>
+            <td>gds_version</td>
+            <td>{{ element.get_gds_version_input_value|default:"" }}</td>
+        </tr>
+        </tbody>
+    </table>
+{% endif %}

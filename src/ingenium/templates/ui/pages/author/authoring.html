@@ -1,0 +1,281 @@
+{% extends "layouts/ingenium_template.html" %}
+{% load static %}
+
+{% block html_title %}
+    Authoring
+{% endblock %}
+
+{% block page_label %}
+    Authoring
+{% endblock %}
+
+{% block page_content %}
+    <link href="{% static "css/authoring.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "css/steps.css" %}" rel="stylesheet" type="text/css"/>
+
+
+    <div class="row" id="authoring_page">
+
+        <div class="col-xs-3" id="authoring_page_left">
+
+            <div id="authoring_toolbar_wrapper">
+
+                <div id="authoring_toolbar_top">
+                    <h4>Configuration Management</h4>
+                        <div class="procedure_config_management">
+                            <div class="authoring_cm_details">
+                                {% include "ui/pages/author/cm_details_latest.html" %}
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <button type="button" data-procedure-id="{{ procedure.get_procedure_id }}" class="btn btn-default cm-details">
+                                    <span class="glyphicon glyphicon-zoom-in"></span> Details
+                                </button>
+                                <button type="button" data-procedure-id="{{ procedure.get_procedure_id }}"
+                                        class="btn btn-default cm-new-version"><span class="glyphicon glyphicon-save"></span> New Version
+                                </button>
+                            </div>
+                        </div>
+                    <hr />
+
+                    <h2>Dictionaries</h2>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label for="sse_dictionary_version">SSE Dictionary</label>
+                                <select id="sse_dictionary_version" name="sse_dictionary_version" class="form-control" placeholder="SSE Dictionary">
+                                    {% for dictionary in sse_dictionaries %}
+                                        <option {% if dictionary.get_version == sse_dictionary_version %}selected{% endif %} value="{{ dictionary.get_version }}">{{ dictionary.get_version }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-6">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label for="flight_dictionary_version">Flight Dictionary</label>
+                                <select id="flight_dictionary_version" name="flight_dictionary_version" class="form-control" placeholder="Flight Dictionary">
+                                    {% for dictionary in flight_dictionaries %}
+                                        <option {% if dictionary.get_version == flight_dictionary_version %}selected{% endif %} value="{{ dictionary.get_version }}">{{ dictionary.get_version }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h2>Steps</h2>
+                 </div>
+
+                <div id="authoring_toolbar_bottom">
+                    <ol class="steps_list" id="steps_toolbar">
+                        {% for category, elements in ingenium_steps %}
+                            <li class="ui-state-default ui-state-disabled"><h4>{{ category }}</h4></li>
+                            {% for element in elements %}
+                                {% include "ui/elements/generic/step_outer.html" with type="toolbar" procedure_id=procedure.get_procedure_id %}
+                            {% endfor %}
+                            {% if not forloop.last %}<hr />{% endif %}
+                        {% endfor %}
+                    </ol>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-xs-9" id="authoring_page_right">
+
+            <div class="row">
+
+                <div class="col-xs-12">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <h2 style="display:inline-block;margin:0;">Authoring&nbsp;|&nbsp;{{ procedure.get_procedure_id }}</h2>
+                        </div>
+                    </div>
+
+                    <div class="" style="margin-top:10px;">
+                        <div class="description_wysiwyg_content">{{ procedure.get_description|default_if_none:"" }}</div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+
+            <br/>
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <h2 style="display:inline-block;margin:0;">Procedure</h2>
+                        <div style="display:flex;text-align:right;">
+                            <div class="form-group" style="margin:0;">
+                                <label for="toggle_detail_all">Details</label>
+                                <br/>
+                                <input type="checkbox" id="toggle_detail_all" checked/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <br/>
+
+            <ol class="steps_list" id="steps_canvas">
+                {% for element in elements.get_children %}
+                    {% include "ui/elements/generic/step_outer.html" with type="canvas" procedure_id=procedure.get_procedure_id %}
+                {% endfor %}
+
+            </ol>
+
+        </div>
+
+        <div class="clearfix"></div>
+
+        <div class="hidden" id="steps_javascript">
+            {{ elements.get_all_execution_javascript }}
+        </div>
+
+
+    </div>
+
+    <script src="{% static 'js/execution.js' %}"></script>
+    <script>
+    $(function() {
+        const procedure_id = "{{ procedure.get_procedure_id }}";
+        sessionStorage.setItem('locked_procedure_id', procedure_id);
+
+        $(document).ready(function(){
+            // LOCK PROCEDURE
+            $.ajax({
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", ING.utils.csrfToken());
+                },
+                url: '{% url 'update_procedure' %}',
+                method: 'POST',
+                data: { 
+                    'locked_by': "{{ username }}",
+                    'procedure_id': "{{ procedure.get_procedure_id }}"
+                },
+                success: function (result, status) {
+                },
+                error: function (error) {
+                }
+            });
+        });
+
+        // UNLOCK PROCEDURE
+        var _wasPageCleanedUp = false;
+
+        function pageCleanup()
+        {
+            if (!_wasPageCleanedUp)
+            {
+                $.ajax({
+                    beforeSend: function (xhr, settings) {
+                        xhr.setRequestHeader("X-CSRFToken", ING.utils.csrfToken());
+                    },
+                    async: false,
+                    url: '{% url 'update_procedure' %}',
+                    method: 'POST',
+                    data: { 
+                        'locked_by': "",
+                        'procedure_id': "{{ procedure.get_procedure_id }}"
+                    },
+                    success: function(response){
+                        sessionStorage.removeItem('locked_procedure_id');
+                        _wasPageCleanedUp = true;
+                    },
+                    error: function(error){
+                        console.log(error)
+                    }
+                });
+            }
+        }
+
+        $(window).on('beforeunload', function(){
+            //for Chrome
+            pageCleanup();
+        });
+
+        $(window).on("unload", function (){
+            //for other browsers
+            pageCleanup();
+        });
+
+        /* Values from the model */
+        const flight_dictionary_version = "{{ flight_dictionary_version }}";
+        const sse_dictionary_version = "{{ sse_dictionary_version }}";
+
+        /* Version drop downs */
+        const $flight_dropdown = $("#flight_dictionary_version");
+        const $sse_dropdown = $("#sse_dictionary_version");
+
+        /* If no values exist, patch in default ones */
+        if(!flight_dictionary_version) {
+            patchDictionary('flight_dictionary_version', $flight_dropdown.val());
+        } 
+        if(!sse_dictionary_version) {
+            patchDictionary('sse_dictionary_version', $sse_dropdown.val());
+        }
+
+        /* On change functions to patch selections */
+        $flight_dropdown.change(function() {
+            patchDictionary('flight_dictionary_version', $(this).val());
+        });
+
+        $sse_dropdown.change(function() {
+            patchDictionary('sse_dictionary_version', $(this).val());
+        });
+
+        /* Helper function to patch a dictionary */
+        function patchDictionary(dictType, dictVersion) {
+            const data = {
+                procedure_id: procedure_id,
+                version: 0
+            };
+            data[dictType] = dictVersion;
+            $.ajax({
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", ING.utils.csrfToken());
+                },
+                url: '{% url 'update_procedure_version' %}',
+                method: 'POST',
+                data: data
+            });
+        }
+
+        {# show configuration management details modal #}
+        $("button.cm-details").up_modal_request({
+            url: '{% url 'cm_details_modal' %}',
+            data: {procedure_id: procedure_id},
+            up_modal_options: {
+                'size': 'sm',
+                'dismissible': true
+            }
+        });
+
+        {# show configuration management save version modal #}
+        $("button.cm-new-version").up_modal_request({
+            url: '{% url 'save_procedure_version_modal' %}',
+            data: {procedure_id: procedure_id},
+            up_modal_options: {
+                'size': 'sm',
+                'dismissible': true
+            },
+            on_modal_close: function() {
+                console.log("procedure_id: ", procedure_id);
+                $.ajax({
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+                    },
+                    url: '{% url 'update_authoring_procedure_detail_html' procedure_id=procedure.get_procedure_id %}',
+                    method: "GET",
+                    success: function (result, status) {
+                        $(".authoring_cm_details").html(result.html);
+                    }
+                });
+            }
+        });
+    });
+    </script>
+
+{% endblock %}

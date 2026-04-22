@@ -1,0 +1,20 @@
+{% include 'ui/elements/executable/execution_results.html' %}
+
+{% if element.get_user_inputs.entries %}
+    <table class="table table-striped">
+        <tr>
+            <th>Element</th>
+            <th>Field</th>
+            <th>Verif Condition</th>
+            <th>Verif Value</th>
+        </tr>
+        {% for entry in element.get_user_inputs.entries %}
+            <tr>
+                <td>{{ entry.config_elem_name }}</td>
+                <td>{{ entry.field_name }}</td>
+                <td>{{ entry.verification_condition }}</td>
+                <td>{{ entry.verification_value }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}

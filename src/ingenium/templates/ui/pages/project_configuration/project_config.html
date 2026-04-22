@@ -1,0 +1,21 @@
+{% extends "layouts/ingenium_template.html" %}
+
+{% load static %}
+
+{% block html_title %}
+    Project Configuration
+{% endblock %}
+
+{% block page_label %}
+    Project Configuration  
+{% endblock %}
+
+{% block page_content %}
+
+    {# Vue Project Configuration Component #}
+    <div id="spa-project-config"></div>
+
+    <script src="{% static project_config_js_bundle %}"></script>
+
+{% endblock %}
+

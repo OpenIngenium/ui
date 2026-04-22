@@ -1,0 +1,44 @@
+{% extends 'ui/elements/executable/execution_result_container.html' %}
+{% load ingenium_tags %}
+
+
+{% block results %}
+    <div class="">
+        <table class="table execution-results-table {% execution_result_status_css_class execution_record %}">
+            <tr class="">
+                <th>Name</th>
+                <th>Verify On</th>
+                <th>Verification Condition</th>
+                <th>Verification Value</th>
+                <th>Actual Value</th>
+                <th>Eval</th>
+            </tr>
+                <tr class="">
+                    <td>Temperature (°C)</td>
+                    <td>{{ execution_record.get_results.temperature.verify_on }}</td>
+                    <td>{{ execution_record.get_results.temperature.verification_condition }}</td>
+                    <td>{{ execution_record.get_results.temperature.verification_values.0 }} {% if execution_record.get_results.temperature.verification_values.1 %} - {{ execution_record.get_results.temperature.verification_values.1 }}{% endif %}</td>
+                    <td>{{ execution_record.get_results.temperature.actual_value }}</td>
+                    <td>{% if execution_record.get_results.temperature.verification_status == 'PASS'%}
+                            <span class="glyphicon glyphicon-ok success"></span>
+                        {% else %} 
+                            <span class="glyphicon glyphicon-remove danger"></span>
+                        {% endif %}
+                    </td>
+                </tr>
+            <tr class="">
+                <td>Humidity (%)</td>
+                <td>{{ execution_record.get_results.humidity.verify_on }}</td>
+                <td>{{ execution_record.get_results.humidity.verification_condition }}</td>
+                <td>{{ execution_record.get_results.humidity.verification_values.0 }} {% if execution_record.get_results.humidity.verification_values.1 %} - {{ execution_record.get_results.humidity.verification_values.1 }}{% endif %}</td>
+                <td>{{ execution_record.get_results.humidity.actual_value }}</td>
+                <td>{% if execution_record.get_results.humidity.verification_status == 'PASS'%}
+                        <span class="glyphicon glyphicon-ok success"></span>
+                    {% else %} 
+                        <span class="glyphicon glyphicon-remove danger"></span>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+{% endblock %}

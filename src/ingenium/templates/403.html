@@ -1,0 +1,18 @@
+{% extends "layouts/ingenium_template.html" %}
+
+{% block html_title %}
+  Access Denied
+{% endblock %}
+
+{% block page_label %}
+  Access Denied
+{% endblock %}
+
+{% block page_content %}
+  <div class="row">
+    <div class="jumbotron">
+      <h2 style="text-transform: uppercase;">{% if error_title %}{{ error_title }}{% else %}Access Denied{% endif %}</h2>
+      <p style="margin-left: 10px;">{{ error }}</p>
+    </div>
+  </div>
+{% endblock %}

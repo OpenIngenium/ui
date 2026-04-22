@@ -1,0 +1,32 @@
+
+<li class="step {{ element.get_element_css_class }}"
+    id="{{ element.get_element_id }}"
+    {% if execution_id %}
+        data-add-url="{% url 'create_execution_element' execution_id=execution_id element_type_id=element.get_element_type_id %}"
+        data-execution-id="{{ execution_id }}"
+        data-has-executed="{{ element.has_executed|yesno:'true,false' }}"
+        data-has-executed-at-some-point="{{ element.has_executed|yesno:'true,false' }}"
+        data-is-executable="{{ element.get_is_executable|yesno:'true,false' }}"
+        data-is-executing="false"
+    {% endif %}
+    {% if procedure_id %}
+        data-add-url="{% url 'create_procedure_element' procedure_id=procedure_id element_type_id=element.get_element_type_id %}"
+        data-procedure-id="{{ procedure_id }}"
+    {% endif %}
+    data-move-url="{% url 'move_element_api' %}"
+    data-remove-url="{% url 'remove_element_api' %}"
+    data-element-id="{{ element.get_element_id }}"
+    data-element-type-id="{{ element.get_element_type_id }}"
+    data-has-details="{{ element.get_has_details|yesno:'true,false' }}"
+    data-has-options="{{ element.get_has_options|yesno:'true,false' }}"
+    data-is-collapsible="{{ element.get_is_collapsible|yesno:'true,false' }}"
+    data-is-commentable="{{ element.get_is_commentable|yesno:'true,false' }}"
+    data-is-duplicatable="{{ element.get_is_duplicatable|yesno:'true,false' }}"
+    data-is-nestable="{{ element.get_is_nestable|yesno:'true,false' }}"
+    data-is-activated="false">
+    {% if type == "canvas" %}
+        {% include "ui/elements/generic/step_inner_canvas.html" %}
+    {% else %}
+        {% include "ui/elements/generic/step_inner_toolbar.html" %}
+    {% endif %}
+</li>

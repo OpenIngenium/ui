@@ -1,0 +1,34 @@
+{% load ingenium_tags %}
+
+{% for execution_record in element.get_execution_results %}
+    {% if not as_run_history %}
+        <div class="step-detail-execution-label {% execution_result_status_css_class execution_record %}">
+            <span class="step-detail-execution-label-text">{% if execution_record.execution_error %}Error{% else %}Executed{% endif %}</span>
+            <span class="step-detail-execution-label-counter hidden">E.{{ forloop.counter }}</span>
+        </div>
+    {% endif %}
+    <div class="alert alert-{% execution_result_status_css_class execution_record %}">
+        <div class="row">
+            <div class="col-xs-12">
+                <span class="{% execution_result_status_icon_class execution_record %}" aria-hidden="true"></span>
+                {{ element.get_name }} step <b>{{ execution_record.get_status|lower }}</b> on
+                <b>{{ execution_record.get_time_started }}</b> by <b>{{ execution_record.get_test_conductor }}</b>
+            </div>
+        </div>
+        {% if not as_run_history %}
+            <span class="glyphicon glyphicon-resize-full step-detail-execution-resize"></span>
+        {% endif %}
+
+        {% if execution_record.execution_error and execution_record.get_error_message %}
+            <div class="row">
+                Error: "{{ execution_record.get_error_message }}"
+            </div>
+        {% endif %}
+
+        <div class="row execution-results-row" style="margin-top: 15px;">
+            <div class="col-xs-12">
+                {% block results %}{% endblock %}
+            </div>
+        </div>
+    </div>
+{% endfor %}
