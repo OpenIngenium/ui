@@ -36,6 +36,9 @@ export const DragAndDrop = {
                 if (binding.value && binding.value.elementPath) {
                     e.dataTransfer.setData('elementPath', binding.value.elementPath);
                 }
+                if (binding.value && binding.value.scriptMeta) {
+                    e.dataTransfer.setData('scriptMeta', JSON.stringify(binding.value.scriptMeta));
+                }
                 if (binding.value && binding.value.copy) {
                     e.dataTransfer.setData('copy', binding.value.copy);
                 }

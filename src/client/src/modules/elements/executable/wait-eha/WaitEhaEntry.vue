@@ -123,14 +123,14 @@
                     </div>
                     <ing-autocomplete
                         :value="channelId"
-                        v-on:handleEvent="handleChannelIdInput"
+                        v-on:handleEvent="(result, secondResult) => handleChannelIdInput(result, secondResult)"
                         :callback="fetchChannelIdAutoCompleteCallback"
                         :items="this.ehas"
                         nameField="channel_id"
-                        categoryField="eha_name"
-                        descriptionField="eha_description"
+                        categoryField="operations_category"
+                        descriptionField="description"
                         enterByName="channel_id"
-                        enterByAdditionalField="eha_name"
+                        enterByAdditionalField="channel_name"
                         v-on:save="saveWaitEhaEntry"
                         dynamicWidth="five-hundred-width"
                         :disabled="disableFields"
@@ -160,13 +160,13 @@
                         class="required-field ing-tooltip"><b>Channel Name</b></label>
                     <ing-autocomplete
                         :value="channelName"
-                        v-on:handleEvent="handleChannelNameInput"
+                        v-on:handleEvent="(result, secondResult) => handleChannelNameInput(result, secondResult)"
                         :callback="fetchChannelNameAutoCompleteCallback"
                         :items="this.ehas"
-                        nameField="eha_name"
-                        categoryField="channel_id"
-                        descriptionField="eha_description"
-                        enterByName="eha_name"
+                        nameField="channel_name"
+                        categoryField="operations_category"
+                        descriptionField="description"
+                        enterByName="channel_name"
                         enterByAdditionalField="channel_id"
                         dynamicWidth="three-hundred-width"
                         v-on:save="saveWaitEhaEntry"
@@ -335,6 +335,7 @@
                 'fetchSseEhas',
                 'fetchFlightEhasEuPresentAndEhasType',
                 'fetchSseEhasEuPresentAndEhasType',
+                'displayFeedback',
             ]),
             handleChannelIdInput: function(channelId, channelName) {
                 this.channelId = channelId;
@@ -344,55 +345,59 @@
                 this.channelName = channelName;
                 this.channelId = channelId;
             },
-            fetchChannelIdAutoCompleteCallback: function(channel_id) {
+            fetchChannelIdAutoCompleteCallback: async function(channel_id) {
                 switch(this.channelType) {
                     case "SSE":
                         if (this.selectedSseDictionaryVersion) {
-                            this.fetchSseEhas({
+                            await this.fetchSseEhas({
                                 dictionaryVersion: this.selectedSseDictionaryVersion,
                                 limit: 6,
                                 filters: {
                                     channel_id: { value: channel_id }
-                                }
+                                },
+                                wild: true,
                             });
                         }
 
                         break;
                     case "FLIGHT":
                         if (this.selectedFlightDictionaryVersion) {
-                            this.fetchFlightEhas({
+                            await this.fetchFlightEhas({
                                 dictionaryVersion: this.selectedFlightDictionaryVersion,
                                 limit: 6,
                                 filters: {
                                     channel_id: { value: channel_id }
-                                }
+                                },
+                                wild: true,
                             });
                         }
                         break;
                 }
             },
-            fetchChannelNameAutoCompleteCallback: function(eha_name) {
+            fetchChannelNameAutoCompleteCallback: async function(eha_name) {
                 switch(this.channelType) {
                     case "SSE":
                         if (this.selectedSseDictionaryVersion) {
-                            this.fetchSseEhas({
+                            await this.fetchSseEhas({
                                 dictionaryVersion: this.selectedSseDictionaryVersion,
                                 limit: 6,
                                 filters: {
                                     eha_name: { value: eha_name }
-                                }
+                                },
+                                wild: true,
                             });
                         }
 
                         break;
                     case "FLIGHT":
                         if (this.selectedFlightDictionaryVersion) {
-                            this.fetchFlightEhas({
+                            await this.fetchFlightEhas({
                                 dictionaryVersion: this.selectedFlightDictionaryVersion,
                                 limit: 6,
                                 filters: {
                                     eha_name: { value: eha_name }
-                                }
+                                },
+                                wild: true,
                             });
                         }
                         break;
@@ -475,7 +480,42 @@
                     }
                 } catch(err) {
                     console.error(err);
-                }        
+                }
+                
+                // Check if no channels found matching what user entered
+                if ((this.channelId || this.channelName) && this.ehas.length === 0) {
+                    const searchTerm = this.channelId || this.channelName;
+                    const fieldType = this.channelId ? 'Channel ID' : 'Channel Name';
+                    this.displayFeedback({
+                        type: 'warning',
+                        messageObj: {
+                            message: `No channels found matching ${fieldType} "${searchTerm}" in the selected ${this.channelType} dictionary.`
+                        }
+                    });
+                } else if (this.channelId && this.ehas.length > 0) {
+                    // Check if the entered channel ID exists in the results
+                    const found = this.ehas.find(eha => eha.channel_id === this.channelId);
+                    if (!found) {
+                        this.displayFeedback({
+                            type: 'warning',
+                            messageObj: {
+                                message: `Channel ID "${this.channelId}" does not exist in the selected ${this.channelType} dictionary.`
+                            }
+                        });
+                    }
+                } else if (this.channelName && this.ehas.length > 0) {
+                    // Check if the entered channel name exists in the results
+                    const found = this.ehas.find(eha => eha.channel_name === this.channelName);
+                    if (!found) {
+                        this.displayFeedback({
+                            type: 'warning',
+                            messageObj: {
+                                message: `Channel Name "${this.channelName}" does not exist in the selected ${this.channelType} dictionary.`
+                            }
+                        });
+                    }
+                }
+                
                 this.save();
             },
             saveDataPath(value) {

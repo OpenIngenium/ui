@@ -62,6 +62,30 @@
                         </ing-editable>
                     </div>
                     <div class="step-icons">
+                        <span
+                            v-if="showConsistencyFlag"
+                            class="consistency-flag-pill ing-tooltip"
+                            :class="consistencyFlagClass"
+                            data-toggle="tooltip"
+                            data-placement="top"
+                            data-trigger="hover"
+                            onclick="$(this).tooltip('hide');"
+                            :title="consistencyFlagTooltip">
+                            <span :class="consistencyFlagIconClass"></span>
+                            {{ consistencyFlagLabel }}
+                        </span>
+                        <button
+                            v-if="showAutoSelectCustomScriptButton"
+                            data-toggle="tooltip"
+                            data-placement="top"
+                            data-trigger="hover"
+                            onclick="$(this).tooltip('hide');"
+                            title="Update this step with the latest custom script definition."
+                            @click.stop="autoSelectCustomScript"
+                            type="button"
+                            class="btn btn-xs btn-warning auto-select-custom-script ing-tooltip">
+                            <span class="glyphicon glyphicon-refresh"></span> Update
+                        </button>
                         <button
                             v-if="debugEnabled"
                             class="step-button ing-tooltip"
@@ -242,6 +266,9 @@
             <div class="clearfix"></div>
             <div class="step_detail step_show_details">
                 <component
+                    v-if="getElementMap(stepData)"
+                    ref="elementComponent"
+                    :key="componentKey"
                     :is="elementMap.comp"
                     :mode="mode"
                     :element-map="getElementMap(stepData)"
@@ -368,6 +395,8 @@
             };
         },
         created() {
+            this.fetchStepPaletteBuiltIn();
+            this.fetchStepPaletteCustom();
         },
         components: {
             'ing-redline': IngRedline,
@@ -425,13 +454,49 @@
                 "hasReplaceElementSource",
                 "modStyle",
                 "copyParams",
-                "debugEnabled"
+                "debugEnabled",
+                "stepPaletteBuiltIn",
+                "stepPaletteCustom",
             ]),
             isStepPending: function() {
                 return this.execution.status === 'RUNNING' || this.execution.status === 'PAUSED';
             },
             showReplaceElementButton:   function() {
                 return this.mode === 'authoring' ? true : false;
+            },
+            consistencyFlag: function() {
+                return this.elementKey(this.stepData.elem_id, "consistency_flag");
+            },
+            showConsistencyFlag: function() {
+                return this.consistencyFlag && this.consistencyFlag !== "CONSISTENT";
+            },
+            consistencyFlagLabel: function() {
+                const labels = {
+                    DELETED: "DELETED",
+                    MISSING_IN_PALLETTE: "MISSING IN PALLETTE",
+                    SPEC_HASH_MISMATCHED: "STEP MODIFIED",
+                    LEGACY: "LEGACY",
+                    CONSISTENT: ""
+                };
+                return labels[this.consistencyFlag] || this.consistencyFlag;
+            },
+            consistencyFlagClass: function() {
+                return this.consistencyFlag === "LEGACY" ? "consistency-flag-warning" : "consistency-flag-error";
+            },
+            showAutoSelectCustomScriptButton: function() {
+                return this.consistencyFlag === "SPEC_HASH_MISMATCHED" && !this.elementKey(this.stepData.elem_id, "executed");
+            },
+            consistencyFlagIconClass: function() {
+                return this.consistencyFlag === "DELETED" ? "glyphicon glyphicon-trash consistency-flag-icon" : "glyphicon glyphicon-warning-sign consistency-flag-icon";
+            },
+            consistencyFlagTooltip: function() {
+                const tooltips = {
+                    DELETED: "This step references a custom script that has been deleted.",
+                    MISSING_IN_PALLETTE: "This step references a custom script that is missing from the current palette.",
+                    SPEC_HASH_MISMATCHED: "This step references a custom script whose specification has changed since it was selected.",
+                    LEGACY: "This step references a legacy custom script. Please reselect it from the lookup modal."
+                };
+                return tooltips[this.consistencyFlag];
             },
             replaceElementButtonClass: function() {
                 return this.hasReplaceElementSource ? 'replace-elem-active' : 'replace-elem-inactive';
@@ -470,7 +535,7 @@
                 return this.elementsByParent(this.stepData.elem_id);
             },
             elementTitle: function() {
-                return getElementDisplayName(this.stepData);
+                return getElementDisplayName(this.stepData,this.stepPaletteBuiltIn, this.stepPaletteCustom);
             },
             elementTypeTitleStyle: function() {
                 return this.stepData.elem_type === 'SECTION' ? 'section_title' : '';
@@ -775,6 +840,13 @@
             },
             toggleDiffsClass: function() {
                 return this.elemDiffsShown(this.stepData.elem_id) ? 'diffs-active' : 'diffs-inactive';
+            },
+            componentKey: function() {
+                // Generate unique key to force component re-render when element data changes
+                // Include spec_hash and consistency_flag to trigger updates
+                const specHash = this.executionInputKey(this.stepData.elem_id, 'spec_hash') || '';
+                const consistencyFlag = this.consistencyFlag || '';
+                return `${this.stepData.elem_id}-${specHash}-${consistencyFlag}`;
             }
         },
         methods: {
@@ -803,6 +875,8 @@
                 "replaceElement",
                 "hasSelectedElements",
                 "hasSelectedElementsForThis",
+                "fetchStepPaletteBuiltIn",
+                "fetchStepPaletteCustom",
             ]),
             printStepContents: function() {
                 const stepData = _.cloneDeep(this.stepData);
@@ -819,7 +893,12 @@
                 delete stepData.specification;
                 delete stepData.run_records;
                 console.log(JSON.stringify(stepData, null, 2));
-            },            
+            },
+            autoSelectCustomScript: function() {
+                if (this.$refs.elementComponent && this.$refs.elementComponent.autoSelectCustomScript) {
+                    this.$refs.elementComponent.autoSelectCustomScript();
+                }
+            },
             handleRedlineStepSelection: function() {
                 if(this.isRedlineElementSelected) {
                     let filteredElements = this.bulkRedlineElementIds.filter(item => item !== this.stepData.elem_id);
@@ -1251,7 +1330,32 @@
 
     .step-icons {
         display: flex;
+        align-items: center;
         margin-left: auto;
+    }
+
+    .consistency-flag-pill {
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: bold;
+        line-height: 1;
+        margin-right: 6px;
+        padding: 4px 8px;
+        white-space: nowrap;
+    }
+
+    .consistency-flag-icon {
+        margin-right: 4px;
+    }
+
+    .consistency-flag-error {
+        background-color: #d9534f;
+        color: #fff;
+    }
+
+    .consistency-flag-warning {
+        background-color: #f0ad4e;
+        color: #fff;
     }
 
     .step-button {

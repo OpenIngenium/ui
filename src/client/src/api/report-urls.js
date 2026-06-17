@@ -17,6 +17,12 @@ const reportUrls = {
     },
     search_report() {
         return reportUrl + `/search_report`;
+    },
+    report_queue() {
+        return reportUrl + `/report_queue`;
+    },
+    report_queue_job(jobId) {
+        return reportUrl + `/report_queue/${jobId}`;
     }
 };
 

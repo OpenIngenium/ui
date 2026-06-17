@@ -31,11 +31,13 @@ async function getExecutionInPdf(executionId) {
     return await transport.get(
         reportUrls.executions(executionId),
         {
-            responseType: 'arraybuffer',
+            responseType: 'json',
             params: {
+                toc_level: 0,
                 comment: true,
                 activity_report_comment: true,
-                data_review_comment: true
+                data_review_comment: true,
+                all_steps: true
             }                
         }
     );
@@ -45,8 +47,9 @@ async function getProcedureInPdf(procedureId, procedureVersion) {
     return await transport.get(
         reportUrls.procedures(procedureId, procedureVersion), 
         { 
-            responseType: 'arraybuffer',
+            responseType: 'json',
             params: {
+                toc_level: 0,
                 comment: true
             }
         }
@@ -71,12 +74,32 @@ async function getDifferenceReport(baseType, baseId, baseVersion, targetType, ta
     );
 }
 
+async function getReportQueue() {
+    return await transport.get(
+        reportUrls.report_queue(),
+        {
+            responseType: 'json'
+        }
+    );
+}
+
+async function abortReportQueueJob(jobId) {
+    return await transport.delete(
+        reportUrls.report_queue_job(jobId),
+        {
+            responseType: 'json'
+        }
+    );
+}
+
 const reportApi = {
     getExecutionsReport,
     getSearchReport,
     getExecutionInPdf,
     getProcedureInPdf,
     getDifferenceReport,
+    getReportQueue,
+    abortReportQueueJob,
 };
 
 export default reportApi;

@@ -5,7 +5,8 @@ import {
     dictionaryFlightUrls,
     dictionarySseUrls,
     dictionaryUrls,
-    verificationAndValidation
+    verificationAndValidation,
+    stepPaletteUrls
 } from "./dict-urls";
 import _ from "lodash";
 
@@ -676,6 +677,36 @@ async function deleteCustomScript(script_id) {
         /* eslint-disable no-console */
         console.error(error);
         /* eslint-enable no-console */
+        throw error;
+    }
+}
+
+async function getStepPaletteBuiltIn() {
+    const options = {
+        enable_disable: 'ENABLE',
+    };
+    try {
+        const url = stepPaletteUrls.stepPaletteBuiltIn();
+        const response = await transport.get(url, {params: options});
+        return response.data;
+    } catch (error) {
+        /* eslint-disable no-console */
+        console.warn(error);
+        /* eslint-enable no-console */
+        return null;
+    }
+}
+
+async function getStepPaletteCustom() {
+    try {
+        const url = stepPaletteUrls.stepPaletteCustom();
+        const response = await transport.get(url);
+        return response.data;
+    } catch (error) {
+        /* eslint-disable no-console */
+        console.warn(error);
+        /* eslint-enable no-console */
+        return null;
     }
 }
 
@@ -702,7 +733,9 @@ const dictionaryApi = {
     patchCustomScripts,
     deleteFlightDictionary,
     deleteSseDictionary,
-    deleteCustomScript
+    deleteCustomScript,
+    getStepPaletteBuiltIn,
+    getStepPaletteCustom
 };
 
 export default dictionaryApi;

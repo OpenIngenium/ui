@@ -12,10 +12,7 @@
             <h3>Insufficient Permissions</h3>
             <p>Execution</p>
         </div>
-        <footer>
-            The technical data in this document is controlled under the U.S. Export Regulations, release to foreign persons may require an export authorization.
-JPL/Caltech Proprietary - Not for Public Release - Do Not Distribute or Duplicate
-        </footer>
+        <footer v-html="footerText"></footer>
     </div>
 </template>
 
@@ -154,7 +151,8 @@ JPL/Caltech Proprietary - Not for Public Release - Do Not Distribute or Duplicat
             return {
                 executionId: this.$route.params.executionId,
                 currentUser: getUsername(),
-                routeLeaving: false  // flag to indicate this page is being switch to another page
+                routeLeaving: false,  // flag to indicate this page is being switch to another page
+                footerText: window.uiCustomFooter || ""
             };
         },
         sockets: {

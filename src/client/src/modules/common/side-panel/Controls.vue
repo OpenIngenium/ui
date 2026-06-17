@@ -205,14 +205,21 @@
                 </button>
             </template>
         </ing-modal>
+        <report-submitted-modal
+            :show="showReportSubmittedModal"
+            :report-id="submittedReportId"
+            :message="submittedReportMessage"
+            title="As Run PDF Report Request"
+            @close="showReportSubmittedModal = false">
+        </report-submitted-modal>
     </div>
 </template>
 
 <script>
     import { mapActions, mapGetters } from 'vuex';
     import IngToggle from '../IngToggle.vue';
+    import ReportSubmittedModal from '../ReportSubmittedModal.vue';
     import reportApi from '../../../api/report';
-    import { forceFileDownload } from "../../common/utils";
     
     export default {
         name: "Controls",
@@ -221,10 +228,14 @@
                 executionId: this.$route.params.executionId,
                 showModal: false, // TODO: move this to vuex app-wide store,
                 showConfirmSuspend: false,
+                showReportSubmittedModal: false,
+                submittedReportId: '',
+                submittedReportMessage: ''
             };
         },
         components: {
-            IngToggle
+            IngToggle,
+            'report-submitted-modal': ReportSubmittedModal
         },
         computed: {
             ...mapGetters([
@@ -447,7 +458,9 @@
 
                 try {
                     const response = await reportApi.getExecutionInPdf(this.executionId);
-                    forceFileDownload(response, `${this.executionId}.pdf`);
+                    this.submittedReportId = response.data.report_id;
+                    this.submittedReportMessage = response.data.message;
+                    this.showReportSubmittedModal = true;
                 } catch (error) {
                     this.displayFeedback({type: 'error', errorObj: error});
                 } finally {

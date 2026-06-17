@@ -16,6 +16,7 @@
                 return {
                     action: 'selectedCustomScript',
                     data: {
+                        script_id: this.data.script_id,
                         script_path: this.data.script_path
                     }
                 };

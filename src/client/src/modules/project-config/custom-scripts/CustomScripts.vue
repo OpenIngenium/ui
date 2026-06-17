@@ -10,8 +10,10 @@
             :total="customScriptsCount"
             empty-message="No Custom Scripts to display."
             :callback="fetchCallback"
-            :limit="limit">
+            :limit="limit"
+            @handleEvent="handleTableEvent">
         </ing-table>
+        <feedback-modal></feedback-modal>
         <!-- FOOTER -->
         <ing-footer></ing-footer>
     </div>
@@ -24,12 +26,14 @@
     import { mapActions, mapGetters } from "vuex";
     import _ from 'lodash';
     import CustomScriptsActionsDropdown from "./CustomScriptsActionsDropdown.vue";
+    import FeedbackModal from "../../common/FeedbackModal.vue";
     import IngFooter from "../../common/IngFooter.vue";
 
     export default {
         name: 'CustomScripts',
         components: {
             IngTable,
+            FeedbackModal,
             'ing-footer': IngFooter
         },
         computed: {
@@ -49,31 +53,28 @@
                 "fetchCustomScripts",
             ]),
             fetchCallback: function({ sortDirection, sortField, filters, limit, offset }) {
+                this.lastOptions = {
+                    sortDirection,
+                    sortField,
+                    filters,
+                    limit,
+                    offset
+                };
                 this.offset = offset;
                 this.limit = limit;
-                this.fetchCustomScripts({
-                    sortDirection: sortDirection,
-                    sortField: sortField,
-                    filters: filters,
-                    limit: limit,
-                    offset: offset
-                });
+                this.fetchCustomScripts(this.lastOptions);
             },
             handleTableEvent: function(event) {
-                switch(event.action) {
-                    case "delete":
-                        break;
-                    case "activate":
-                        break;
-                    case "deactivate":
-                        break;
-                    default:
-                        break;
+                // For now, treat any child action that updates/deletes data as a signal to refresh.
+                // We only refresh if we have previous options (table has already loaded once).
+                if (this.lastOptions) {
+                    this.fetchCustomScripts(this.lastOptions);
                 }
             }
         },
         data() {
             return {
+                lastOptions: null,
                 tableColumns: [
                     {
                         field: "script_path",

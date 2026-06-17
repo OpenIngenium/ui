@@ -174,7 +174,8 @@ export function slimElement(element) {
         "break_point",
         "tag_ids",
         "callable",
-        "child_execution_id"
+        "child_execution_id",
+        "consistency_flag"
     ];
 
     return elementKeys.reduce((obj, key) => ({ ...obj, [key]: element[key] }), {});

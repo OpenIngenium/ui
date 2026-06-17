@@ -1,4 +1,4 @@
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 import { getUsername } from "../../common/utils";
 import { getElementDef } from "../../common/elem_types";
 
@@ -18,6 +18,8 @@ export default {
     computed: {
         ...mapGetters([
             "elementsByParent",
+            "stepPaletteBuiltIn",
+            "stepPaletteCustom"
         ]),
         canEditElement: function() {
             return false;
@@ -39,8 +41,12 @@ export default {
         }
     },
     methods: {
+        ...mapActions([
+            "fetchStepPaletteBuiltIn",
+            "fetchStepPaletteCustom"
+        ]),
         getElementMap: function(elementData) {
-            return getElementDef(elementData);
+            return getElementDef(elementData, this.stepPaletteBuiltIn, this.stepPaletteCustom);
         },
         elementDrop: function() {
             return false;

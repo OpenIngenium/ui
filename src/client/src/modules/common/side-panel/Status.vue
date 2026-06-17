@@ -215,22 +215,33 @@
                     class="btn btn-default"><span class="glyphicon glyphicon-download"></span>&nbsp;Save as PDF</button>
             </div>
         </div>
+        <report-submitted-modal
+            :show="showReportSubmittedModal"
+            :report-id="submittedReportId"
+            :message="submittedReportMessage"
+            title="As Run PDF Report Request"
+            @close="showReportSubmittedModal = false">
+        </report-submitted-modal>
     </div>
 </template>
 
 <script>
     import { mapGetters, mapActions } from 'vuex';
     import IngModal from "../../common/IngModal.vue";
+    import ReportSubmittedModal from "../../common/ReportSubmittedModal.vue";
     import ParticipantsModal from "./ParticipantsModal.vue";
     //import dateformat from "dateformat";
     import reportApi from '../../../api/report';
-    import { forceFileDownload, isAdmin } from '../utils';
+    import { isAdmin } from '../utils';
 
     export default {
         name: "Status",
         data() {
             return {
                 current_time: Date.now(),
+                showReportSubmittedModal: false,
+                submittedReportId: '',
+                submittedReportMessage: '',
                 approveAsRunModal: false,
                 unfinalizeAsRunModal: false,
                 approveAsRunText: "",
@@ -244,6 +255,7 @@
         components: {
             'ing-modal': IngModal,
             'participants-modal': ParticipantsModal,
+            'report-submitted-modal': ReportSubmittedModal
         },
         props: {
             isAsRun: {
@@ -468,7 +480,9 @@
                 this.setPending(true);
                 try {
                     const response = await reportApi.getExecutionInPdf(this.execution.execution_id);
-                    forceFileDownload(response, `${this.execution.execution_id}.pdf`);
+                    this.submittedReportId = response.data.report_id;
+                    this.submittedReportMessage = response.data.message;
+                    this.showReportSubmittedModal = true;
                 } catch (error) {
                     this.displayFeedback({type: 'error', errorObj: error});
                 } finally {

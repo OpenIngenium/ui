@@ -250,6 +250,8 @@
             window.addEventListener('resize', this.handleHeight);
 
             this.loadElementSelections();
+            this.fetchStepPaletteBuiltIn();
+            this.fetchStepPaletteCustom();
         },
         mounted() {
             this.toolbarTop = this.$refs.toolbarTop.offsetHeight;
@@ -280,6 +282,8 @@
                 "procedureDetails",
                 "executionId",
                 "filteredElementIdMap",
+                "stepPaletteBuiltIn",
+                "stepPaletteCustom",
             ]),
             rootElements: function() {
                 return this.fetchOutlinePrecomputed;
@@ -313,7 +317,9 @@
                 "removeCopyElemId",
                 "setCopyParams",
                 "loadElementSelections",
-                "addElemIdRange"
+                "addElemIdRange",
+                "fetchStepPaletteBuiltIn",
+                "fetchStepPaletteCustom",
             ]),
             onMouseEnter: function() {
                 this.loadElementSelections();
@@ -407,7 +413,7 @@
             },
             handleToggleBreakpoint: function(e) {
                 this.updateElement({
-                    elementPath: getElementPath(this.menuContext),
+                    elementPath: getElementPath(this.menuContext, this.stepPaletteBuiltIn, this.stepPaletteCustom),
                     elementId: this.menuContext.elem_id,
                     element: {
                         'break_point': this.menuContext.break_point == 'NONE' ? 'ACTIVE' : 'NONE'
@@ -424,13 +430,15 @@
             handleInsertStep: async function(e, {
                 elementPath,
                 insertAfterId,
-                level
+                level,
+                scriptMeta
             }) {
                 this.operate({
                     operation: 'INSERT',
                     elementPath,
                     insertAfterId,
-                    level
+                    level,
+                    scriptMeta
                 }, false);
                 this.showElementMenu = false;
             },
@@ -485,7 +493,7 @@
                     }
                 } else {
                     if (dropdownItem.elementPath) {
-                        await this.createElement({elementType: dropdownItem.elementPath, insertAfterId: dropdownItem.insertAfterId, level: dropdownItem.level});
+                        await this.createElement({elementType: dropdownItem.elementPath, insertAfterId: dropdownItem.insertAfterId, level: dropdownItem.level, scriptMeta: dropdownItem.scriptMeta});
                     } else {
                         console.warn(`elementType was not provided: ${dropdownItem.elementPath}`);
                     }

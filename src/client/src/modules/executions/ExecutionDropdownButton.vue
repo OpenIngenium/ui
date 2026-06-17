@@ -142,6 +142,13 @@
                     <button type="button" class="btn pull-right" style="margin-left: 15px;" @click="showCloseExecutionModal = false">Cancel</button>
                 </template>
             </ing-modal>
+            <report-submitted-modal
+                :show="showReportSubmittedModal"
+                :report-id="submittedReportId"
+                :message="submittedReportMessage"
+                title="As Run PDF Report Request"
+                @close="showReportSubmittedModal = false">
+            </report-submitted-modal>
         </div>
     </div>
 </template>
@@ -151,6 +158,7 @@
     import reportApi from "../../api/report";
     import {mapActions, mapGetters} from "vuex";
     import IngModal from "../common/IngModal.vue";
+    import ReportSubmittedModal from "../common/ReportSubmittedModal.vue";
     import {exportExecutionInGzip} from "../../api/execution";
     import {forceFileDownload} from "../common/utils";
 
@@ -175,10 +183,14 @@
                 filteredAvailableVenues: [],
                 canCloseThisExecution: false,
                 canSuspendThisExecution: false,
+                showReportSubmittedModal: false,
+                submittedReportId: '',
+                submittedReportMessage: ''
             };
         },
         components: {
-            'ing-modal': IngModal
+            'ing-modal': IngModal,
+            'report-submitted-modal': ReportSubmittedModal
         },
         computed: {
             ...mapGetters([
@@ -249,8 +261,9 @@
                 this.setPending(true);
                 try {
                     const response = await reportApi.getExecutionInPdf(this.data.execution_id);
-                    const timestamp = (new Date()).toISOString();
-                    forceFileDownload(response, `${this.data.execution_id}_${timestamp}.pdf`);
+                    this.submittedReportId = response.data.report_id;
+                    this.submittedReportMessage = response.data.message;
+                    this.showReportSubmittedModal = true;
                 } catch (error) {
                     this.displayFeedback({type: 'error', errorObj: error});
                 } finally {

@@ -64,10 +64,23 @@ const verificationAndValidation = {
     }
 };
 
+const stepPaletteUrls = {
+    stepPalette: function() {
+        return dictUrl + `/step_palette`;
+    },
+    stepPaletteBuiltIn: function() {
+        return stepPaletteUrls.stepPalette() + `/built_in`;
+    },
+    stepPaletteCustom: function() {
+        return stepPaletteUrls.stepPalette() + `/custom`;
+    }
+};
+
 export {
     dictionaryUrls,
     dictionaryFlightUrls,
     dictionarySseUrls,
     customScriptsUrls,
-    verificationAndValidation
+    verificationAndValidation,
+    stepPaletteUrls
 };

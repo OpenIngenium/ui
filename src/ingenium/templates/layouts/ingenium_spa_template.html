@@ -23,6 +23,11 @@
         <script type="text/javascript" src="{% static "/js/bootstrap.min.js" %}?version=3.0.15"></script>
         <script type="text/javascript" src="{% static "/js/global.min.js" %}?version=3.0.15"></script>
 
+        <script>
+            window.applicationTitle = "{{ APPLICATION_TITLE }}";
+            window.uiCustomFooter = "{{ UI_CUSTOM_FOOTER|safe }}";
+        </script>
+
     </head>
 
     <body class="up-body mw-100 position-relative" style="min-height: auto;">
@@ -46,8 +51,6 @@
     <div id="dynamic_js_include">{% block dynamic_js_include %}{% endblock %}</div>
 
     <script>
-        window.applicationTitle = "{{ APPLICATION_TITLE }}";
-
         window.contextMenuDropdowns = () => {
             $('.dropdown-submenu .submenu').off('click');
             

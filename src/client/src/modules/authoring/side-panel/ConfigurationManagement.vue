@@ -224,28 +224,39 @@
                 </button>
             </template>
         </ing-modal>
+        <report-submitted-modal
+            :show="showReportSubmittedModal"
+            :report-id="submittedReportId"
+            :message="submittedReportMessage"
+            title="Procedure PDF Report Request"
+            @close="showReportSubmittedModal = false">
+        </report-submitted-modal>
     </div>
 </template>
 
 <script>
     import { mapGetters, mapActions } from "vuex";
     import IngModal from "../../common/IngModal.vue";
+    import ReportSubmittedModal from "../../common/ReportSubmittedModal.vue";
     import { getUsername } from "../../common/utils";
     import reportApi from '../../../api/report';
-    import { forceFileDownload } from "../../common/utils";
 
     let TOOLTIPS = require('../../common/tooltip-config');
 
     export default {
         name: "ConfigurationManagement",
         components: {
-            IngModal
+            IngModal,
+            'report-submitted-modal': ReportSubmittedModal
         },
         data() {
             return {
                 showVersioningModal: false,
                 lockAddVersion: false,
                 showDetailModal: false,
+                showReportSubmittedModal: false,
+                submittedReportId: '',
+                submittedReportMessage: '',
                 versionDescription: "",
                 currentUser: getUsername(),
             };
@@ -310,7 +321,9 @@
                 this.setPending(true);
                 try {
                     const response = await reportApi.getProcedureInPdf(this.procedureDetails.procedure_id, this.procedureVersion);
-                    forceFileDownload(response, `${this.procedureDetails.procedure_id}-v${this.procedureVersion}.pdf`);
+                    this.submittedReportId = response.data.report_id;
+                    this.submittedReportMessage = response.data.message;
+                    this.showReportSubmittedModal = true;
                 } catch (error) {
                     this.displayFeedback({type: 'error', errorObj: error});
                 } finally {

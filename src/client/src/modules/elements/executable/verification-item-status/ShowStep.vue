@@ -50,11 +50,17 @@
                 required: true
             },
         },
+        created() {
+            this.fetchStepPaletteBuiltIn();
+            this.fetchStepPaletteCustom();
+        },
         computed: {
             ...mapGetters([
                 "elementsAll",
                 "selectedVisStepElementId",
                 "getStepsByElementId",
+                "stepPaletteBuiltIn",
+                "stepPaletteCustom"
             ]),
             parentElements: function() {
                 return this.elementsAll.filter((elem) => {
@@ -62,7 +68,7 @@
                 });
             },
             elementMap: function() {
-                return elementMapByType(this.type);
+                return elementMapByType(this.type, this.stepPaletteBuiltIn, this.stepPaletteCustom);
             },
             showCheckbox: function() {
                 return !(this.elementMap.category === "organization" || this.elementMap.category === "non_executable");
@@ -94,6 +100,8 @@
             ...mapActions([
                 "addStepToStatusStep",
                 "deleteStepFromStep",
+                "fetchStepPaletteBuiltIn",
+                "fetchStepPaletteCustom"
             ]),
             handleCheckboxChange(event) {
                 if(event.target.checked) {

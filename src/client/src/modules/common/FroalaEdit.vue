@@ -12,7 +12,7 @@
             return {
                 config:{
                     // Editor overall
-                    key : "", //ENTER KEY HERE
+                    key : "CTD5xE3B2E2B2A6B3wc2DBKSPJ1WKTUCQOd1OURPE1KDc1C-7J2A4D4B3C6E2D1F4E1H2==",
                     attribution: false,
                     charCounterCount: false,
                     toolbarButtons: FROALA_TOOLBAR_BUTTONS,

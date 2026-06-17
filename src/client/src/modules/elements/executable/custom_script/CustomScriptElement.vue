@@ -60,7 +60,7 @@
 
             <div v-if="isLevelThreeDetail" class="edit-container">
                 <div class="row">
-                    <div class="col-xs-6">
+                    <div class="col-xs-6" v-if="!isCustomScriptDynamic">
                         <button 
                             data-toggle="tooltip" 
                             data-placement="top"
@@ -94,7 +94,7 @@
                             :inputClasses="modStyle(elementId, 'script_path')"
                         ></ing-autocomplete>
                     </div>
-                    <div class="col-xs-4"></div>
+                    <div :class="isCustomScriptDynamic ? 'col-xs-10' : 'col-xs-4'"></div>
                     <div class="col-xs-2">
                         <label 
                             data-toggle="tooltip" 
@@ -116,7 +116,7 @@
         </div>
 
         <!-- BACKWARD COMPATIBILITY OLD STYLE-->
-        <div v-if="!isAdvancedLayout">
+        <div v-if="!isAdvancedLayout && !isCustomScriptDynamic">
             <!--INPUT SECTION SINGLE ENTRY-->
             <div v-if="isLevelTwoDetail && inputs.length && scriptPath !== ''">
                 <p style="text-align: center; font-weight: bold; margin-top:10px;">Inputs</p>
@@ -255,6 +255,7 @@
                                       :executed="executed"
                                       :enableExecution="enableExecution"
                                       :outputs="outputs"
+                                      :isEntry="false"
 
                                       :modStyle="modStyle"
                                       :getInputByName="getInputByName"
@@ -295,6 +296,7 @@
                                       :executed="executed"
                                       :enableExecution="enableExecution"
                                       :outputs="outputs"
+                                      :isEntry="false"
 
                                       :modStyle="modStyle"
                                       :getInputByName="getInputByName"
@@ -411,6 +413,7 @@
                                   :executed="executed"
                                   :enableExecution="enableExecution"
                                   :outputs="outputs"
+                                  :isEntry="false"
                                                         
                                   :modStyle="modStyle"
                                   :getInputByName="getInputByName"
@@ -485,6 +488,9 @@
             AdvancedLayoutField
         },
         created() { 
+            if(!this.isAdvancedLayout && this.elementMap.scriptMeta) {
+                this.autoSelectCustomScript();
+            }
         },
         data() {
             return  {
@@ -702,12 +708,19 @@
             isStepPending: function() {
                 return this.execution.status === 'RUNNING' || this.execution.status === 'PAUSED';
             },
+            isCustomScriptDynamic: function() {
+                if (this.elementMap.scriptMeta) {
+                    return this.customScriptInput.hasOwnProperty('script_display_name');
+                }
+                return false;
+            }
         },
         methods: {
             ...mapActions([
                 "fetchCustomScripts",
                 "editCustomScriptInput",
-                "saveElementInput"
+                "saveElementInput",
+                "updateElementConsistencyFlag"
             ]),
             clickLogsLink: function(logsLink) {
                 return window.location.origin + '/file_server/' + logsLink;
@@ -735,6 +748,10 @@
             },
             getScriptByPath: function(scriptPath) {
                 const scriptInfo = this.allCustomScripts.find((script => script.script_path === scriptPath));
+                return scriptInfo ? scriptInfo : null;
+            },
+            getScriptById: function(scriptId) {
+                const scriptInfo = this.allCustomScripts.find((script => script.script_id === scriptId));
                 return scriptInfo ? scriptInfo : null;
             },
             buildNameTypeFieldMap: function(fields) {
@@ -827,18 +844,124 @@
                         });
                     });
                 }
-            },            
-            selectCustomScript: function(customEvent, save) {
-                const script_path = customEvent.data.script_path;
-                this.scriptPath = script_path;
+            }, 
+            autoSelectCustomScript: async function() {
                 
-                // get the definition of the newly selected script
-                const scriptInfoFromCatalog = this.getScriptByPath(script_path);
-
+                const script_id = this.elementMap.scriptMeta.script_id;
+                const script_path = this.elementMap.scriptMeta.script_path;
+                
+                await this.fetchCustomScripts({ scriptPath: script_path });
+                
+                // get the definition of the script, preferring ID lookup
+                let scriptInfoFromCatalog = null;
+                if (script_id) {
+                    scriptInfoFromCatalog = this.getScriptById(script_id);
+                }
+                if (!scriptInfoFromCatalog && script_path) {
+                    scriptInfoFromCatalog = this.getScriptByPath(script_path);
+                }
+                
                 if (scriptInfoFromCatalog === null) {
-                    console.error(`custom script was not found. script_path: ${script_path}`);
+                    console.error(`custom script was not found. script_id: ${script_id}, script_path: ${script_path}`);
                     return;
                 }
+                
+                this.scriptPath = scriptInfoFromCatalog.script_path;
+                const scriptInfo = _.cloneDeep(scriptInfoFromCatalog);
+                const stepInput = this.customScriptInput;
+                // These will update scriptInfo, which is a cloned data.
+                // scriptInfo will be used to set inputs and entries below
+                this.mergeInputs(stepInput.inputs, scriptInfo.inputs);
+                this.mergeEntryInputs(stepInput.entries, scriptInfo.entries);
+
+                this.editElementInput({
+                    elementId: this.elementId,
+                    keyString: "script_path",
+                    value: scriptInfo.script_path
+                });
+                this.editElementInput({
+                    elementId: this.elementId,
+                    keyString: "script_id",
+                    value: scriptInfo.script_id
+                });
+                this.editElementInput({
+                    elementId: this.elementId,
+                    keyString: "script_name",
+                    value: scriptInfo.script_name
+                });
+                this.editElementInput({
+                    elementId: this.elementId,
+                    keyString: "hash",
+                    value: scriptInfo.hash
+                });
+                this.editElementInput({
+                    elementId: this.elementId,
+                    keyString: "description",
+                    value: scriptInfo.description
+                });
+                this.editElementInput({
+                    elementId: this.elementId,
+                    keyString: "inputs",
+                    value: scriptInfo.inputs
+                });
+                this.editElementInput({
+                    elementId: this.elementId,
+                    keyString: "entries",
+                    value: scriptInfo.entries
+                });                
+                this.editElementInput({
+                    elementId: this.elementId,
+                    keyString: "outputs",
+                    value: scriptInfo.outputs
+                });
+                this.editElementInput({
+                    elementId: this.elementId,
+                    keyString: "output_array",
+                    value: scriptInfo.output_array
+                });
+                this.editElementInput({
+                    elementId: this.elementId,
+                    keyString: "layout",
+                    value: scriptInfo.layout
+                });
+                this.editElementInput({
+                    elementId: this.elementId,
+                    keyString: "spec_hash",
+                    value: scriptInfo.spec_hash
+                });
+
+           
+                // save input to the step
+                this.saveElementInput({ 
+                    elementId: this.elementId,
+                    elementPath: this.elementMap.path
+                });
+                
+                // update consistency flag to CONSISTENT
+                this.updateElementConsistencyFlag({
+                    elementId: this.elementId,
+                    consistencyFlag: 'CONSISTENT'
+                });                
+            },
+            selectCustomScript: function(customEvent, save) {
+                const script_id = customEvent.data.script_id;
+                const script_path = customEvent.data.script_path;
+
+                // get the definition of the newly selected script, preferring ID lookup
+                let scriptInfoFromCatalog = null;
+                if (script_id) {
+                    scriptInfoFromCatalog = this.getScriptById(script_id);
+                }
+                if (!scriptInfoFromCatalog && script_path) {
+                    scriptInfoFromCatalog = this.getScriptByPath(script_path);
+                }
+
+                if (scriptInfoFromCatalog === null) {
+                    console.error(`custom script was not found. script_id: ${script_id}, script_path: ${script_path}`);
+                    return;
+                }
+
+                this.scriptPath = scriptInfoFromCatalog.script_path;
                 
                 // make a copy not to change state of catalog outside mutator
                 const scriptInfo = _.cloneDeep(scriptInfoFromCatalog);
@@ -901,6 +1024,11 @@
                     keyString: "layout",
                     value: scriptInfo.layout
                 });
+                this.editElementInput({
+                    elementId: this.elementId,
+                    keyString: "spec_hash",
+                    value: scriptInfo.spec_hash
+                });
 
                 this.showCustomScriptModal = false;
 
@@ -909,6 +1037,12 @@
                     this.saveElementInput({ 
                         elementId: this.elementId,
                         elementPath: this.elementMap.path
+                    });
+                    
+                    // update consistency flag to CONSISTENT
+                    this.updateElementConsistencyFlag({
+                        elementId: this.elementId,
+                        consistencyFlag: 'CONSISTENT'
                     });
                 }
             },
@@ -943,6 +1077,8 @@
             handleDataEntryEvent: function(event) {
                 this.$emit('dataEntryEvent', event);
             },
+            // TODO: this function is very similar to the one in CustomScriptEntry.vue. Consider consolidation.
+            // Many methods in the component can be consolidated with the ones in CustomScriptEntry.vue.
             getFieldValue(fieldName) {
                 // First check inputs
                 const input = this.inputs.find(i => i.name === fieldName);
@@ -985,6 +1121,7 @@
 
                 return '___________';
             },
+            // TODO: this function is duplicated in CustomScriptEntry.vue. Consider consolidation.
             renderTemplate(template) {       
                 return template.replace(/{([^}]+)}/g, (_, fieldExpr) => {
                     // Match: fieldName[index]

@@ -181,8 +181,13 @@
                     vi.vac_name = '';
                     if (vi.vas && vi.vas.length > 0) {
                         // assume that VI belongs to only one VA
-                        vi.va_name = vi.vas[0].va_name;
-                        vi.va_name = vi.vas[0].vac_name;
+                        const firstVa = vi.vas[0];
+                        if (typeof firstVa === 'object' && firstVa !== null) {
+                            vi.va_name = firstVa.va_name || '';
+                            vi.vac_name = firstVa.vac_name || '';
+                        } else {
+                            vi.va_name = firstVa || '';
+                        }
                     }
                     vis.push(vi);
                 }

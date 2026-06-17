@@ -7,7 +7,8 @@ def global_settings(request):
     return {
         'APPLICATION_TITLE': settings.APPLICATION_TITLE,
         'APPLICATION_ACRONYM': settings.APPLICATION_ACRONYM,
-        'HEADER_JS_BUNDLE': settings.HEADER_JS_BUNDLE
+        'HEADER_JS_BUNDLE': settings.HEADER_JS_BUNDLE,
+        'UI_CUSTOM_FOOTER': settings.UI_CUSTOM_FOOTER
     }
 
 

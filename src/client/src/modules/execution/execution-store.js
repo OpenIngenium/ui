@@ -46,6 +46,7 @@ import { slimElement, deepCopy, isUndefinedOrNull, setScrollToElementIdFunc, pag
     getUsername, toggleOutlineCollapsedAllFunc, diffElems, handleErrorNotification, getDefaultSearchResult
 } from "../../modules/common/utils";
 import { getElementPath } from "../common/elem_types";
+import dictionaryApi from "../../api/dictionary";
 import _ from 'lodash';
 import Vue from 'vue';
 
@@ -133,12 +134,53 @@ const initialState = () => {
         redlineElementIds: [],
         // Bulk Redline elements
         bulkRedlineElementIds: [],
-        dataInitialized: false
+        dataInitialized: false,
+        stepPaletteBuiltIn: [],
+        stepPaletteCustom: []
     };
 };
 
 
 const state = initialState();
+
+function normalizeVisForStepInput(vis) {
+    const inputVis = Array.isArray(vis) ? vis : [];
+
+    return inputVis.map((vi) => {
+        const vas = Array.isArray(vi.vas) ? vi.vas : [];
+        const vacs = Array.isArray(vi.vacs) ? vi.vacs : [];
+
+        return {
+            ...vi,
+            vi_id: vi.vi_id || '',
+            vi_name: vi.vi_name || '',
+            vi_owner: vi.vi_owner || '',
+            vi_type: vi.vi_type || '',
+            vi_text: vi.vi_text || '',
+            vi_additional_procs: vi.vi_additional_procs || '',
+            vi_selected: vi.vi_selected,
+            vas: vas.map((va, index) => {
+                if (typeof va === 'object' && va !== null) {
+                    return {
+                        va_id: va.va_id || '',
+                        va_name: va.va_name || '',
+                        va_poc: va.va_poc || '',
+                        vac_id: va.vac_id || '',
+                        vac_name: va.vac_name || vacs[index] || vi.vac_name || '',
+                    };
+                }
+
+                return {
+                    va_id: '',
+                    va_name: va || '',
+                    va_poc: '',
+                    vac_id: '',
+                    vac_name: vacs[index] || vi.vac_name || '',
+                };
+            }),
+        };
+    });
+}
 
 const getters = {
     dataInitialized: state => state.dataInitialized,
@@ -621,6 +663,8 @@ const getters = {
     hasReplaceElementSource: state => {
         return Object.keys(state.replaceElementSource).length > 0;
     },
+    stepPaletteBuiltIn: state => state.stepPaletteBuiltIn,
+    stepPaletteCustom: state => state.stepPaletteCustom,
     procedureModificationModal: state => state.procedureModificationModal,
     redlineElementIds: state => state.redlineElementIds,
     bulkJustificationModalMessage: state => state.bulkJustificationModalMessage,
@@ -686,6 +730,24 @@ const actions = {
         commit("setBooleanKey", {key: "loadingProcedureDetails", bool: true});
         return procedureApi.getProcedureVersion(procedureId, version);
     },
+    async fetchStepPaletteBuiltIn({state, commit}) {
+        if (state.stepPaletteBuiltIn && state.stepPaletteBuiltIn.length) {
+            return state.stepPaletteBuiltIn;
+        }
+        commit('setBooleanKey', {key: 'loadingProcedure', bool: true});
+        const stepPaletteBuiltIn = await dictionaryApi.getStepPaletteBuiltIn();
+        commit('setStepPaletteBuiltIn', {stepPaletteBuiltIn: stepPaletteBuiltIn});
+        commit('setBooleanKey', {key: 'loadingProcedure', bool: false});
+    },
+    async fetchStepPaletteCustom({state, commit}) {
+        if (state.stepPaletteCustom && state.stepPaletteCustom.length) {
+            return state.stepPaletteCustom;
+        }
+        commit('setBooleanKey', {key: 'loadingProcedure', bool: true});
+        const stepPaletteCustom = await dictionaryApi.getStepPaletteCustom();
+        commit('setStepPaletteCustom', {stepPaletteCustom: stepPaletteCustom});
+        commit('setBooleanKey', {key: 'loadingProcedure', bool: false});
+    },
     async fetchElements({commit, getters, rootState, dispatch}, {executionId}) {
         commit("setPending", true);
         const { elements, error } = await getExecutionElements(executionId);
@@ -719,9 +781,9 @@ const actions = {
     async scrollElements({commit}, {scrollDirection}) {
         commit("pageElements", {scrollDirection: scrollDirection});
     },    
-    async createElement({commit, getters, rootState}, {elementType, insertAfterId, level}) {
+    async createElement({commit, getters, rootState}, {elementType, insertAfterId, level, scriptMeta}) {
         commit("setBooleanKey", {key: "creatingElement", bool: true});
-        await postExecutionElement(getters.executionId, elementType, insertAfterId, level,
+        await postExecutionElement(getters.executionId, elementType, insertAfterId, level, scriptMeta,
             () => {},
             (error) => {
                 commit('receiveFeedback', {type: 'error', errorObj: error});
@@ -953,6 +1015,9 @@ const actions = {
         let payload = state.elements[elementId].execution_user_input;
         if (input) {
             payload = {...payload, ...input};
+        }
+        if (payload && Array.isArray(payload.vis)) {
+            payload = {...payload, vis: normalizeVisForStepInput(payload.vis)};
         }
         try {
             await postExecutionElementInput(getters.executionId, elementPath, elementId, payload);
@@ -1968,6 +2033,9 @@ const actions = {
         commit("receiveElementInput", {elementId, keyString, value});
         commit('setBooleanKey', {key: 'updatingElementInput', bool: false});
     },
+    updateElementConsistencyFlag({commit}, {elementId, consistencyFlag}) {
+        commit("updateElementConsistencyFlag", {elementId, consistencyFlag});
+    },
     editCustomScriptInput({commit}, {elementId, index, key, value}) {
         commit('setBooleanKey', {key: 'updatingElementInput', bool: true});
         commit("receiveCustomScriptInput", {elementId, index, key, value});
@@ -2104,7 +2172,7 @@ const actions = {
         const elementId = getters.selectedVisStepElementId;
         const payload = {
             execution_user_input: {
-                vis: Object.values(state.selectedViMap),
+                vis: normalizeVisForStepInput(Object.values(state.selectedViMap)),
                 steps: [ ...getters.getStepsByElementId(elementId) ],
             }
         };
@@ -2120,7 +2188,7 @@ const actions = {
         if (visOriginal.length !== visToReplace.length) {
             const payload = {
                 execution_user_input: {
-                    vis: visToReplace,
+                    vis: normalizeVisForStepInput(visToReplace),
                     steps: [ ...getters.getStepsByElementId(elementId) ],
                 }
             };
@@ -2142,7 +2210,7 @@ const actions = {
         };
         const payload = {
             execution_user_input: {
-                vis: [ ...getters.getVisByElementId(selectedVisStepElementId) ],
+                vis: normalizeVisForStepInput([ ...getters.getVisByElementId(selectedVisStepElementId) ]),
                 steps: [ ...getters.getStepsByElementId(selectedVisStepElementId), step ],
             }
         };
@@ -2154,7 +2222,7 @@ const actions = {
     async deleteStepFromStep({commit, getters}, {elementId, elem_id}) {
         const payload = {
             execution_user_input: {
-                vis: [ ...getters.getVisByElementId(elementId) ],
+                vis: normalizeVisForStepInput([ ...getters.getVisByElementId(elementId) ]),
                 steps: getters.getStepsByElementId(elementId).filter((step) => step.elem_id !== elem_id),
             }
         };
@@ -2167,7 +2235,7 @@ const actions = {
         const selectedVisStepElementId = getters.selectedVisStepElementId;
         const payload = {
             execution_user_input: {
-                vis: getters.getVisByElementId(selectedVisStepElementId),
+                vis: normalizeVisForStepInput(getters.getVisByElementId(selectedVisStepElementId)),
                 steps: [],
             }
         };
@@ -2189,7 +2257,7 @@ const actions = {
             });
         const payload = {
             execution_user_input: {
-                vis: getters.getVisByElementId(selectedVisStepElementId),
+                vis: normalizeVisForStepInput(getters.getVisByElementId(selectedVisStepElementId)),
                 steps: steps
             }
         };
@@ -2747,6 +2815,9 @@ const mutations = {
     receiveElementSpecification(state, {elementId, keyString, value}) {
         _.set(state.elements[elementId].specification.execution_user_input, keyString, value);
     },
+    updateElementConsistencyFlag(state, {elementId, consistencyFlag}) {
+        state.elements[elementId].consistency_flag = consistencyFlag;
+    },
     receiveRedlineInput(state, {elementId, keyString, value}) {
         _.set(state.elements[elementId].procedure_modification, keyString, value);
     },
@@ -2918,7 +2989,7 @@ const mutations = {
         state.elements[elementId].execution_user_input.vis.splice(deleteIndex, 1);
     },
     setVisDeclareStep(state, {elementId}) {
-        state.elements[elementId].execution_user_input.vis = Object.values(state.selectedViMap);
+        state.elements[elementId].execution_user_input.vis = normalizeVisForStepInput(Object.values(state.selectedViMap));
     },
     deleteStepFromStep(state, {elementId, elem_id}) {
         const deleteIndex = state.elements[elementId].execution_user_input.steps.findIndex((step) => step.elem_id === elem_id);
@@ -3032,7 +3103,13 @@ const mutations = {
             } 
         }
         state.bulkRedlineElementIds = updatedRedlineElementIds;
-    }
+    },
+    setStepPaletteBuiltIn(state, {stepPaletteBuiltIn}) {
+        state.stepPaletteBuiltIn = stepPaletteBuiltIn;
+    },
+    setStepPaletteCustom(state, {stepPaletteCustom}) {
+        state.stepPaletteCustom = stepPaletteCustom;
+    },
 };
 
 export default {

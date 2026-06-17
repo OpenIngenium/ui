@@ -36,6 +36,7 @@ STATIC_URL = '/static/'
 
 APPLICATION_TITLE = os.environ.get("APPLICATION_TITLE", "Europa Clipper")
 APPLICATION_ACRONYM = os.environ.get("APPLICATION_ACRONYM", "Europa Clipper Ingenium")
+UI_CUSTOM_FOOTER = os.environ.get("UI_CUSTOM_FOOTER", "")
 
 # This is needed by Django;  Although we don't have a Database we still need to set this
 SECRET_KEY = ')g*70jesw6ux^jn)glyq#i^efg$d^(w=qm)*2o(hr13(w7xc8%'

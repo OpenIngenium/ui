@@ -60,8 +60,8 @@
                                 class="dropdown-submenu">
                                 <a class="submenu" data-toggle="dropdown" href="#">{{ group }} <span class="caret"></span></a>
                                 <ul class="dropdown-menu" :style="subMenuLevel2">
-                                    <li v-for="element in usedElementsByPaletteGroup(group)" 
-                                        :key="element.name"
+                                    <li v-for="(element, index) in usedElementsByPaletteGroup(group)" 
+                                        :key="index"
                                         class="dropdown-submenu">
                                         <a class="submenu" data-toggle="dropdown" href="#">{{ element.displayName }}<span class="caret"></span></a>
                                         <ul class="dropdown-menu" :style="subMenuLevel3">
@@ -70,7 +70,8 @@
                                                 <a @click.prevent="(e) => handleInsertStep(e, {
                                                     elementPath: element.path,
                                                     insertAfterId: insertDropdownItem.insertAfterId,
-                                                    level: insertDropdownItem.level
+                                                    level: insertDropdownItem.level,
+                                                    scriptMeta: element.scriptMeta
                                                 })" v-html="insertDropdownItem.label"></a>
                                             </li>
                                         </ul>
@@ -99,13 +100,16 @@
         name: "IngContextMenu",
         data() {
             return {
-                paletteGroups: getElementCategories(),
                 insertDropdownItems: [],
                 cutDropdownItems: [],
                 copyDropdownItems: [],
                 xOffset: 0,
                 yOffset: 0
             };
+        },
+        created() {
+            this.fetchStepPaletteBuiltIn();
+            this.fetchStepPaletteCustom();
         },
         props: {
             mode: {
@@ -167,7 +171,12 @@
                 "hasSelectedElements",
                 "hasSelectedElementsToCopy",
                 "hasSelectedElementsToMove",
+                "stepPaletteBuiltIn",
+                "stepPaletteCustom"
             ]),
+            paletteGroups: function() { 
+                return getElementCategories(this.stepPaletteBuiltIn, this.stepPaletteCustom);
+            },
             dropDownDirection: function() {
                 const spaceBelow = window.innerHeight - this.menuYOffset;
                 if(spaceBelow > 400) {
@@ -195,8 +204,12 @@
             }
         },
         methods: {
+            ...mapActions([
+                "fetchStepPaletteBuiltIn",
+                "fetchStepPaletteCustom",
+            ]),
             usedElementsByPaletteGroup(group) {
-                return elementsByPaletteGroup(group);
+                return elementsByPaletteGroup(group, this.stepPaletteBuiltIn, this.stepPaletteCustom);
             },
             getMenuItems: function(previousElementId, previousElement, operation, label) {
                 let dropdownItems = [];

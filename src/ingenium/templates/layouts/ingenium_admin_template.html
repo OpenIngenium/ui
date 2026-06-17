@@ -82,6 +82,11 @@
         <!-- test -->
         {% add_data_tables_css_js_dependencies %}
         {% add_all_django_up_tool_libraries %}
+
+        <script>
+            window.applicationTitle = "{{ APPLICATION_TITLE }}";
+            window.uiCustomFooter = "{{ UI_CUSTOM_FOOTER|safe }}";
+        </script>
     </head>
 
     <body class="up-body mw-100 position-relative" style="min-height: auto;">
@@ -104,9 +109,6 @@
 
     <div id="dynamic_js_include">{% block dynamic_js_include %}{% endblock %}</div>
 
-    <script>
-        window.applicationTitle = "{{ APPLICATION_TITLE }}";
-    </script>
 
     {% include 'ui/session/session_expire.html' %}
     {% include 'ui/pages/footertext.html' %}

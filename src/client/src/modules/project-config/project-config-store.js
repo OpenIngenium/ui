@@ -66,17 +66,16 @@ const getters = {
         };
     },
 
-    customScriptDetails: function(state, getters) {
-        return({scriptPath}) => {
+    customScriptDetails: function(state) {
+        return({scriptId}) => {
             let customScript = {};
-            const scriptId = getters.customScriptIdByPath({scriptPath});
             if(state.customScripts[scriptId] !== undefined) {
                 customScript = state.customScripts[scriptId];
             }
             return customScript;
         };
     },
-    
+
     customScriptIdByPath: function(state) {
         return({scriptPath}) => {
             for (let key in state.customScripts) {
@@ -249,11 +248,9 @@ const actions = {
     },
     async updateCustomScriptsStatus({dispatch}, {name, status}) {
         await dictionaryApi.patchCustomScripts(name, status);
-        dispatch("fetchCustomScripts", {});
     },
     async deleteCustomScript({dispatch}, {script_id}) {
-        await dictionaryApi.deleteCustomScript(script_id);
-        dispatch("fetchCustomScripts", {});
+        return await dictionaryApi.deleteCustomScript(script_id);
     }
 };
 

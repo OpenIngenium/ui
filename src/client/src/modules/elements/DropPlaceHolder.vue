@@ -157,6 +157,12 @@
                     // So we have to get data here.
                     dropdownItem.elementPath = parseDataTransfer(event.dataTransfer.getData('elementPath'));
                     dropdownItem.draggedElementId = parseDataTransfer(event.dataTransfer.getData('elemId'));
+                    try {
+                        const scriptMetaRaw = event.dataTransfer.getData('scriptMeta');
+                        dropdownItem.scriptMeta = scriptMetaRaw ? JSON.parse(scriptMetaRaw) : null;
+                    } catch (e) {
+                        dropdownItem.scriptMeta = null;
+                    }
 
                     if (dropdownItem.elementPath) {
                         dropdownItem.operation = 'INSERT';
@@ -244,7 +250,7 @@
                 } else {
                     // insert 
                     if (dropdownItem.elementPath) {
-                        await this.createElement({elementType: dropdownItem.elementPath, insertAfterId: dropdownItem.insertAfterId, level: dropdownItem.level});
+                        await this.createElement({elementType: dropdownItem.elementPath, insertAfterId: dropdownItem.insertAfterId, level: dropdownItem.level, scriptMeta: dropdownItem.scriptMeta});
                     } else {
                         console.warn(`elementType was not provided: ${dropdownItem.elementPath}`);
                     }

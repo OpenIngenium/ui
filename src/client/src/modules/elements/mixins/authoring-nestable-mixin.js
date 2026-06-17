@@ -29,7 +29,9 @@ export default {
     computed: {
         ...mapGetters([
             "elementsByParent",
-            "procedureDetails"
+            "procedureDetails",
+            "stepPaletteBuiltIn",
+            "stepPaletteCustom"
         ]),
         isAllowEdit: function() {
             return this.$route.query.hasOwnProperty('update') && this.workingCopy && (
@@ -49,6 +51,8 @@ export default {
             "moveElement",
             "copyElement",
             "removeElement",
+            "fetchStepPaletteBuiltIn",
+            "fetchStepPaletteCustom"
         ]),
 
         removeElementCallback: async function() {
@@ -57,7 +61,10 @@ export default {
             }
         },
         getElementMap: function(elementData) {
-            let elemMap = getElementDef(elementData);
+            let elemMap = getElementDef(elementData, this.stepPaletteBuiltIn, this.stepPaletteCustom);
+            if (!elemMap) {
+                return null;
+            }
             // special case for procedure section in authoring
             if (elemMap.name === 'PROCEDURE_SECTION') {
                 // make a copy to avoid changing the value in the map

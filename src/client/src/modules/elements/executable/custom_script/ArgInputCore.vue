@@ -96,12 +96,11 @@
         </div>
 
         <!-- BOOL -->
-        <div v-else-if="['BOOL'].includes(arg.type)">
+        <div v-else-if="['BOOL'].includes(arg.type)" :class="inputClasses">
             <input
               type="checkbox"
               :checked="arg.value == 'true'"
               @change="$emit('updateArg', $event)"
-              :class="inputClasses"
               :disabled="disableInputField"
             >
         </div>
@@ -178,6 +177,7 @@
               enterByName="command_stem"
               @save="$emit('saveFlightCmd')"
               :disabled="disableFields"
+              :class="inputClasses"
             ></ing-autocomplete>
         </div>
 
@@ -216,6 +216,7 @@
               enterByName="command_stem"
               @save="$emit('saveSimCmd')"
               :disabled="disableFields"
+              :class="inputClasses"
             ></ing-autocomplete>
         </div>
 
@@ -246,6 +247,7 @@
               @save="$emit('saveEvrEntry')"
               dynamicWidth="five-hundred-width"
               :disabled="disableFields"
+              :class="inputClasses"
             ></ing-autocomplete>
         </div>
 
@@ -276,7 +278,7 @@
           
               <ing-autocomplete
                 :value="ehaChannelId"
-                @handleEvent="$emit('handleEhaChannelIdInput', ...$event)"
+                @handleEvent="(result, secondResult) => $emit('handleEhaChannelIdInput', result, secondResult)"
                 :callback="fetchEhaChannelIdAutoCompleteCallback"
                 :items="ehas"
                 nameField="channel_id"
@@ -287,6 +289,7 @@
                 @save="$emit('saveEhaEntry')"
                 dynamicWidth="five-hundred-width"
                 :disabled="disableFields"
+                :class="inputClasses"
               ></ing-autocomplete>
             </div>
             <div class="col-xs-7">
@@ -301,7 +304,7 @@
             
               <ing-autocomplete
                 :value="ehaChannelName"
-                @handleEvent="$emit('handleEhaChannelNameInput', ...$event)"
+                @handleEvent="(result, secondResult) => $emit('handleEhaChannelNameInput', result, secondResult)"
                 :callback="fetchEhaChannelNameAutoCompleteCallback"
                 :items="ehas"
                 nameField="channel_name"
@@ -312,6 +315,7 @@
                 dynamicWidth="three-hundred-width"
                 @save="$emit('saveEhaEntry')"
                 :disabled="disableFields"
+                :class="inputClasses"
               ></ing-autocomplete>
             </div>
         </div>

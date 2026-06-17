@@ -128,10 +128,51 @@ const initialState = () => {
         // These are not used for authoring
         procedureModificationModal: false,
         bulkJustificationModalMessage: '',
+        stepPaletteBuiltIn: [],
+        stepPaletteCustom: []
     };
 };
 
 const state = initialState();
+
+function normalizeVisForStepInput(vis) {
+    const inputVis = Array.isArray(vis) ? vis : [];
+
+    return inputVis.map((vi) => {
+        const vas = Array.isArray(vi.vas) ? vi.vas : [];
+        const vacs = Array.isArray(vi.vacs) ? vi.vacs : [];
+
+        return {
+            ...vi,
+            vi_id: vi.vi_id || '',
+            vi_name: vi.vi_name || '',
+            vi_owner: vi.vi_owner || '',
+            vi_type: vi.vi_type || '',
+            vi_text: vi.vi_text || '',
+            vi_additional_procs: vi.vi_additional_procs || '',
+            vi_selected: vi.vi_selected,
+            vas: vas.map((va, index) => {
+                if (typeof va === 'object' && va !== null) {
+                    return {
+                        va_id: va.va_id || '',
+                        va_name: va.va_name || '',
+                        va_poc: va.va_poc || '',
+                        vac_id: va.vac_id || '',
+                        vac_name: va.vac_name || vacs[index] || vi.vac_name || '',
+                    };
+                }
+
+                return {
+                    va_id: '',
+                    va_name: va || '',
+                    va_poc: '',
+                    vac_id: '',
+                    vac_name: vacs[index] || vi.vac_name || '',
+                };
+            }),
+        };
+    });
+}
 
 const getters = {
     isPending: state => state.isPending,
@@ -535,6 +576,8 @@ const getters = {
     canParticipate: function(state, getters) {
         return true;
     },
+    stepPaletteBuiltIn: state => state.stepPaletteBuiltIn,
+    stepPaletteCustom: state => state.stepPaletteCustom,
     modStyle: (state) => (elementId, fieldPath, isInput=true) => {
         return '';
     },
@@ -600,6 +643,24 @@ const actions = {
         workingVersion.time_saved = commonDateTime(workingVersion.time_saved);  // REFORMATING TIME_SAVED
 
         commit('receiveAuthoringProcedureVersionsWorkingVersion', {version: workingVersion});
+        commit('setBooleanKey', {key: 'loadingProcedure', bool: false});
+    },
+    async fetchStepPaletteBuiltIn({state, commit}) {
+        if (state.stepPaletteBuiltIn && state.stepPaletteBuiltIn.length) {
+            return state.stepPaletteBuiltIn;
+        }
+        commit('setBooleanKey', {key: 'loadingProcedure', bool: true});
+        const stepPaletteBuiltIn = await dictionaryApi.getStepPaletteBuiltIn();
+        commit('setStepPaletteBuiltIn', {stepPaletteBuiltIn: stepPaletteBuiltIn});
+        commit('setBooleanKey', {key: 'loadingProcedure', bool: false});
+    },
+    async fetchStepPaletteCustom({state, commit}) {
+        if (state.stepPaletteCustom && state.stepPaletteCustom.length) {
+            return state.stepPaletteCustom;
+        }
+        commit('setBooleanKey', {key: 'loadingProcedure', bool: true});
+        const stepPaletteCustom = await dictionaryApi.getStepPaletteCustom();
+        commit('setStepPaletteCustom', {stepPaletteCustom: stepPaletteCustom});
         commit('setBooleanKey', {key: 'loadingProcedure', bool: false});
     },
     async addProcedureTag({commit}, {procedureId, tag}) {
@@ -797,9 +858,9 @@ const actions = {
         }
         commit("setBooleanKey", {key: "creatingProcedureVersion", bool: false});
     },
-    async createElement({commit, getters, rootState}, {elementType, insertAfterId, level}) {
+    async createElement({commit, getters, rootState}, {elementType, insertAfterId, level, scriptMeta}) {
         commit("setBooleanKey", {key: "creatingElement", bool: true});
-        await postProcedureElement(getters.procedureId, elementType, insertAfterId, level,
+        await postProcedureElement(getters.procedureId, elementType, insertAfterId, level, scriptMeta,
             () => {},
             (error) => {
                 commit('receiveFeedback', {type: 'error', errorObj: error});
@@ -939,6 +1000,9 @@ const actions = {
         if (input) {
             payload = {...payload, ...input};
         }
+        if (payload && Array.isArray(payload.vis)) {
+            payload = {...payload, vis: normalizeVisForStepInput(payload.vis)};
+        }
         try {
             await postProcedureElementInput(getters.procedureId, elementPath, elementId, payload);
         } catch (error) {
@@ -964,6 +1028,9 @@ const actions = {
         commit('setBooleanKey', {key: 'updatingElementInput', bool: true});
         commit("receiveElementInput", {elementId, keyString, value});
         commit('setBooleanKey', {key: 'updatingElementInput', bool: false});
+    },
+    updateElementConsistencyFlag({commit}, {elementId, consistencyFlag}) {
+        commit("updateElementConsistencyFlag", {elementId, consistencyFlag});
     },
     editEntries({commit}, {elementId, value, level}) {
         commit('setBooleanKey', {key: 'updatingElementInput', bool: true});
@@ -1223,7 +1290,7 @@ const actions = {
         
         const validation_input = {
             update: update,
-            vis: selected_vis,
+            vis: normalizeVisForStepInput(selected_vis),
             scripts: selected_scripts
         };
 
@@ -1276,7 +1343,7 @@ const actions = {
         
         const validation_input = {
             update: true,
-            vis: selected_vis,
+            vis: normalizeVisForStepInput(selected_vis),
             scripts: selected_scripts
         };
 
@@ -1691,6 +1758,12 @@ const mutations = {
     receiveAuthoringProcedureVersionsWorkingVersion(state, {version}) {
         state.authoringProcedureVersionsWorkingVersion = version;
     },
+    setStepPaletteBuiltIn(state, {stepPaletteBuiltIn}) {
+        state.stepPaletteBuiltIn = stepPaletteBuiltIn;
+    },
+    setStepPaletteCustom(state, {stepPaletteCustom}) {
+        state.stepPaletteCustom = stepPaletteCustom;
+    },
     setAuthoringProcedureIndex(state, {index}) {
         state.authoringProcedureIndex = index;
     },
@@ -1939,6 +2012,9 @@ const mutations = {
         // _.set(state.elements[elementId].authoring_user_input, keyString, Object.assign({}, value));
         _.set(state.elements[elementId].authoring_user_input, keyString, value);
     },
+    updateElementConsistencyFlag(state, {elementId, consistencyFlag}) {
+        state.elements[elementId].consistency_flag = consistencyFlag;
+    },
     receiveValidation(state, {update, validationItems, elementId}) {
         if (update) {
             if (elementId) {
@@ -2165,7 +2241,7 @@ const mutations = {
         state.elements[elementId].authoring_user_input.vis.splice(deleteIndex, 1);
     },
     setVisDeclareStep(state, {elementId}) {
-        state.elements[elementId].authoring_user_input.vis = Object.values(state.selectedViMap);
+        state.elements[elementId].authoring_user_input.vis = normalizeVisForStepInput(Object.values(state.selectedViMap));
     },
     deleteStepFromStep(state, {elementId, elem_id}) {
         const deleteIndex = state.elements[elementId].authoring_user_input.steps.findIndex((step) => step.elem_id === elem_id);

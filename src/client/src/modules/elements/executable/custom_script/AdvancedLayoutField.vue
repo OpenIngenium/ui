@@ -9,7 +9,7 @@
         >
         <!-- FIELD / FILE / IMAGE / SERIES -->
         <CustomScriptInputArg
-            v-if="['FIELD','IMAGE','SERIES'].includes(field.layout_type)"
+            v-if="['FIELD','IMAGE','SERIES'].includes(field.layout_type) && getInputByName(field.field_name)"
             v-on:updateArgEvent="$emit('updateArgEvent', $event)"
             :disableFields="disableForField"
             :canDisableExecuteField="canDisableForField"
@@ -18,7 +18,7 @@
             :isEntry="isEntry"
             :r4s="isRunForScore"
             :arg="getInputByName(field.field_name)"
-            :inputClasses="modStyle(elementId, `inputs.${field.field_name}`)"
+            :inputClasses="isEntry ? modStyle(elementId, `entries.${entryIndex}.${field.field_name}`) : modStyle(elementId, `inputs.${field.field_name}`)"
             :argumentLabel="field.label && field.label.label_content"
             :labelAlign="field.label && field.label.label_align"
             :labelLoc="field.label && field.label.label_loc"
@@ -31,12 +31,16 @@
             <ul slot="body" style="width: 300px">
                 <span v-html="generateIconTooltip(field.mouseover.mouseover_elements)"></span>
             </ul>
-            <span v-html="renderTemplate(field.template && field.template.template)"></span>
+            <span 
+                :class="getDisplayModStyle()"
+                v-html="renderTemplate(field.template && field.template.template)"
+            ></span>
         </ing-popover>
 
         <!-- DISPLAY plain -->
         <span
             v-if="field.layout_type==='DISPLAY' && !field.mouseover"
+            :class="getDisplayModStyle()"
             v-html="renderTemplate(field.template && field.template.template)"
         ></span>
 
@@ -81,7 +85,7 @@
                 required: true 
             },
             elementId: { 
-                type: [String, Number], 
+                type: String,
                 required: true 
             },
 
@@ -117,6 +121,10 @@
             isEntry:{
                 type: Boolean,
                 default: false
+            },
+            entryIndex: {
+                type: Number,
+                default: 0
             },
 
             // functions borrowed from parent
@@ -157,6 +165,36 @@
             },
             canDisableForField() {
                 return this.canDisableExecuteField || this.isOutputField(this.field.field_name);
+            }
+        },
+        methods: {
+            getDisplayModStyle() {
+                // Parse template to extract field names like {enumerated_input} or {flight_channel[1]}
+                const template = this.field.template && this.field.template.template;
+                if (!template) return '';
+                
+                // Extract all field names from {field_name} or {field_name[index]} patterns
+                const fieldMatches = template.match(/\{([^}]+)\}/g);
+                if (!fieldMatches) return '';
+                
+                const fieldNames = fieldMatches.map(match => {
+                    // Remove { } and anything after [ if it exists
+                    const cleaned = match.replace(/[{}]/g, '');
+                    return cleaned.split('[')[0];
+                });
+                
+                // Check if any of the referenced fields have diffs
+                for (const fieldName of fieldNames) {
+                    const path = this.isEntry ? `entries.${this.entryIndex}.${fieldName}` : `inputs.${fieldName}`;
+                    const cssClass = this.modStyle(this.elementId, path);
+                    
+                    if (cssClass) {
+                        // Return the first diff class we find (CD, CA, A, or D)
+                        return cssClass;
+                    }
+                }
+                
+                return '';
             }
         }
     };

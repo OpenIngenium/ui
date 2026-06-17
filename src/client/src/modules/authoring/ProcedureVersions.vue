@@ -342,6 +342,13 @@
         </div>
         <!-- FOOTER -->
         <ing-footer></ing-footer>
+        <report-submitted-modal
+            :show="showReportSubmittedModal"
+            :report-id="submittedReportId"
+            :message="submittedReportMessage"
+            title="Procedure PDF Report Request"
+            @close="showReportSubmittedModal = false">
+        </report-submitted-modal>
     </div>
     
 </template>
@@ -354,7 +361,7 @@
     import ProcedureVersionDropdownButton from './ProcedureVersionDropdownButton.vue';
     import reportApi from '../../api/report';
     import proceduresApi from '../../api/procedures';
-    import { deepCopy, forceFileDownload, getUsername } from '../common/utils';
+    import { deepCopy, getUsername } from '../common/utils';
     import ProcedureVersionRevertModal from './ProcedureVersionRevertModal.vue';
     import FeedbackModal from '../common/FeedbackModal.vue';
     import SpinnerModal from '../common/SpinnerModal.vue';
@@ -363,6 +370,7 @@
     import IngFooter from "../common/IngFooter.vue";
     import IngToggle from "../common/IngToggle.vue";
     import ProcedureLabelInline from './ProcedureLabelInline.vue';
+    import ReportSubmittedModal from '../common/ReportSubmittedModal.vue';
 
     export default {
         name: 'ProcedureVersions',
@@ -375,7 +383,8 @@
             'export-modal': ExportModal,
             'ing-footer': IngFooter,
             'ing-toggle': IngToggle,
-            'procedure-label-inline': ProcedureLabelInline
+            'procedure-label-inline': ProcedureLabelInline,
+            'report-submitted-modal': ReportSubmittedModal
         },
         created: async function() {
             await this.setProcedureId({procedureId: this.$route.params.procedureId});
@@ -419,6 +428,9 @@
                 descriptionBack: '',
                 authorBack: '',
                 showExportModal: false,
+                showReportSubmittedModal: false,
+                submittedReportId: '',
+                submittedReportMessage: '',
                 tableColumns: [
                     {
                         field: 'version',
@@ -822,8 +834,10 @@
                 }
                 this.setPending(true);
                 try {
-                    const report = await reportApi.getProcedureInPdf(procedureId, version);
-                    forceFileDownload(report, `${procedureId}-v${version}.pdf`);
+                    const response = await reportApi.getProcedureInPdf(procedureId, version);
+                    this.submittedReportId = response.data.report_id;
+                    this.submittedReportMessage = response.data.message;
+                    this.showReportSubmittedModal = true;
                 } catch (error) {
                     this.displayFeedback({type: 'error', errorObj: error});
                 } finally {

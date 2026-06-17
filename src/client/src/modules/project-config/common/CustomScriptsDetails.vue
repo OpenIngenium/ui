@@ -200,13 +200,13 @@
             ]),
             custom_script() {
                 let cs = this.customScriptDetails({
-                    scriptPath: this.data.script_path
+                    scriptId: this.data.script_id
                 });
                 return cs;
             },
             has_inputs() {
                 let cs = this.customScriptDetails({
-                    scriptPath: this.data.script_path
+                    scriptId: this.data.script_id
                 });
                 if (cs && cs.inputs && cs.inputs.length > 0) {
                     return true;
@@ -216,7 +216,7 @@
             },
             has_entries() {
                 let cs = this.customScriptDetails({
-                    scriptPath: this.data.script_path
+                    scriptId: this.data.script_id
                 });
                 if (cs && cs.entries && cs.entries.length > 0) {
                     return true;
@@ -226,7 +226,7 @@
             },
             has_entry_inputs() {
                 let cs = this.customScriptDetails({
-                    scriptPath: this.data.script_path
+                    scriptId: this.data.script_id
                 });
                 if (cs && cs.entries && cs.entries.length > 0 && cs.entries[0].entry_inputs && cs.entries[0].entry_inputs.length > 0) {
                     return true;
@@ -236,7 +236,7 @@
             },                             
             has_entry_outputs() {
                 let cs = this.customScriptDetails({
-                    scriptPath: this.data.script_path
+                    scriptId: this.data.script_id
                 });
                 if (cs && cs.entries && cs.entries.length > 0 && cs.entries[0].entry_outputs && cs.entries[0].entry_outputs.length > 0) {
                     return true;
@@ -246,7 +246,7 @@
             },     
             has_entry_output_array() {
                 let cs = this.customScriptDetails({
-                    scriptPath: this.data.script_path
+                    scriptId: this.data.script_id
                 });
                 if (cs && cs.entries && cs.entries.length > 0 && cs.entries[0].entry_output_array) {
                     return true;
@@ -256,7 +256,7 @@
             },  
             has_entry_output_array_outputs() {
                 let cs = this.customScriptDetails({
-                    scriptPath: this.data.script_path
+                    scriptId: this.data.script_id
                 });
                 if (cs && cs.entries && cs.entries.length > 0 && cs.entries[0].entry_output_array && 
                     cs.entries[0].entry_output_array.outputs && cs.entries[0].entry_output_array.outputs.length > 0) {
@@ -267,7 +267,7 @@
             },   
             has_outputs() {
                 let cs = this.customScriptDetails({
-                    scriptPath: this.data.script_path
+                    scriptId: this.data.script_id
                 });
             
                 if (cs && cs.outputs && cs.outputs.length > 0) {
@@ -278,7 +278,7 @@
             },           
             has_output_array() {
                 let cs = this.customScriptDetails({
-                    scriptPath: this.data.script_path
+                    scriptId: this.data.script_id
                 });
             
                 if (cs && cs.output_array) {

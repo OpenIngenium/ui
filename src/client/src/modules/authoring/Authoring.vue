@@ -11,10 +11,7 @@
             <h3>Insufficient Permissions</h3>
             <p>Authoring</p>
         </div>
-        <footer>
-            The technical data in this document is controlled under the U.S. Export Regulations, release to foreign persons may require an export authorization.
-JPL/Caltech Proprietary - Not for Public Release - Do Not Distribute or Duplicate
-        </footer>
+        <footer v-html="footerText"></footer>
     </div>
 </template>
 
@@ -84,7 +81,8 @@ JPL/Caltech Proprietary - Not for Public Release - Do Not Distribute or Duplicat
                 version: this.$route.params.version,
                 procedureId: this.$route.params.procedureId,
                 routeLeaving: false,  // flag to indicate this page is being switch to another page
-                topNavbarHeight: 0
+                topNavbarHeight: 0,
+                footerText: window.uiCustomFooter || ""
             };
         },
         sockets: {

@@ -80,7 +80,8 @@
         methods: {
             ...mapActions([
                 "updateCustomScriptsStatus",
-                "deleteCustomScript"
+                "deleteCustomScript",
+                "displayFeedback"
             ]),
             handleAction: function(event) {
                 // console.log(event.target.value);
@@ -89,6 +90,8 @@
                         this.updateCustomScriptsStatus({
                             name: this.data.script_id,
                             status: "ACTIVE",
+                        }).then(() => {
+                            this.$emit('tableEvent', { action: 'activate', script_id: this.data.script_id });
                         });
                         this.action = "";
                         break;
@@ -96,6 +99,8 @@
                         this.updateCustomScriptsStatus({
                             name: this.data.script_id,
                             status: "INACTIVE",
+                        }).then(() => {
+                            this.$emit('tableEvent', { action: 'deactivate', script_id: this.data.script_id });
                         });
                         this.action = "";
                         break;
@@ -107,11 +112,17 @@
                         break;
                 }
             },
-            handleDelete: function() {
-                this.deleteCustomScript({
-                    script_id: this.data.script_id
-                });
-                this.showModal = false;
+            handleDelete: async function() {
+                try {
+                    await this.deleteCustomScript({
+                        script_id: this.data.script_id
+                    });
+                    this.$emit('tableEvent', { action: 'delete', script_id: this.data.script_id });
+                    this.showModal = false;
+                } catch (error) {
+                    this.showModal = false;
+                    this.displayFeedback({ type: 'error', errorObj: error });
+                }
             }
         }
     };

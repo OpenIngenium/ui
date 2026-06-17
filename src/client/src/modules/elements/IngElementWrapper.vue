@@ -43,6 +43,7 @@
             <!-- Loop through steps -->
             <template v-for="element in elements">
                 <ing-element
+                    v-if="getElementMap(element)"
                     class="step-container"
                     :key="element.elem_id"
                     ref="viewElemRef"

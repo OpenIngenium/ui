@@ -10,118 +10,36 @@
         <div class="row">
             <ul class="nav nav-tabs">
               <li class="nav-item">
-                <a class="nav-link active" href="#">Create Report</a>
+                <a class="nav-link" :class="{active: activeTab === 'create'}" href="#" @click.prevent="activeTab = 'create'">Create Report</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" :class="{active: activeTab === 'queue'}" href="#" @click.prevent="activeTab = 'queue'">Report Queue</a>
               </li>
             </ul>
         </div>
-        <div class="row report-body-spacing">
-            <div class="col-md-2">
-                <side-bar-menu></side-bar-menu>
-            </div>
-            <div class="col-md-10">
-                <report-type-selection type="Base" @updateReport="updateBaseReportSelection"></report-type-selection>
-                <report-type-selection type="Target" @updateReport="updateTargetReportSelection" style="margin-top:25px"></report-type-selection>
-                <button
-                    @click="requestReport"
-                    type="button"
-                    :disabled="baseId != '' && targetId != '' ? false : true"
-                    class="btn btn-md btn-primary"
-                    style="margin-top:30px">
-                    Generate Report
-                </button>
-            </div>
-        </div>
-        <ing-modal v-if="showConfirmationModal" @close="showConfirmationModal = false" size="medium">
-            <template slot="title">
-                <h4 :style="{fontWeight: 'bold', display: 'inline-block'}">
-                    Difference Report Request
-                </h4>
-            </template>
-            <template slot="body">
-                <p>
-                    Report ID: {{requestReportId}}<br >
-                    {{requestReportMessage}}<br>
-                    The report will be sent to you via email once ready.<br>
-                </p>
-            </template>
-            <template slot="footer">
-                <button type="button"
-                        class="btn btn-default pull-right"
-                        @click="showConfirmationModal = false">
-                    Confirm
-                </button>
-            </template>
-        </ing-modal>
+        <create-report v-if="activeTab === 'create'"></create-report>
+        <report-queue v-if="activeTab === 'queue'"></report-queue>
         <!-- FOOTER -->
         <ing-footer></ing-footer>
     </div> 
 </template>
 
 <script>
-    import {mapGetters, mapActions} from 'vuex';
-    import SideBarMenu from  './SideBarMenu.vue';
-    import ReportTypeSelection from './ReportTypeSelection.vue';
-    import reportApi from '../../api/report';
-    import IngModal from "../common/IngModal.vue";
+    import CreateReport from './CreateReport.vue';
+    import ReportQueue from './ReportQueue.vue';
     import IngFooter from "../common/IngFooter.vue";
 
     export default {
         name: "Reporting",
         components: {
-            'side-bar-menu': SideBarMenu,
-            'report-type-selection': ReportTypeSelection,
-            'ing-modal': IngModal,
+            'create-report': CreateReport,
+            'report-queue': ReportQueue,
             'ing-footer': IngFooter
         },
         data() {
             return {
-                baseType: '',
-                baseId: '',
-                baseVersion: '',
-                targetType: '',
-                targetId: '',
-                targetVersion: '',
-                showConfirmationModal: false,
-                requestReportId: '',
-                requestReportMessage: ''
+                activeTab: 'create'
             };
-        },
-        computed: {
-            ...mapGetters([
-                'isPending',
-            ]),
-        },
-        methods: {
-            ...mapActions([
-                "displayFeedback",
-                "setPending",
-            ]),
-            updateBaseReportSelection: function(type, Id, version){
-                this.baseType = type;
-                this.baseId = Id;
-                this.baseVersion = version;
-            },
-            updateTargetReportSelection: function(type, Id, version){
-                this.targetType = type;
-                this.targetId = Id;
-                this.targetVersion = version;
-            },
-            requestReport: async function() {
-                if (this.isPending) {
-                    return;
-                }
-                this.setPending(true);
-                try {
-                    const response = await reportApi.getDifferenceReport(this.baseType, this.baseId, this.baseVersion, this.targetType, this.targetId, this.targetVersion);
-                    this.requestReportId = response.data.report_id;
-                    this.requestReportMessage = response.data.message;
-                    this.showConfirmationModal = true;
-                } catch (error) {
-                    this.displayFeedback({type: 'error', errorObj: error});
-                } finally {
-                    this.setPending(false);
-                }
-            }
         }
     };
 </script>
@@ -130,9 +48,5 @@
     .nav-link.active {
         background-color: #eee;
         color: black;
-    }
-    .report-body-spacing {
-        margin-top: 20px;
-        margin-bottom: 20px;
     }
 </style>

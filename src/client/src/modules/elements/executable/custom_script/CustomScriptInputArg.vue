@@ -500,7 +500,8 @@
                 "fetchFlightEvrs",
                 "fetchSseEvrs",
                 "fetchFlightEhas",
-                "fetchSseEhas"
+                "fetchSseEhas",
+                "displayFeedback"
             ]),
             updateArg(eventOrValue) {
                 this.$emit('updateArgEvent', {
@@ -567,25 +568,26 @@
                         }
                 } 
             },
-            fetchEhaChannelIdAutoCompleteCallback: function( channel_id ) {
+            fetchEhaChannelIdAutoCompleteCallback: async function( channel_id ) {
                 const ehaCategory = this.ehaType;
 
                 switch(ehaCategory) {
                     case "SSE":
                         if (this.selectedSseDictionaryVersion) {
-                            this.fetchSseEhas({
+                            await this.fetchSseEhas({
                                 dictionaryVersion: this.selectedSseDictionaryVersion,
                                 limit: 6,
                                 filters: {
                                     channel_id: { value: channel_id }
-                                }
+                                },
+                                wild: true,
                             });
                         }
 
                         break;
                     case "FLIGHT":
                         if (this.selectedFlightDictionaryVersion) {
-                            this.fetchFlightEhas({
+                            await this.fetchFlightEhas({
                                 dictionaryVersion: this.selectedFlightDictionaryVersion,
                                 limit: 6,
                                 filters: {
@@ -597,13 +599,13 @@
                         break;
                 }
             },
-            fetchEhaChannelNameAutoCompleteCallback: function(eha_name) {
+            fetchEhaChannelNameAutoCompleteCallback: async function(eha_name) {
                 const ehaCategory = this.ehaType;
 
                 switch(ehaCategory) {
                     case "SSE":
                         if (this.selectedSseDictionaryVersion) {
-                            this.fetchSseEhas({
+                            await this.fetchSseEhas({
                                 dictionaryVersion: this.selectedSseDictionaryVersion,
                                 limit: 6,
                                 filters: {
@@ -616,7 +618,7 @@
                         break;
                     case "FLIGHT":
                         if (this.selectedFlightDictionaryVersion) {
-                            this.fetchFlightEhas({
+                            await this.fetchFlightEhas({
                                 dictionaryVersion: this.selectedFlightDictionaryVersion,
                                 limit: 6,
                                 filters: {
@@ -637,7 +639,7 @@
             handleEvrInput:function(customEvent) {
                 this.evrName = customEvent;
             },
-            handleEhaChannelIdInput:function(channelId, channelName) {
+            handleEhaChannelIdInput:function(channelId, channelName = "") {
                 this.ehaChannelId = channelId;
                 this.ehaChannelName = channelName;
             },
@@ -673,6 +675,40 @@
                 });
             },
             saveEhaEntry() {
+                // Check if no channels found matching what user entered
+                if ((this.ehaChannelId || this.ehaChannelName) && this.ehas.length === 0) {
+                    const searchTerm = this.ehaChannelId || this.ehaChannelName;
+                    const fieldType = this.ehaChannelId ? 'Channel ID' : 'Channel Name';
+                    this.displayFeedback({
+                        type: 'warning',
+                        messageObj: {
+                            message: `No channels found matching ${fieldType} "${searchTerm}" in the selected ${this.ehaType} dictionary.`
+                        }
+                    });
+                } else if (this.ehaChannelId && this.ehas.length > 0) {
+                    // Check if the entered channel ID exists in the results
+                    const found = this.ehas.find(eha => eha.channel_id === this.ehaChannelId);
+                    if (!found) {
+                        this.displayFeedback({
+                            type: 'warning',
+                            messageObj: {
+                                message: `Channel ID "${this.ehaChannelId}" does not exist in the selected ${this.ehaType} dictionary.`
+                            }
+                        });
+                    }
+                } else if (this.ehaChannelName && this.ehas.length > 0) {
+                    // Check if the entered channel name exists in the results
+                    const found = this.ehas.find(eha => eha.channel_name === this.ehaChannelName);
+                    if (!found) {
+                        this.displayFeedback({
+                            type: 'warning',
+                            messageObj: {
+                                message: `Channel Name "${this.ehaChannelName}" does not exist in the selected ${this.ehaType} dictionary.`
+                            }
+                        });
+                    }
+                }
+                
                 this.$emit('updateArgEvent', {
                     action: 'updateArg',
                     data: {

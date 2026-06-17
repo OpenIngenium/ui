@@ -7,15 +7,15 @@
                 </div>
             </div>
             <ol v-if="canParticipate" class="steps_list">
-                <li v-for="element in usedElementsByPaletteGroup(group)" :key="element.name"
+                <li v-for="(element, index) in usedElementsByPaletteGroup(group)" :key="index"
                     :class="`step step_${element.category}`"
-                    v-drag-and-drop="{ elementPath: element.path, draggableType: 'element' }">
+                    v-drag-and-drop="{ elementPath: element.path, draggableType: 'element', scriptMeta: element.scriptMeta }">
                     <div class="step_type">{{ element.displayName }}</div>
                     <span class="step_move_button" id="step_move_icon"></span>
                 </li>
             </ol>
             <ol v-else class="steps_list disabled">
-                <li v-for="element in usedElementsByPaletteGroup(group)" :key="element.name"
+                <li v-for="(element, index) in usedElementsByPaletteGroup(group)" :key="index"
                     :class="`step step_${element.category}`">
                     <div class="step_type">{{ element.displayName }}</div>
                 </li>
@@ -25,25 +25,39 @@
 </template>
 
 <script>
-    import { mapGetters } from "vuex";
+    import { mapActions, mapGetters } from "vuex";
     import { elementsByPaletteGroup, getElementCategories } from '../elem_types';
 
     export default {
         name: "StepPalette",
         data() {
             return {
-                paletteGroups: getElementCategories()
+                
             };
+        },
+        created() {
+            this.fetchStepPaletteBuiltIn();
+            this.fetchStepPaletteCustom();
         },
         computed: {
             ...mapGetters([
                 "canParticipate",
+                "stepPaletteBuiltIn",
+                "stepPaletteCustom",
             ]),
+            paletteGroups: function() { 
+                return getElementCategories(this.stepPaletteBuiltIn, this.stepPaletteCustom);
+            }
         },
         methods: {
+            ...mapActions([
+                "fetchStepPaletteBuiltIn",
+                "fetchStepPaletteCustom",
+            ]),
             usedElementsByPaletteGroup(group) {
-                return elementsByPaletteGroup(group);
-            }
+                return(elementsByPaletteGroup(group, this.stepPaletteBuiltIn, this.stepPaletteCustom));
+            },
+            
         }
     };
 </script>

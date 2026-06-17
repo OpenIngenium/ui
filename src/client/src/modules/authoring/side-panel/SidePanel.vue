@@ -392,13 +392,15 @@
             handleInsertStep: async function(e, {
                 elementPath,
                 insertAfterId,
-                level
+                level,
+                scriptMeta
             }) {
                 this.operate({
                     operation: 'INSERT',
                     elementPath,
                     insertAfterId,
-                    level
+                    level,
+                    scriptMeta
                 }, false);
                 this.showElementMenu = false;
             },
@@ -453,7 +455,7 @@
                     }
                 } else {
                     if (dropdownItem.elementPath) {
-                        await this.createElement({elementType: dropdownItem.elementPath, insertAfterId: dropdownItem.insertAfterId, level: dropdownItem.level});
+                        await this.createElement({elementType: dropdownItem.elementPath, insertAfterId: dropdownItem.insertAfterId, level: dropdownItem.level, scriptMeta: dropdownItem.scriptMeta});
                     } else {
                         console.warn(`elementType was not provided: ${dropdownItem.elementPath}`);
                     }

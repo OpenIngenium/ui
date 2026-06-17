@@ -107,6 +107,7 @@
                                         :enableExecution="enableExecution"
                                         :outputs="entry_outputs"
                                         :isEntry="true"
+                                        :entryIndex="index"
 
                                         :modStyle="modStyle"
                                         :getInputByName="getInputByName"
@@ -149,6 +150,7 @@
                                         :enableExecution="enableExecution"
                                         :outputs="entry_outputs"
                                         :isEntry="true"
+                                        :entryIndex="index"
 
                                         :modStyle="modStyle"
                                         :getInputByName="getInputByName"
@@ -265,6 +267,7 @@
                                     :enableExecution="enableExecution"
                                     :outputs="entry_outputs"
                                     :isEntry="false"
+                                    :entryIndex="index"
                                           
                                     :modStyle="modStyle"
                                     :getInputByName="getInputByName"

@@ -31,6 +31,8 @@ export default {
             "elementKey",
             "canParticipate",
             "executionRedlineInputKey",
+            "stepPaletteBuiltIn",
+            "stepPaletteCustom"
         ]),
         disableFields: function() { 
             return this.isPreview === true || this.elementKey(this.stepData.elem_id, "executed") || !this.canParticipate;  
@@ -128,6 +130,8 @@ export default {
             "moveElement",
             "copyElement",
             "removeElement",
+            "fetchStepPaletteBuiltIn",
+            "fetchStepPaletteCustom"
         ]),
         isAllowEdit: function() {
             return this.canParticipate;
@@ -136,7 +140,10 @@ export default {
             await this.removeElement({elementId: this.stepData.elem_id});
         },
         getElementMap: function(elementData) {
-            let elemMap = getElementDef(elementData);
+            let elemMap = getElementDef(elementData, this.stepPaletteBuiltIn, this.stepPaletteCustom);
+            if (!elemMap) {
+                return null;
+            }
             // special case for procedure section in execution
             if (elemMap.name === 'PROCEDURE_SECTION') {
                 if (elementData.imported === false) {

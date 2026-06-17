@@ -312,13 +312,22 @@ async function bulkDiscardExecutionElements(executionId, bulkDiscardInput, succe
     }
 }
 
-async function postExecutionElement(executionId, elementPath, insertAfterId, level, successCallback, failureCallback) {
+async function postExecutionElement(executionId, elementPath, insertAfterId, level, scriptMeta, successCallback, failureCallback) {
     try {
+        const params = {
+            insert_after_id: insertAfterId,
+            level: level
+        };
+        if (scriptMeta) {
+            if (scriptMeta.script_id) params.script_id = scriptMeta.script_id;
+            if (scriptMeta.script_name) params.script_name = scriptMeta.script_name;
+            if (scriptMeta.script_path) params.script_path = scriptMeta.script_path;
+            if (scriptMeta.script_display_name) params.script_display_name = scriptMeta.script_display_name;
+            if (scriptMeta.script_hash) params.script_hash = scriptMeta.script_hash;
+            if (scriptMeta.script_spec_hash) params.script_spec_hash = scriptMeta.script_spec_hash;
+        }
         const response = await transport.post(coreExecutionUrls.elementBase(executionId, elementPath), {}, {
-            params: {
-                insert_after_id: insertAfterId,
-                level: level
-            }
+            params: params
         });
         successCallback({
             numbers: response.data.numbers,

@@ -1,7 +1,7 @@
 import Vue from "vue";
 import elementCoreMixin from "./element-core-mixin";
 import authoringMixin from "./authoring-mixin.js";
-import { mapActions } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 
 const elementAuthoringMixin = Vue.extend(elementCoreMixin).extend(authoringMixin).extend({
@@ -11,7 +11,10 @@ const elementAuthoringMixin = Vue.extend(elementCoreMixin).extend(authoringMixin
             procedureId: this.$route.params.procedureId,
         };
     },
-    computed: {     
+    computed: {
+        ...mapGetters([
+            "executionMetaDataKey"
+        ]),
         executed: function() { return false; },
     },
     methods: {
@@ -20,6 +23,9 @@ const elementAuthoringMixin = Vue.extend(elementCoreMixin).extend(authoringMixin
             "editElementInput",
             "editElementArray",
         ]),
+        getExecutionMetaDataKey: function(key) {
+            return this.executionMetaDataKey(this.elementId, key);
+        },
         save: function() {
             if (this.workingCopy) {
                 this.saveElementInput({
