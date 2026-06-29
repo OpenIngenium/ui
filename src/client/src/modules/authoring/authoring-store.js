@@ -725,18 +725,18 @@ const actions = {
                 });
             },
             (error) => {
-                console.log(error);
+                commit('receiveFeedback', {type: 'error', errorObj: error});
             }
         );
     },
-    async updateProcedureVersionMetaData({getters, dispatch}, {procedureId, version, versionDescription, institutionalReleaseId}){
+    async updateProcedureVersionMetaData({commit, getters, dispatch}, {procedureId, version, versionDescription, institutionalReleaseId}){
         const data = {version_description: versionDescription, institutional_release_id: institutionalReleaseId};
         await patchProcedureVersion(procedureId, version, data,
             () => {
                 dispatch("fetchAuthoringProcedureVersions", {procedureId: getters.procedureId});
             },
             (error) => {
-                console.log(error);
+                commit('receiveFeedback', {type: 'error', errorObj: error});
             }
         );
     },
