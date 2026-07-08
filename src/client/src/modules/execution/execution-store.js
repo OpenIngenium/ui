@@ -1465,6 +1465,11 @@ const actions = {
         }
         // Add Redline Step
         case "execution_modify_element": {
+            // Carry over consistency_flag from the original element to the new redline element
+            const originalElem = state.elements[params.elem_id];
+            if (originalElem && originalElem.consistency_flag && !response.elem.consistency_flag) {
+                response.elem.consistency_flag = originalElem.consistency_flag;
+            }
             commit("receiveElement", {element: response.elem, detailLevel: 3, numbers: response.numbers, elementIds: response.elem_ids, rootState});
             // pop up the dialog only for the user who initiated the redline/blueline
             if (user_name && (user_name === getUsername())) {
@@ -1832,6 +1837,11 @@ const actions = {
         }
         // Add Redline Step
         case "execution_modify_element": {
+            // Carry over consistency_flag from the original element to the new redline element
+            const originalElem = state.elements[params.elem_id];
+            if (originalElem && originalElem.consistency_flag && !response.elem.consistency_flag) {
+                response.elem.consistency_flag = originalElem.consistency_flag;
+            }
             commit("receiveElement", {element: response.elem, detailLevel: 3, numbers: response.numbers, elementIds: response.elem_ids, rootState});
             break;
         }
@@ -2512,6 +2522,11 @@ const mutations = {
             element.parent_id = parent_id;
         }
 
+        // Preserve consistency_flag from existing element if not provided
+        if (!element.consistency_flag && state.elements[element.elem_id] && state.elements[element.elem_id].consistency_flag) {
+            element.consistency_flag = state.elements[element.elem_id].consistency_flag;
+        }
+
         // This function is used when an element is added
         const slimmedElement = slimElement(element);
         const elementsObj = {...state.elements, [element.elem_id]: slimmedElement};
@@ -2587,6 +2602,11 @@ const mutations = {
                 element.parent_id = parent_id;
             }
             
+            // Preserve consistency_flag from existing element if not provided
+            if (!element.consistency_flag && elementsObj[element.elem_id] && elementsObj[element.elem_id].consistency_flag) {
+                element.consistency_flag = elementsObj[element.elem_id].consistency_flag;
+            }
+
             if(elementsObj[element.elem_id]) {
                 // Make copy of element data and update it without triggering state change.
                 // elements will be updated later in a batch.

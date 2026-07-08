@@ -484,7 +484,10 @@
                 return this.consistencyFlag === "LEGACY" ? "consistency-flag-warning" : "consistency-flag-error";
             },
             showAutoSelectCustomScriptButton: function() {
-                return this.consistencyFlag === "SPEC_HASH_MISMATCHED" && !this.elementKey(this.stepData.elem_id, "executed");
+                if (this.elementKey(this.stepData.elem_id, "run_for_score") && !this.lockUnlockIcon) {
+                    return false;
+                }
+                return this.consistencyFlag === "SPEC_HASH_MISMATCHED" && !this.elementKey(this.stepData.elem_id, "executed") && this.canParticipate;
             },
             consistencyFlagIconClass: function() {
                 return this.consistencyFlag === "DELETED" ? "glyphicon glyphicon-trash consistency-flag-icon" : "glyphicon glyphicon-warning-sign consistency-flag-icon";
