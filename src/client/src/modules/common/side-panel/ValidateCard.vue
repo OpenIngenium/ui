@@ -43,7 +43,7 @@
         <div v-if="show" class="validateChildren">
             <div 
                 v-if="userActionMsg !== ''" 
-                style="color: orange;">
+                style="color: orange; word-break: break-all;">
                 <i>{{ userActionMsg }}</i>
             </div>
             <div 
@@ -152,6 +152,7 @@
 
     .validateChildren {
         margin-top: 10px;
+        word-break: break-all;
     }
 
     .validateUpdate {

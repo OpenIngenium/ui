@@ -6,6 +6,9 @@
             :class="showChevron"></i> 
         [{{ this.changedItem.change_type }}] {{ this.changedItem.item_type }}: {{ this.changedItem.item_name }}
         <div v-if="show" class="validateChildrenFields">
+            <div v-if="this.changedItem.item_id">
+                SCRIPT ID: {{ this.changedItem.item_id }}
+            </div>
             <div 
                 class="validateChildrenField"
                 v-for="(changed_field, idx) in this.changedItem.changed_fields"
