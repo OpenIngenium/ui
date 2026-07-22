@@ -897,9 +897,11 @@
                 delete stepData.run_records;
                 console.log(JSON.stringify(stepData, null, 2));
             },
-            autoSelectCustomScript: function() {
+            autoSelectCustomScript: async function() {
                 if (this.$refs.elementComponent && this.$refs.elementComponent.autoSelectCustomScript) {
-                    this.$refs.elementComponent.autoSelectCustomScript();
+                    this.setPending(true);
+                    await this.$refs.elementComponent.autoSelectCustomScript();
+                    this.setPending(false);
                 }
             },
             handleRedlineStepSelection: function() {
