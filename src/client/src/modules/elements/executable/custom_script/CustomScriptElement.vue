@@ -846,9 +846,9 @@
                 }
             }, 
             autoSelectCustomScript: async function() {
-                
-                const script_id = this.elementMap.scriptMeta.script_id;
-                const script_path = this.elementMap.scriptMeta.script_path;
+                const scriptMeta = this.elementMap && this.elementMap.scriptMeta;
+                const script_id = this.executionInputKey(this.elementId, 'script_id') || (scriptMeta && scriptMeta.script_id) || '';
+                const script_path = this.executionInputKey(this.elementId, 'script_path') || (scriptMeta && scriptMeta.script_path) || '';
                 
                 await this.fetchCustomScripts({ scriptPath: script_path });
                 
