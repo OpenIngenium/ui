@@ -12,7 +12,7 @@
             return {
                 config:{
                     // Editor overall
-                    key : "CTD5xE3B2E2B2A6B3wc2DBKSPJ1WKTUCQOd1OURPE1KDc1C-7J2A4D4B3C6E2D1F4E1H2==",
+                    key : "Ig1A7vB3C1B2E2F2E4E4I1CqgfkOPVi1b1b2Le2e1G1AWMSGSAFDTGHWsE7D7E6E5A1I4I4C3B6B5==",
                     attribution: false,
                     charCounterCount: false,
                     toolbarButtons: FROALA_TOOLBAR_BUTTONS,
