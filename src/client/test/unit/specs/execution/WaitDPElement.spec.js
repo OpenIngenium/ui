@@ -56,6 +56,7 @@ describe("WaitDPElement.vue", () => {
     store = new Vuex.Store({
         state: {
             elementIds: ['abc123'],
+            elemModificationMap: {},
             elements: {
                 'abc123': {
                     description:"",
@@ -113,6 +114,12 @@ describe("WaitDPElement.vue", () => {
             mode: "execution"
         },
         stubs
+    });
+
+    afterAll(() => {
+        if (wrapper) {
+            wrapper.destroy();
+        }
     });
 
     it("Displays the correct label and input text", () => {

@@ -55,6 +55,7 @@ describe("EipElement.vue", () => {
     store = new Vuex.Store({
         state: {
             elementIds: ['abc123'],
+            elemModificationMap: {},
             elements: {
                 'abc123': {
                     description:"",
@@ -122,6 +123,12 @@ describe("EipElement.vue", () => {
             mode: "execution"
         },
         stubs
+    });
+
+    afterAll(() => {
+        if (wrapper) {
+            wrapper.destroy();
+        }
     });
 
     it("Entries exist", () => {

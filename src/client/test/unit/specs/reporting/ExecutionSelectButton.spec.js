@@ -12,11 +12,16 @@ describe("ExecutionSelectButton.vue", () => {
         wrapper = shallow(VersionSelectButton, {
             propsData: {
                 data: {
-                    executionId: executionId,
-                    
+                    execution_id: executionId,
                 }
             }
         });
+    });
+
+    afterEach(() => {
+        if (wrapper) {
+            wrapper.destroy();
+        }
     });
 
     it("Make sure tableEvent gets emitted when clicked", () => {

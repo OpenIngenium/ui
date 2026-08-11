@@ -39,29 +39,6 @@ describe("IngTable.vue", () => {
         expect(filterButton.exists()).toBe(false);
     });
 
-    xit("Fires a new search when filters are added", () => {
-        const wrapper = mount(IngTable, {
-            localVue,
-            propsData: {
-                columns:  [{ name: 'Status', field: 'status', filterType: 'search' }],
-                data: [
-                    { 'status': 'good.'},
-                    { 'status': 'great.'},
-                    { 'status': 'greatest.'},
-                ],
-                callback: () => {}
-            }
-        });
-        sinon.spy(wrapper.vm, 'changeFilter');
-        const filterButton = wrapper.find("#filter-dropdown");
-        expect(filterButton.exists()).toBe(true);
-        filterButton.trigger('click');
-
-        const submitButton  = wrapper.find(".table-filter-dropdown button[type='submit']");
-        submitButton.trigger('click');
-        expect(wrapper.vm.changeFilter.calledOnce).toBeTruthy();
-    });
-
     it("renders the correct number of rows", () => {
         const wrapper = shallow(IngTable, {
             localVue,
@@ -158,26 +135,8 @@ describe("IngTable.vue", () => {
                 ]
             },
         });
-        const filterableColumns = wrapper.vm.filterableCols;
-        expect(filterableColumns.length).toBe(2);
-    });
-
-    xit("Renders child templates and passes them row data.", () => {
-        const wrapper = shallow(IngTable, {
-            localVue,
-            propsData: {
-                columns:  [
-                    { name: 'A', field: 'a', component: 'custom-column' },
-                    { name: 'B', field: 'b' }
-                ],
-                data: [
-                    { a: 'a1', b: 'b1'}
-                ]
-
-            }
-        });
-        const componentText = wrapper.find("tbody").find('h4');
-        expect(componentText.text()).toContain("a1");
+        const filterableColumns = wrapper.vm.filters;
+        expect(Object.keys(filterableColumns).length).toBe(2);
     });
 
     it("Updates params and refetches data when pagination changes.", () => {

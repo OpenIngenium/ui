@@ -14,7 +14,6 @@ const {
 const {
     receiveElement,
     updateElementExecution,
-    updateElementOrder,
     moveEntryViewState,
     receiveElementInput,
     receiveEntryInput,
@@ -28,22 +27,35 @@ const {
 
 describe("Store authoring-store.js", () => {
     describe("getters", () => {
-        xit("elements - gets elements sorted by number", () => {
+        it("elements - returns the filtered elements within the viewport window", () => {
             const fakeId1 = faker.random.uuid();
             const fakeId2 = faker.random.uuid();
             const fakeId3 = faker.random.uuid();
             const state = {
-                elementIds: [fakeId1, fakeId2, fakeId3],
+                // ordering now comes from filteredElementIds (precomputed), not a number sort
+                filteredElementIds: [fakeId1, fakeId2, fakeId3],
                 elements: {
-                    [fakeId3]: { number: 3 },
-                    [fakeId1]: { number: 1 },
-                    [fakeId2]: { number: 2 }
-                }
+                    [fakeId3]: { elem_id: fakeId3, number: 3 },
+                    [fakeId1]: { elem_id: fakeId1, number: 1 },
+                    [fakeId2]: { elem_id: fakeId2, number: 2 }
+                },
+                viewportTopPointer: 0,
+                viewportSize: 10
             };
-            const sortedElements = elements(state);
-            expect(sortedElements[0].number).toEqual(1);
-            expect(sortedElements[1].number).toEqual(2);
-            expect(sortedElements[2].number).toEqual(3);
+            const visible = elements(state);
+            expect(visible.map(e => e.elem_id)).toEqual([fakeId1, fakeId2, fakeId3]);
+        });
+
+        it("elements - limits the result to the viewport size starting at the top pointer", () => {
+            const state = {
+                filteredElementIds: ["a", "b", "c", "d"],
+                elements: {
+                    a: { elem_id: "a" }, b: { elem_id: "b" }, c: { elem_id: "c" }, d: { elem_id: "d" }
+                },
+                viewportTopPointer: 1,
+                viewportSize: 2
+            };
+            expect(elements(state).map(e => e.elem_id)).toEqual(["b", "c"]);
         });
         it("nestedChildIds - takes an elementId argument, and retrieves all nested child ids", () => {
             const fakeElementId = faker.random.uuid();
@@ -243,9 +255,10 @@ describe("Store authoring-store.js", () => {
             expect(state.executionId).toEqual(fakeExecutionId);
         });
 
-        xit("receiveElement - receives a element and updates state", () => {
+        it("receiveElement - receives a element and updates state", () => {
             const newCmdStep = {
                 elem_id: faker.random.uuid(),
+                parent_id: "",
                 authoring_user_input: {
                     entries: [
                         {dynamicKey1: "dynamicValue1", moreVals: [1, 2, 3]}
@@ -259,71 +272,60 @@ describe("Store authoring-store.js", () => {
                 elementIds: [],
                 elements: {},
                 elementsViewState: {},
-                entriesViewState: {}
+                entriesViewState: {},
+                elemFilters: {filterElementIdMap: {}},
+                filteredElementIds: [],
+                outlinePrecomputed: {}
             };
+            // receiveElement now takes precomputed numbers/elementIds and rootState (for conversations)
+            const rootState = {comments: {conversations: {}}};
 
             expect(Object.keys(state.elementsViewState).length).toEqual(0);
             expect(Object.keys(state.entriesViewState).length).toEqual(0);
 
-            receiveElement(state, {element: newCmdStep});
+            receiveElement(state, {
+                element: newCmdStep,
+                detailLevel: 2,
+                numbers: [{elem_id: newCmdStep.elem_id, number: 1}],
+                elementIds: [newCmdStep.elem_id],
+                rootState
+            });
 
             expect(state.elementIds.length).toEqual(1);
             expect(state.elementIds).toContain(newCmdStep.elem_id);
             expect(state.elements[newCmdStep.elem_id].authoring_user_input).toEqual(newCmdStep.authoring_user_input);
 
+            // filters out garbage keys (slimElement whitelists known fields)
+            expect(Object.keys(state.elements[newCmdStep.elem_id])).not.toContain("garbageKey1");
             // new element and entry should also get added to respective view state shapes
             expect(Object.keys(state.elementsViewState).length).toEqual(1);
             expect(Object.keys(state.entriesViewState).length).toEqual(1);
         });
 
-        xit("receiveElement - doesn't throw an error if authoring_user_input is not found in element", () => {
-            const newBogusStep = {elem_id: "5ef0ad50-6865-11e8-adc0-fa7ae01bbebc"};
+        it("receiveElement - doesn't throw an error if authoring_user_input is not found in element", () => {
+            const newBogusStep = {elem_id: "5ef0ad50-6865-11e8-adc0-fa7ae01bbebc", parent_id: ""};
 
             const state = {
                 elementIds: [],
-                elements: {}
+                elements: {},
+                elementsViewState: {},
+                entriesViewState: {},
+                elemFilters: {filterElementIdMap: {}},
+                filteredElementIds: [],
+                outlinePrecomputed: {}
             };
+            const rootState = {comments: {conversations: {}}};
 
-            receiveElement(state, {element: newBogusStep});
+            expect(() => receiveElement(state, {
+                element: newBogusStep,
+                detailLevel: 2,
+                numbers: [{elem_id: newBogusStep.elem_id, number: 1}],
+                elementIds: [newBogusStep.elem_id],
+                rootState
+            })).not.toThrow();
 
             expect(state.elementIds.length).toEqual(1);
-            expect(Object.keys(state.elements[newBogusStep.elem_id]).authoring_user_input).toBe(undefined);
-        });
-
-        xit("updateElementOrder - updates existing element numbers with new data from the server", () => {
-            const fakeId1to3 = faker.random.uuid();
-            const fakeId2to1 = faker.random.uuid();
-            const fakeId3to2 = faker.random.uuid();
-
-            const state = {
-                elementIds: [
-                    fakeId1to3,
-                    fakeId2to1,
-                    fakeId3to2
-                ],
-                elements: {
-                    [fakeId1to3]: { number: 1 },
-                    [fakeId2to1]: { number: 2 },
-                    [fakeId3to2]: { number: 3 },
-                }
-            };
-
-            const newElementNumbers = [
-                {elem_id: fakeId1to3, number: 3 },
-                {elem_id: fakeId2to1, number: 1 },
-                {elem_id: fakeId3to2, number: 2 },
-            ];
-
-            const newElementIds = [fakeId2to1, fakeId3to2, fakeId1to3];
-
-            updateElementOrder(state, {numbers: newElementNumbers, elem_ids: newElementIds});
-            expect(state.elements[fakeId1to3]["number"]).toEqual(3);
-            expect(state.elements[fakeId2to1]["number"]).toEqual(1);
-            expect(state.elements[fakeId3to2]["number"]).toEqual(2);
-
-            expect(state.elementIds[0]).toEqual(fakeId2to1);
-            expect(state.elementIds[1]).toEqual(fakeId3to2);
-            expect(state.elementIds[2]).toEqual(fakeId1to3);
+            expect(state.elements[newBogusStep.elem_id].authoring_user_input).toBe(undefined);
         });
 
         it("moveEntryViewState - updates entries view state on move", () => {
@@ -360,20 +362,36 @@ describe("Store authoring-store.js", () => {
             expect(state.entriesViewState[fakeId][3].detailLevel).toEqual(3);
         });
 
-        xit("deleteElement - deletes a specific element from elementIds and elements", () => {
+        it("deleteElement - removes the element and rebuilds from surviving elementIds", () => {
+            // deleteElement now deletes the given elementId and rebuilds ordering/outline
+            // from the caller-provided surviving elementIds/numbers plus rootState.
             const state = {
                 elementIds: ["destructible", "indestructible"],
-                elements: {"destructible": {}, "indestructible": {}}
+                elements: {
+                    "destructible": {elem_id: "destructible", parent_id: ""},
+                    "indestructible": {elem_id: "indestructible", parent_id: ""}
+                },
+                elementsViewState: {"destructible": {}, "indestructible": {}},
+                entriesViewState: {"destructible": [], "indestructible": []},
+                elemFilters: {filterElementIdMap: {}},
+                filteredElementIds: ["destructible", "indestructible"],
+                outlinePrecomputed: {}
             };
+            const rootState = {comments: {conversations: {}}};
 
             expect(state.elementIds.length).toEqual(2);
             expect(Object.keys(state.elements).length).toEqual(2);
 
-            deleteElement(state, {elementId: "destructible"});
+            deleteElement(state, {
+                elementId: "destructible",
+                numbers: [{elem_id: "indestructible", number: 1}],
+                elementIds: ["indestructible"],
+                rootState
+            });
 
-            expect(state.elementIds.length).toEqual(1);
-            expect(state.elementIds).toContain("indestructible");
-            expect(Object.keys(state.elements).length).toEqual(1);
+            expect(state.elementIds).toEqual(["indestructible"]);
+            expect(Object.keys(state.elements)).toEqual(["indestructible"]);
+            expect(state.elements.destructible).toBeUndefined();
         });
 
         it("receiveEntryInput - adds an entry to authoring_user_input entries state", () => {
@@ -471,7 +489,13 @@ describe("Store authoring-store.js", () => {
             receiveEntryArrayValue(state, fakeObj);
             expect(state.elements[fakeId].authoring_user_input.entries[0].widgets).toEqual(['b']);
 
+            // Only null/undefined removes an index; an empty string is a real
+            // value and replaces the target index.
             fakeObj = {elementId: fakeId, keyString: "widgets", value: '', targetIndex: 0, entryIndex: 0};
+            receiveEntryArrayValue(state, fakeObj);
+            expect(state.elements[fakeId].authoring_user_input.entries[0].widgets).toEqual(['']);
+
+            fakeObj = {elementId: fakeId, keyString: "widgets", value: undefined, targetIndex: 0, entryIndex: 0};
             receiveEntryArrayValue(state, fakeObj);
             expect(state.elements[fakeId].authoring_user_input.entries[0].widgets).toEqual([]);
         });

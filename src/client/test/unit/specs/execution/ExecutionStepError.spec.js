@@ -6,45 +6,72 @@ const localVue = createLocalVue();
 
 
 describe("ExecutionStepError.vue", () => {
+    let wrapper;
 
-    it("should display data pass via props", () => {
-        const wrapper = shallow(ExecutionStepError, {
+    afterEach(() => {
+        if (wrapper) {
+            wrapper.destroy();
+        }
+    });
+
+    it("displays error source and http response from metaData when status is ERROR", () => {
+        wrapper = shallow(ExecutionStepError, {
             localVue,
             propsData: {
-                data: {
-                    error_type: "INGENIUM_SERVICE_ERROR",
-                    error_source: "CORE",
-                    http_code_at_source: "404"
-                },
-                elementId: 'test',
+                metaData: {
+                    status: "ERROR",
+                    error: {
+                        error_type: "INGENIUM_SERVICE_ERROR",
+                        error_source: "CORE",
+                        http_code_at_source: "404",
+                        message: "Call to core failed"
+                    }
+                }
             }
         });
 
         const errorType = wrapper.find(".error-type");
-        
-        expect(errorType.text().split(' ').join('')).toBe("ErrorType:INGENIUM_SERVICE_ERROR\nSource:CORE,HTTPResponse:404");
+        expect(errorType.exists()).toBe(true);
+        expect(errorType.text()).toContain("Source: CORE");
+        expect(errorType.text()).toContain("HTTP Response: 404");
     });
 
-    it("should expand/collapse on click", () => {
-        const wrapper = shallow(ExecutionStepError, {
+    it("does not display the error type block when status is not an error", () => {
+        wrapper = shallow(ExecutionStepError, {
             localVue,
             propsData: {
-                data: {
-                    error_type: "INGENIUM_SERVICE_ERROR",
-                    message: "Call to venure_service failed: ",
-                    error_source: "VENUE SERVICE",
-                    http_code_at_source: "404", 
-                    details: ["this is some data\n blah blah"],
-                },
-                elementId: "test" 
-            },
-            data: {
-                expanded: false,
-            }, 
-
+                metaData: {
+                    status: "PASS",
+                    error: {}
+                }
+            }
         });
-        const iconSpan = wrapper.find("i");
-        iconSpan.trigger('click');
+
+        expect(wrapper.find(".error-type").exists()).toBe(false);
+    });
+
+    it("toggles detail visibility on click", () => {
+        wrapper = shallow(ExecutionStepError, {
+            localVue,
+            propsData: {
+                metaData: {
+                    status: "ERROR",
+                    error: {
+                        error_type: "INGENIUM_SERVICE_ERROR",
+                        error_source: "VENUE SERVICE",
+                        http_code_at_source: "404",
+                        message: "Call to venue_service failed: ",
+                        details: ["this is some data\n blah blah"]
+                    }
+                }
+            }
+        });
+
+        const collapse = wrapper.find(".error-collapse");
+        expect(wrapper.vm.expanded).toBe(true);
+        collapse.trigger('click');
+        expect(wrapper.vm.expanded).toBe(false);
+        collapse.trigger('click');
         expect(wrapper.vm.expanded).toBe(true);
     });
 

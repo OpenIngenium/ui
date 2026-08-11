@@ -76,15 +76,14 @@
 </template>
 
 <script>
-    import Outline from "./Outline.vue";
     import _ from 'lodash';
     import { getTagColor } from "../utils";
 
     export default {
         name: "Outline",
-        components: {
-            Outline
-        },
+        // Recursive component: resolved by its own `name` option instead of a
+        // self-import, avoiding a circular module dependency (webpack 5 ESM TDZ).
+        components: {},
         props: {
             elementId: {
                 type: String,

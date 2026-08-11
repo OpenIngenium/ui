@@ -98,14 +98,19 @@ export REPORT_API_URL=http://127.0.0.1:3003
 ### Running Unit Tests
 Unit tests live in `src/client/test/unit` and can be run via npm or cli.
 
-Via npm, keeps the browser open for troubleshooting and report viewing (click debug to see html report).
+Single run (headless jsdom) then exits — this is what CI runs:
 ```
-npm run unit
+npm test
 ```
 
-Via cli, single run then exits.
+Watch mode, keeps the browser open for troubleshooting and report viewing (click debug to see html report):
 ```
-NODE_ENV=test ./node_modules/.bin/karma start test/unit/karma.conf.js --single-run
+npm run test:watch
+```
+
+With coverage report:
+```
+npm run test:coverage
 ```
 
 ### Running E2E Tests Locally
@@ -129,26 +134,6 @@ brew install chromedriver
 3) run all the tests in another terminal window
 ```
 npm run e2e
-```
-
-### Running Legacy Tests w/ Docker
-This method will run tests against the instance of Ingenium UI specified by the environment variable INGENIUM_SERVER.
-
-1) navigate to the tests directory
-``` 
-cd src/tests
-```
-
-2) export USERNAME, PASSWORD and INGENIUM_SERVER as environmeent variables in your shell or specify them in run.sh
-
-3a) run via docker-compose
-```
-docker-compose up 
-```
-
-3b) run via script
-```
-bash run_compose.sh
 ```
 
 ## Misc Notes

@@ -68,12 +68,6 @@ const factoryWithData = (propsData, newData) => {
 
 
 describe("IngAutocomplete.vue", () => {
-    xit("displays empty message when there are no matching results ", () => {
-        const wrapper = factory();
-        expect(wrapper.find('.loading').exists()).toBeTruthy();
-        expect(wrapper.find('.autocomplete-result').exists()).toBeFalsy();
-    });
-
     it("should not display anything when input has no characters", () => {
         const wrapper = factory(null, { isOpen: false });
         expect(wrapper.find('.autocomplete-result').exists()).toBeFalsy();

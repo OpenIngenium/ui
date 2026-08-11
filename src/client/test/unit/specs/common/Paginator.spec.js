@@ -75,33 +75,6 @@ describe("Paginator.vue", () => {
         expect(activePage.text()).toBe("1");
     });
 
-    xit("respects the window size parameter", () => {
-        const wrapper = shallow(Paginator, {
-            propsData: {
-                limit: 10,
-                totalItems: 1000,
-                ellipsisThreshold: 5,
-                windowRadius: 3,
-                callback: () => {}
-            }
-        });
-        // 7 window items + 3 on left and 3 on right
-        const expectedLength = 13;
-        const nextButton = wrapper.find("nav ul li a[aria-label='Next']");
-        for(let i = 0; i < 50; i++) {
-            nextButton.trigger('click');
-        }
-        const pageList = wrapper.find("nav ul").findAll("li");
-        expect(pageList.length).toBe(expectedLength);
-
-        // Middle elem is 50 pages away from page 1
-        expect(pageList.at(Math.floor(expectedLength/2)).text()).toBe("51");
-
-        // Ensure the active label is the middle element
-        const activePage = wrapper.find("nav ul .active");
-        expect(activePage.text()).toBe("51");
-    });
-
     it("invokes the callback with button clicks", () => {
         const callback = sinon.spy();
         const wrapper = shallow(Paginator, {

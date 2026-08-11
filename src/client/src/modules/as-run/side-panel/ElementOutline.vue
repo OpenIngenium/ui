@@ -22,13 +22,12 @@
 
 <script>
     import { mapGetters } from "vuex";
-    import ElementOutline from "./ElementOutline.vue";
 
     export default {
         name: "ElementOutline",
-        components: {
-            ElementOutline
-        },
+        // Recursive component: resolved by its own `name` option instead of a
+        // self-import, avoiding a circular module dependency (webpack 5 ESM TDZ).
+        components: {},
         props: {
             elementId: {
                 type: String,

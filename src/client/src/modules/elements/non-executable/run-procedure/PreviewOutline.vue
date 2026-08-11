@@ -28,14 +28,15 @@
 
 <script>
     import { mapActions, mapGetters } from "vuex";
-    import PreviewOutline from "./PreviewOutline.vue";
     import IngTag from "../../IngTag.vue";
     import _ from 'lodash';
 
     export default {
         name: "PreviewOutline",
         components: {
-            PreviewOutline,
+            // Recursive component: resolved by its own `name` option instead of a
+            // self-import, which would create a circular module dependency that
+            // webpack 5's strict ESM bindings reject (TDZ on the default export).
             'ing-tag': IngTag
         },
         props: {

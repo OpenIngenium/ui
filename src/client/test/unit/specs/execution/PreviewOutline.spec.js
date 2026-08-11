@@ -148,12 +148,6 @@ describe("PreviewOutline.vue", () => {
         expect(wrapper.find("span").element.innerHTML.replace(/^\s+|\s+$/g, '')).toEqual(title);
     });
 
-    xit("Select element", () => {
-        spyOn(wrapper.vm, "updateProcedureOutlineSelection");
-        wrapper.find("input").trigger("change");
-        expect(wrapper.vm.updateProcedureOutlineSelection).toHaveBeenCalled();
-    });
-
     it("childElements", () => {
         expect(wrapper.vm.childElements).toBeDefined();
     });

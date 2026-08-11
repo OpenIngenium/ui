@@ -6,7 +6,55 @@ import authApi from "./auth";
 
 axios.defaults.headers.common["Authorization"] = "Bearer " + getJwt();
 axios.defaults.headers.common["Content-Type"] = "application/json";
+
+// Replicates the default query-param serializer from axios 0.18 (the version this app
+// was built against). axios >= 0.27 changed the default so that params whose value is
+// `null` are serialized as an empty `key=` instead of being omitted. That regression
+// caused unset procedure/dictionary filters (e.g. `hazardous`) to be sent as empty
+// strings, which the core server rejects with a 400. Omitting null/undefined here
+// keeps the outgoing query strings identical to the pre-upgrade behavior.
+function encodeParam(val) {
+    return encodeURIComponent(val)
+        .replace(/%3A/gi, ":")
+        .replace(/%24/g, "$")
+        .replace(/%2C/gi, ",")
+        .replace(/%20/g, "+")
+        .replace(/%5B/gi, "[")
+        .replace(/%5D/gi, "]");
+}
+
+function legacyParamsSerializer(params) {
+    const parts = [];
+    Object.keys(params || {}).forEach(function(key) {
+        let val = params[key];
+        // axios 0.18 behavior: skip null and undefined values entirely
+        if (val === null || typeof val === "undefined") {
+            return;
+        }
+        let serializedKey = key;
+        if (Array.isArray(val)) {
+            serializedKey = key + "[]";
+        } else {
+            val = [val];
+        }
+        val.forEach(function(v) {
+            if (v instanceof Date) {
+                v = v.toISOString();
+            } else if (v !== null && typeof v === "object") {
+                v = JSON.stringify(v);
+            }
+            parts.push(encodeParam(serializedKey) + "=" + encodeParam(v));
+        });
+    });
+    return parts.join("&");
+}
+
+// axios >= 0.27 expects paramsSerializer to be an object of the shape { serialize },
+// not a bare function (passing a function throws "options must be an object").
+const paramsSerializer = { serialize: legacyParamsSerializer };
+axios.defaults.paramsSerializer = paramsSerializer;
 const transport = axios.create();
+transport.defaults.paramsSerializer = paramsSerializer;
 
 const ING_CLIENT_TIME_OFFSET_SECS = 'ING_CLIENT_TIME_OFFSET_SECS';
 

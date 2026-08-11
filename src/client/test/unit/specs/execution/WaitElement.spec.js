@@ -52,6 +52,7 @@ describe("WaitElement.vue", () => {
     store = new Vuex.Store({
         state: {
             elementIds: ['abc123'],
+            elemModificationMap: {},
             elements: {
                 'abc123': {
                     description:"",
@@ -102,18 +103,17 @@ describe("WaitElement.vue", () => {
         });
     });
 
+    afterEach(() => {
+        if (wrapper) {
+            wrapper.destroy();
+        }
+    });
+
     it("Displays the correct label and input text", () => {
         wrapper.findAll('option').at(0).element.selected = true;
         wrapper.find('select').trigger('change');
         expect(wrapper.vm.waitTypeIsDuration).toEqual(true);
         expect(wrapper.vm.timeOrDurationText).toEqual('600 seconds');
         expect(wrapper.vm.timeOrDurationInputLabel).toEqual('Duration(sec)');
-    });
-    xit("Resets the time value when the wait type is changed.", async() => {
-        wrapper.findAll('option').at(1).element.selected = true;
-        await wrapper.vm.$nextTick();
-        expect(wrapper.vm.waitTypeIsDuration).toEqual(false);
-        expect(wrapper.vm.timeOrDurationText).toEqual('_____');
-        expect(wrapper.vm.timeOrDurationInputLabel).toEqual('Time(UTC)');
     });
 });

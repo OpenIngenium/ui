@@ -1,9 +1,7 @@
 import Vue from 'vue';
-import { shallow } from "@vue/test-utils";
+import { shallow, createLocalVue } from "@vue/test-utils";
 import Vuex from "vuex";
-import * as faker from "faker";
 import sinon from "sinon";
-import { createLocalVue } from "@vue/test-utils";
 import CheckVenueConfigEntry from "../../../../src/modules/elements/executable/check-venue-config/CheckVenueConfigEntry.vue";
 import executionStore from "../../../../src/modules/execution/execution-store";
 import entryExecutionMixin from "../../../../src/modules/elements/mixins/entry-execution-mixin";
@@ -11,98 +9,67 @@ import { DragAndDrop } from '../../../../src/modules/common/directives/DragAndDr
 
 Vue.directive('drag-and-drop', DragAndDrop);
 
-
 const {
     executionInputEntryKey,
     executionResultsEntryKey,
     elementKey
 } = executionStore.getters;
 
-const {
-    setBooleanKey,
-    receiveEntryInput,
-} = executionStore.mutations;
-
-const {
-    editEntryInput,
-} = executionStore.actions;
-
 const localVue = createLocalVue();
 localVue.use(Vuex);
 
+const Composed = Vue.extend(entryExecutionMixin).extend(CheckVenueConfigEntry);
+
 describe("CheckVenueConfigEntry.vue", () => {
-    let actions;
-    let getters;
-    let mutations;
-    let commonStore;
-    let store;
-    let elementId = faker.random.uuid();
+    const elementId = "cvc1";
 
-    actions = {
-        editEntryInput,
-    };
-    mutations = {
-        setBooleanKey,
-        receiveEntryInput
-    };
-    getters = {
-        executionInputEntryKey,
-        executionResultsEntryKey,
-        elementKey,
-        entryViewState: () => function() {return {detailLevel: 3}; },
-        isLevelTwoDetail: () => () => true,
-        isLevelThreeDetail: () => () => true,
-    };
-
-    beforeEach(() => {
-        commonStore = {
-            state: {
-                elementIds: [elementId],
-                elements: {
-                    [elementId]: {
-                        elem_id: elementId,
-                        elem_type: "STEP",
-                        executed: false,
-                        execution_user_input: {},
-                        number: "1",
-                        parent_id: "",
-                        specification: {},
-                        execution: {
-                            results: {
-                                entries: [
-                                    {
-                                        actual_value: 5
-                                    }
-                                ]
-                            }
-                        },
-                        step_type: "VENUE_CONFIG_CHECK",
-                    }
+    function build(entry = {}) {
+        const editEntryInputSpy = sinon.spy();
+        const state = {
+            elementIds: [elementId],
+            elements: {
+                [elementId]: {
+                    elem_id: elementId,
+                    elem_type: "STEP",
+                    executed: false,
+                    execution_user_input: {
+                        entries: [{
+                            config_elem_name: "",
+                            field_name: "STATUS",
+                            verification_condition: "",
+                            verification_value: "",
+                            ...entry
+                        }]
+                    },
+                    number: "1",
+                    parent_id: "",
+                    specification: {},
+                    execution: {results: {entries: [{actual_value: 5}]}},
+                    step_type: "VENUE_CONFIG_CHECK"
                 }
-            },
-            mutations,
-            actions,
-            getters
+            }
         };
-
-        commonStore.state.elements[elementId]["execution_user_input"]['entries'] = [{
-            config_elem_name: '',
-            field_name: 'STATUS',
-            verification_condition: '',
-            verification_value: '',
-            actual_value: ''
-        }];
-        store = new Vuex.Store(commonStore);
-    });
-
-    xit("watches field name and resets the verification value on change", async() => {
-        let wrapper = shallow(CheckVenueConfigEntry, {
-            propsData: {
-                elementId: elementId,
-                index: 0,
-                mode: 'execution'
+        const store = new Vuex.Store({
+            state,
+            getters: {
+                executionInputEntryKey,
+                executionResultsEntryKey,
+                elementKey,
+                executionResultsEntry: () => () => ({}),
+                executionRedlineInputKey: () => () => undefined,
+                canParticipate: () => true,
+                entryViewState: () => () => ({detailLevel: 3})
             },
-            mixins: [entryExecutionMixin],
+            actions: {
+                editEntryInput: editEntryInputSpy,
+                editEntryArray: sinon.spy(),
+                saveElementInput: sinon.spy(),
+                moveEntry: sinon.spy(),
+                setEntryViewStateDetailLevel: sinon.spy()
+            }
+        });
+        const wrapper = shallow(Composed, {
+            propsData: {elementId, index: 0, mode: "execution"},
             store,
             localVue,
             stubs: {
@@ -113,19 +80,52 @@ describe("CheckVenueConfigEntry.vue", () => {
                 "drag-and-drop": true
             }
         });
+        return {wrapper, state, editEntryInputSpy};
+    }
 
-        sinon.spy(wrapper.vm,'editEntryInput');
+    it("computed getters read the entry input", () => {
+        const {wrapper} = build({config_elem_name: "PWR", field_name: "TYPE", verification_condition: "EQUAL", verification_value: "FLIGHT"});
+        expect(wrapper.vm.configElemName).toBe("PWR");
+        expect(wrapper.vm.fieldName).toBe("TYPE");
+        expect(wrapper.vm.verificationCondition).toBe("EQUAL");
+        expect(wrapper.vm.verificationValue).toBe("FLIGHT");
+        expect(wrapper.vm.isType).toBe(true);
+    });
 
-        expect(wrapper.vm.editEntryInput.callCount).toEqual(0);
-        expect(commonStore.state.elements[elementId]["execution_user_input"]['entries'][0].verification_value).toEqual('');
+    it("isType is false for a STATUS field", () => {
+        expect(build({field_name: "STATUS"}).wrapper.vm.isType).toBe(false);
+    });
 
-        const fieldName = wrapper.findAll('select').at(0);
-        fieldName.findAll('option').at(1).element.selected = true;
-        fieldName.trigger('change');
+    it("actualValue reads from execution results", () => {
+        expect(build().wrapper.vm.actualValue).toBe(5);
+    });
+
+    it("setters dispatch editEntryInput with the entry coordinates", () => {
+        const {wrapper, editEntryInputSpy} = build();
+        wrapper.vm.configElemName = "NewName";
+        expect(editEntryInputSpy.called).toBe(true);
+        expect(editEntryInputSpy.args[0][1]).toEqual({elementId, index: 0, key: "config_elem_name", value: "NewName"});
+    });
+
+    it("saveCheckVenueConfigEntry emits a save event", () => {
+        const {wrapper} = build();
+        wrapper.vm.saveCheckVenueConfigEntry();
+        expect(wrapper.emitted("save")).toBeTruthy();
+    });
+
+    it("switching to TYPE resets the verification value to the first type option", async() => {
+        const {wrapper, state, editEntryInputSpy} = build({field_name: "STATUS"});
+        state.elements[elementId].execution_user_input.entries[0].field_name = "TYPE";
         await wrapper.vm.$nextTick();
+        const call = editEntryInputSpy.getCalls().find((c) => c.args[1].key === "verification_value");
+        expect(call.args[1].value).toBe("BREADBOARD");
+    });
 
-        expect(commonStore.state.elements[elementId]["execution_user_input"]['entries'][0].field_name).toEqual('TYPE');
-        expect(commonStore.state.elements[elementId]["execution_user_input"]['entries'][0].verification_value).toEqual('BREADBOARD');
-        expect(wrapper.vm.editEntryInput.callCount).toEqual(2);
+    it("switching to STATUS resets the verification value to the first status option", async() => {
+        const {wrapper, state, editEntryInputSpy} = build({field_name: "TYPE"});
+        state.elements[elementId].execution_user_input.entries[0].field_name = "STATUS";
+        await wrapper.vm.$nextTick();
+        const call = editEntryInputSpy.getCalls().find((c) => c.args[1].key === "verification_value");
+        expect(call.args[1].value).toBe("INSTALLED");
     });
 });

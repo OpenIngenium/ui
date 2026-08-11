@@ -1,213 +1,206 @@
 import { mount } from "@vue/test-utils";
-import * as faker from "faker";
+import sinon from "sinon";
 import Vue from "vue";
 import Vuex from "vuex";
 import { createLocalVue } from "@vue/test-utils";
 import elementExecutionMixin from "../../../../src/modules/elements/mixins/element-execution-mixin";
 import QueryEvrElement from "../../../../src/modules/elements/executable/query-evr/QueryEvrElement.vue";
 import executionStore from "../../../../src/modules/execution/execution-store";
-import evrsStore from "../../../../src/modules/elements/executable/query-evr/evr-store";
-import dictionariesStore from "../../../../src/modules/common/dictionaries-store";
 
 const {
     executionInputKey,
     elementKey,
-    executionMetaDataKey,
-    executionResultsKey
+    executionMetaDataKey
 } = executionStore.getters;
-
-const {
-    setBooleanKey,
-    receiveElementInput
-} = executionStore.mutations;
-
-const {
-    saveElementInput,
-    editElementInput
-} = executionStore.actions;
-
-const {
-    evrs,
-} = evrsStore.getters;
-
-const {
-    selectedSseDictionaryVersion,
-    selectedFlightDictionaryVersion,
-} = executionStore.getters;
-
-const {
-    fetchFlightEvrs,
-    fetchSseEvrs,
-} =  evrsStore.actions;
 
 const localVue = createLocalVue();
 localVue.use(Vuex);
 
 describe("QueryEvrElement.vue", () => {
-    let actions;
-    let getters;
-    let mutations;
-    let commonStore;
-    let store;
-    let elementId = faker.random.uuid();
+    const elementId = "abc123";
 
-    actions = {
-        saveElementInput,
-        editElementInput,
-        fetchFlightEvrs,
-        fetchSseEvrs,
-    };
-    mutations = {
-        setBooleanKey,
-        receiveElementInput
-    };
-    getters = {
-        evrs,
-        selectedSseDictionaryVersion,
-        selectedFlightDictionaryVersion,
-        executionInputKey,
-        elementKey,
-        executionMetaDataKey,
-        executionResultsKey,
-        elementViewState: () => function() {return {detailLevel: 3}; },
-        isLevelTwoDetail: () => () => true,
-        isLevelThreeDetail: () => () => true
-    };
-
-    beforeEach(() => {
-        commonStore = {
+    function build(userInput = {}, results = {}) {
+        const actions = {
+            saveElementInput: sinon.spy(),
+            editElementInput: sinon.spy(),
+            fetchFlightEvrs: sinon.spy(),
+            fetchSseEvrs: sinon.spy(),
+            populateTimeReferences: sinon.spy()
+        };
+        const getters = {
+            evrs: () => [{evr_name: "E1"}],
+            selectedSseDictionaryVersion: () => "sse-v1",
+            selectedFlightDictionaryVersion: () => "flt-v1",
+            dataPaths: () => ["dp1"],
+            timeReferences: () => ["T1"],
+            executionInputKey,
+            elementKey,
+            executionMetaDataKey,
+            executionResultsKey: () => (id, key) => results[key],
+            canParticipate: () => true,
+            modStyle: () => () => "",
+            numEntries: () => () => 0,
+            elementViewState: () => () => ({detailLevel: 3})
+        };
+        const store = new Vuex.Store({
             state: {
                 elementIds: [elementId],
+                elemModificationMap: {},
                 elements: {
                     [elementId]: {
                         elem_id: elementId,
                         elem_type: "STEP",
                         executed: false,
-                        execution: {meta_data: {status: undefined}},
-                        execution_user_input: {},
+                        execution: {meta_data: {status: undefined}, results},
+                        execution_user_input: userInput,
                         number: "1",
                         parent_id: "",
                         specification: {},
-                        step_type: "QUERY_EVR",
+                        step_type: "QUERY_EVR"
                     }
                 }
             },
-            mutations,
             actions,
             getters
-        };
-    });
-
-    xit("data bar conditionally displays start time and duration", () => {
-        let start = new Date();
-        let startTime = `${start.getFullYear()}-${start.getMonth()}-${start.getDay()}`;
-        let duration = 30;
-
-        commonStore.state.elements[elementId]["execution_user_input"] = {
-            start_time: startTime,
-            end_time: "",
-            duration: duration,
-            evrs: [],
-        };
-        store = new Vuex.Store(commonStore);
+        });
 
         const wrapper = mount(Vue.extend(elementExecutionMixin).extend(QueryEvrElement), {
             propsData: {
-                elementMap: {
-                    'QUERY_EVR': {
-                        name: 'QUERY_EVR',
-                        displayName: 'Query EVR',
-                        paletteGroup: 'Telemetry',
-                        comp: 'queryevr-container',
-                        category: 'executable',
-                        path: 'query_evr_steps',
-                        isNestable: false
-                    }
-                },
-                elementId: elementId,
+                elementMap: {name: "QUERY_EVR", path: "query_evr_steps", isNestable: false},
+                elementId,
                 mode: "execution"
             },
             store,
             localVue,
-            stubs: { "execution-status-check": true }
+            stubs: {
+                "execution-status-check": true,
+                "select-evr-table": true,
+                "ing-modal": true,
+                "ing-popover": true
+            }
         });
-        const dataBarItems = wrapper.findAll(".data-bar-contents-flex li");
-        expect(dataBarItems.at(0).text()).toContain(`Query starting: ${startTime}`);
-        expect(dataBarItems.at(1).text()).toContain(`Duration: ${duration} seconds`);
+        return {wrapper, actions};
+    }
+
+    let wrapper;
+    afterEach(() => {
+        if (wrapper) {
+            wrapper.destroy();
+        }
     });
 
-    xit("data bar conditionally displays end time and duration", () => {
-        let end = new Date();
-        let endTime = `${end.getFullYear()}-${end.getMonth()}-${end.getDay()}`;
-        let duration = 30;
-
-        commonStore.state.elements[elementId]["execution_user_input"] = {
-            start_time: "",
-            end_time: endTime,
-            duration: duration,
-            evrs: [],
-        };
-        store = new Vuex.Store(commonStore);
-
-        const wrapper = mount(Vue.extend(elementExecutionMixin).extend(QueryEvrElement), {
-            propsData: {
-                elementMap: {
-                    'QUERY_EVR': {
-                        name: 'QUERY_EVR',
-                        displayName: 'Query EVR',
-                        paletteGroup: 'Telemetry',
-                        comp: 'queryevr-container',
-                        category: 'executable',
-                        path: 'query_evr_steps',
-                        isNestable: false
-                    }
-                },
-                elementId: elementId,
-                mode: "execution"
-            },
-            store,
-            localVue,
-            stubs: { "execution-status-check": true }
+    it("computed getters read execution_user_input", () => {
+        const built = build({
+            data_path: "dp1",
+            duration: "30",
+            start_time: "S",
+            end_time: "E",
+            evr_type: "SSE",
+            evr_level: "L",
+            evr_name: "N",
+            message_filter: "MF",
+            time_type: "ERT",
+            timeout: 10,
+            verification_condition: "EQUAL",
+            verification_value: 5
         });
-        const dataBarItems = wrapper.findAll(".data-bar-contents-flex li");
-        expect(dataBarItems.at(0).text()).toContain(`Query ending at: ${endTime}`);
-        expect(dataBarItems.at(1).text()).toContain(`Duration: ${duration} seconds`);
+        wrapper = built.wrapper;
+        const vm = wrapper.vm;
+        expect(vm.dataPath).toBe("dp1");
+        expect(vm.duration).toBe("30");
+        expect(vm.startTime).toBe("S");
+        expect(vm.endTime).toBe("E");
+        expect(vm.evrType).toBe("SSE");
+        expect(vm.evrLevel).toBe("L");
+        expect(vm.evrName).toBe("N");
+        expect(vm.messageFilter).toBe("MF");
+        expect(vm.timeType).toBe("ERT");
+        expect(vm.timeout).toBe(10);
+        expect(vm.verificationCondition).toBe("EQUAL");
+        expect(vm.verificationValue).toBe(5);
+        expect(vm.showVerificationValue).toBe(true);
     });
 
-    xit("data bar displays start and end time", () => {
-        let date = new Date();
-        let dateTime = `${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`;
+    it("showVerificationValue is false for RECORD", () => {
+        wrapper = build({verification_condition: "RECORD"}).wrapper;
+        expect(wrapper.vm.showVerificationValue).toBe(false);
+    });
 
-        commonStore.state.elements[elementId]["execution_user_input"] = {
-            start_time: dateTime,
-            end_time: dateTime,
-            duration: "",
-            evrs: [],
-        };
-        store = new Vuex.Store(commonStore);
+    it("results-derived getters read execution results", () => {
+        wrapper = build({}, {total_count: 7, evr_data: [{event_id: 1}], translated_start_time: "TS", translated_end_time: "TE", query_start_time: "QS", query_end_time: "QE"}).wrapper;
+        expect(wrapper.vm.totalCount).toBe(7);
+        expect(wrapper.vm.evrResultsData).toEqual([{event_id: 1}]);
+        expect(wrapper.vm.translatedStartTime).toBe("TS");
+        expect(wrapper.vm.translatedEndTime).toBe("TE");
+        expect(wrapper.vm.queryTimeRange).toContain("QS");
+    });
 
-        const wrapper = mount(Vue.extend(elementExecutionMixin).extend(QueryEvrElement), {
-            propsData: {
-                elementMap: {
-                    'QUERY_EVR': {
-                        name: 'QUERY_EVR',
-                        displayName: 'Query EVR',
-                        paletteGroup: 'Telemetry',
-                        comp: 'queryevr-container',
-                        category: 'executable',
-                        path: 'query_evr_steps',
-                        isNestable: false
-                    }
-                },
-                elementId: elementId,
-                mode: "execution"
-            },
-            store,
-            localVue,
-            stubs: { "execution-status-check": true }
-        });
-        const dataBarItems = wrapper.findAll(".data-bar-contents-flex li");
-        expect(dataBarItems.at(0).text()).toContain(`Query starting: ${dateTime}`);
-        expect(dataBarItems.at(1).text()).toContain(`and ending: ${dateTime}`);
+    it("evrData returns [] when results are not the expected shape", () => {
+        wrapper = build({}, {evr_data: [{event_id: 1}]}).wrapper;
+        // evrResultsData is an array here, so evrData falls back to []
+        expect(wrapper.vm.evrData).toEqual([]);
+    });
+
+    it("evrTypeCategorySelected getter/setter", () => {
+        wrapper = build({evr_type: "SSE"}).wrapper;
+        expect(wrapper.vm.evrTypeCategorySelected).toBe("FLIGHT");
+        wrapper.vm.evrTypeCategorySelected = "SSE";
+        expect(wrapper.vm.evrTypeCategorySelected).toBe("SSE");
+    });
+
+    it("getEvrTypeOptions returns the category list", () => {
+        wrapper = build().wrapper;
+        expect(wrapper.vm.getEvrTypeOptions()).toEqual(["SSE", "FSW_REALTIME", "FSW_RECORDED"]);
+    });
+
+    it("setters dispatch editElementInput", () => {
+        const built = build();
+        wrapper = built.wrapper;
+        wrapper.vm.dataPath = "newPath";
+        expect(built.actions.editElementInput.called).toBe(true);
+    });
+
+    it("handleInput sets evrName", () => {
+        const built = build();
+        wrapper = built.wrapper;
+        wrapper.vm.handleInput("myEvr");
+        expect(built.actions.editElementInput.called).toBe(true);
+    });
+
+    it("saveDataPath/saveStartTime/saveEndTime persist and save", () => {
+        const built = build();
+        wrapper = built.wrapper;
+        wrapper.vm.saveDataPath("dpX");
+        wrapper.vm.saveStartTime("T1");
+        wrapper.vm.saveEndTime("T2");
+        expect(built.actions.saveElementInput.called).toBe(true);
+    });
+
+    it("selectedEvr closes the modal, sets the name, and saves", () => {
+        const built = build();
+        wrapper = built.wrapper;
+        wrapper.vm.selectedEvr({data: {evr_name: "chosen"}});
+        expect(wrapper.vm.showEvrModal).toBe(false);
+        expect(built.actions.saveElementInput.called).toBe(true);
+    });
+
+    it("fetchEvrAutoCompleteCallback dispatches by evr type", () => {
+        const sseBuilt = build({evr_type: "SSE"});
+        wrapper = sseBuilt.wrapper;
+        wrapper.vm.fetchEvrAutoCompleteCallback("abc");
+        expect(sseBuilt.actions.fetchSseEvrs.called).toBe(true);
+        wrapper.destroy();
+
+        const flightBuilt = build({evr_type: "FSW_REALTIME"});
+        wrapper = flightBuilt.wrapper;
+        wrapper.vm.fetchEvrAutoCompleteCallback("abc");
+        expect(flightBuilt.actions.fetchFlightEvrs.called).toBe(true);
+    });
+
+    it("saveEvrQuery normalizes fields and saves", () => {
+        const built = build({timeout: "10", verification_value: "5", evr_name: " N ", evr_id: " id "});
+        wrapper = built.wrapper;
+        wrapper.vm.saveEvrQuery();
+        expect(built.actions.saveElementInput.called).toBe(true);
     });
 });

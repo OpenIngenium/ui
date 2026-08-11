@@ -11,17 +11,17 @@ COPY .git /ui/.git
 RUN cd /ui && ./gen_version.sh
 
 # Compile JS Bundles{{{
-FROM cae-artifactory.jpl.nasa.gov:17001/node:8.11.1-alpine as node
+FROM cae-artifactory.jpl.nasa.gov:17001/node:22.23.2-alpine as node
 
 RUN mkdir /src;
 COPY --from=python /ui/src /src
 
 WORKDIR /src/client
 
-RUN npm cache verify && \
-    npm rebuild node-sass && \
-    npm install --unsafe-perm && \
-    npm run build-single-node
+# dart-sass (sass) is pure JS, so no native node-sass rebuild is required.
+# --legacy-peer-deps mirrors the resolution used to generate package-lock.json.
+RUN npm ci --legacy-peer-deps && \
+    npm run build:single-node
 # }}}
 
 

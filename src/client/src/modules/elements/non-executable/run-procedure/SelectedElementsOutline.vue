@@ -24,13 +24,13 @@
 
 <script>
     import { mapGetters } from "vuex";
-    import SelectedElementsOutline from "./SelectedElementsOutline.vue";
     import IngTag from "../../IngTag.vue";
 
     export default {
         name: "SelectedElementsOutline",
         components: {
-            SelectedElementsOutline,
+            // Recursive component: resolved by its own `name` option instead of a
+            // self-import, avoiding a circular module dependency (webpack 5 ESM TDZ).
             'ing-tag': IngTag
         },
         props: {

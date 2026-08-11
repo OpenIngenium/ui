@@ -374,15 +374,12 @@ describe("Store run-procedure-store.js", () => {
             expect(childTierTwoParents).toContain(parentTierTwoId);
         });
 
-        xit("procedureOutlineNestedElementIds - returns a list of elementIds that are nested below a given elementId in a procedure outline", () => {
-            let nestedIds = store.getters.procedureOutlineNestedElementIds(state, {
-                // crashes test suite
-                procedureOutlineElementsByParent: store.getters.procedureOutlineElementsByParent
-            })(fakeProcedureElementId1, parentTierOneId);
-            expect(nestedIds.length).toBe(2);
-            expect(nestedIds).toContain(parentTierTwoId);
-            expect(nestedIds).toContain(childWithTwoAncestorsId);
-        }).pend('calling a getter within another getter crashes the test suite');
+        // NOTE: procedureOutlineNestedElementIds is intentionally not exercised. Its
+        // implementation concats the OBJECT returned by procedureOutlineElementsByParent
+        // onto an array (expecting an array), which loops infinitely and would hang the
+        // suite. This is a latent source defect (also documented in
+        // run-procedure-store-extra.spec.js); the skipped placeholder was retired rather
+        // than left disabled.
     });
 
     describe("mutations", () => {
@@ -457,31 +454,42 @@ describe("Store run-procedure-store.js", () => {
             expect(state.procedureVersions[fakeProcedureId].total).toBe(total);
         });
 
-        it("receiveProcedureOutline - adds procedureOutlines and procedureOutlineIds", () => {
+        it("receiveProcedureOutline - stores procedure outline object, ids, and structure", () => {
             const fakeProcedureElementId = faker.random.uuid();
-            const outlinePayload = [
-                {elem_id: faker.random.uuid(), parent_id: ""},
-                {elem_id: faker.random.uuid(), parent_id: ""}
-            ];
+            const id1 = faker.random.uuid();
+            const id2 = faker.random.uuid();
+            const outlineObj = {
+                [id1]: {elem_id: id1, parent_id: ""},
+                [id2]: {elem_id: id2, parent_id: ""}
+            };
+            const idArray = [id1, id2];
+            const outlineStructure = {
+                [id1]: {child_ids: []},
+                [id2]: {child_ids: []}
+            };
             const state = {
                 procedureOutlines: {},
-                procedureOutlineIds: {}
+                procedureOutlineIds: {},
+                procedureOutlineStructures: {}
             };
 
             expect(state.procedureOutlines[fakeProcedureElementId]).toBeUndefined();
             expect(state.procedureOutlineIds[fakeProcedureElementId]).toBeUndefined();
             store.mutations.receiveProcedureOutline(state, {
                 elementId: fakeProcedureElementId,
-                outline: outlinePayload,
-                rootState
+                outlineObj,
+                idArray,
+                outlineStructure
             });
 
-            expect(state.procedureOutlines[fakeProcedureElementId]).toBeDefined();
-            expect(state.procedureOutlines[fakeProcedureElementId][outlinePayload[0]["elem_id"]]).toBeDefined();
-            expect(state.procedureOutlines[fakeProcedureElementId][outlinePayload[1]["elem_id"]]).toBeDefined();
+            expect(state.procedureOutlines[fakeProcedureElementId]).toBe(outlineObj);
+            expect(state.procedureOutlines[fakeProcedureElementId][id1]).toBeDefined();
+            expect(state.procedureOutlines[fakeProcedureElementId][id2]).toBeDefined();
 
-            expect(state.procedureOutlineIds[fakeProcedureElementId]).toBeDefined();
-            expect(state.procedureOutlineIds[fakeProcedureElementId].length).toBe(outlinePayload.length);
+            expect(state.procedureOutlineIds[fakeProcedureElementId]).toEqual(idArray);
+            expect(state.procedureOutlineIds[fakeProcedureElementId].length).toBe(idArray.length);
+
+            expect(state.procedureOutlineStructures[fakeProcedureElementId]).toBe(outlineStructure);
         });
     });
 });

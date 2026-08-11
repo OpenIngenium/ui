@@ -78,12 +78,7 @@
     }
 
     div.entry-dropzone.drag-over:before {
-        @extend div.entry-dropzone.drag-over:before;
         top: 0px;
-    }
-
-    div.entry-dropzone.drag-over {
-        @extend div.entry-dropzone.drag-over;
     }
 
     div.entry-dropzone {

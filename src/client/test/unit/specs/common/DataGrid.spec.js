@@ -42,268 +42,167 @@ const state = {
     }
 };
 
-// Props 
+// Column definitions are now supplied by the parent component via the `columnInfos`
+// prop (the component was refactored from hardcoded EIP columns to a generic grid).
+// The last column (actual_value) is execution-only, so it is filtered out in authoring mode.
+const columnInfos = [
+    { name: "signal_name", header: "Signal Name", width: 100, type: "string", executionOnly: false, defaultValue: "" },
+    { name: "icds", header: "ICDS", width: 100, type: "string", executionOnly: false, defaultValue: "" },
+    { name: "from", header: "From (red probe)", width: 100, type: "integer", executionOnly: false, defaultValue: 0 },
+    { name: "to", header: "To (black probe)", width: 100, type: "integer", executionOnly: false, defaultValue: 0 },
+    { name: "unit", header: "Units", width: 100, type: "string", executionOnly: false, defaultValue: "" },
+    { name: "min_value", header: "Min", width: 100, type: "integer", executionOnly: false, defaultValue: 0 },
+    { name: "max_value", header: "Max", width: 100, type: "integer", executionOnly: false, defaultValue: 0 },
+    { name: "actual_value", header: "Measured", width: 100, type: "string", executionOnly: true, defaultValue: "" }
+];
+
+// Props
 const propsData = {
     elementId,
-    showModal: false, 
+    showModal: false,
     mode: 'execution',
     level: 1,
     disableFields: false,
-    canDisableExecuteField: false
+    canDisableExecuteField: false,
+    columnInfos
 };
 
 // Getters
 const getters = {
-    executionInputEntriesArrayFilter: ExecutionStore.getters.executionInputEntriesArrayFilter
+    executionInputEntriesArrayFilter: ExecutionStore.getters.executionInputEntriesArrayFilter,
+    executionInputCustomScriptEntriesArrayFilter: ExecutionStore.getters.executionInputCustomScriptEntriesArrayFilter,
+    editMode: () => true
 };
 
 // Actions
 const actions = {
-    editEntries: () => {}
+    editEntries: () => {},
+    editCustomScriptEntries: () => {}
 };
 
-// Stub components
-const stubs = {};
+// Stub ing-modal so its default slot (which contains <hot-table>) is not rendered.
+// This avoids initializing Handsontable's DOM (unsupported under jsdom) while still
+// giving us a real IngDataEntry instance to exercise its methods/computed props.
+const stubs = {
+    "ing-modal": { render: (h) => h("div") },
+    "ing-data-grid-info": true
+};
 
 const localVue = createLocalVue();
 localVue.use(Vuex);
 
-describe("DataGrid", () => {
-    let store;
+// The component was refactored to a generic, columnInfos-driven grid; the grid-interaction
+// tests (paste / add / remove rows / modal visibility) required a live Handsontable instance
+// that does not render under jsdom, so they were retired. These tests exercise the component's
+// own logic (column filtering by mode, data mapping, cell validation, row->object conversion)
+// via shallowMount so they do not depend on the Handsontable DOM.
+function makeWrapper(overrides = {}) {
+    const store = new Vuex.Store({ state, getters, actions });
+    return shallowMount(IngDataEntry, {
+        store,
+        localVue,
+        propsData: { ...propsData, ...overrides },
+        stubs
+    });
+}
+
+describe("IngDataEntry (DataGrid)", () => {
     let wrapper;
 
     beforeEach(() => {
-        store = new Vuex.Store({ state, getters, actions });
-        wrapper = mount(IngDataEntry, {
-            store,
-            localVue,
-            propsData,
-            stubs
+        wrapper = makeWrapper();
+    });
+
+    afterEach(() => {
+        if (wrapper) wrapper.destroy();
+    });
+
+    describe("column configuration", () => {
+        it("[execution mode] includes all columns in order", () => {
+            expect(wrapper.vm.mode).toBe("execution");
+            expect(wrapper.vm.columnSize()).toBe(8);
+            expect(wrapper.vm.columnHeaders()).toEqual([
+                "Signal Name", "ICDS", "From (red probe)", "To (black probe)",
+                "Units", "Min", "Max", "Measured"
+            ]);
+            expect(wrapper.vm.hotSettings.colHeaders.length).toBe(8);
+            expect(wrapper.vm.hotSettings.maxCols).toBe(8);
+        });
+
+        it("[authoring mode] filters out execution-only columns", () => {
+            const authoring = makeWrapper({ mode: "authoring" });
+            expect(authoring.vm.columnSize()).toBe(7);
+            expect(authoring.vm.columnHeaders()).toEqual([
+                "Signal Name", "ICDS", "From (red probe)", "To (black probe)",
+                "Units", "Min", "Max"
+            ]);
+            expect(authoring.vm.columnHeaders()).not.toContain("Measured");
+            authoring.destroy();
+        });
+
+        it("columnNames reflect the filtered columns per mode", () => {
+            expect(wrapper.vm.columnNames()).toEqual([
+                "signal_name", "icds", "from", "to", "unit", "min_value", "max_value", "actual_value"
+            ]);
+            const authoring = makeWrapper({ mode: "authoring" });
+            expect(authoring.vm.columnNames()).not.toContain("actual_value");
+            authoring.destroy();
         });
     });
 
-    xit("modal is default closed", () => {
-        const modal = wrapper.find('.modal-container');
-        expect(modal.isVisible()).toBeFalsy();
-    });
-
-    xit("modal is toggleable", () => {
-        const open = wrapper.find('.modal-container');
-        expect(open.isVisible()).toBeFalsy();
-        
-        wrapper.setProps({
-            elementId: '1234',
-            showModal: true, 
-            mode: 'execution',
-            level: 1,
-            disableFields: false,
-            canDisableExecuteField: false
+    describe("hotData (executionInputEntriesArrayFilter)", () => {
+        it("[execution mode] maps entries to arrays for every column", () => {
+            expect(wrapper.vm.hotData.length).toBe(2);
+            expect(wrapper.vm.hotData[0].length).toBe(8);
+            expect(wrapper.vm.hotData).toEqual([
+                ["they're", "great", 2, 3, "Volt", 0, 100, "real"],
+                ["quality you", "can taste", 3, 4, "Ohm", 1, 101, "super real"]
+            ]);
         });
 
-        Vue.nextTick(() => {
-            const closed = wrapper.find('.modal-container');
-            expect(closed.isVisible()).toBeTruthy();
+        it("[authoring mode] omits the execution-only column from each row", () => {
+            const authoring = makeWrapper({ mode: "authoring" });
+            expect(authoring.vm.hotData.length).toBe(2);
+            expect(authoring.vm.hotData[0].length).toBe(7);
+            expect(authoring.vm.hotData[0]).toEqual(["they're", "great", 2, 3, "Volt", 0, 100]);
+            authoring.destroy();
         });
     });
 
-    xit("[execution mode] handsontable has correct amount of columns", () => {
-        expect(wrapper.vm.mode).toBe('execution');
-        expect(wrapper.vm.hotSettings.colHeaders.length).toBe(8);
-    });
-
-    xit("[execution mode] handsontable columns are in order", () => {
-        const expectedColumnHeaders = JSON.stringify(['Signal Name',
-            'ICDS',
-            'From (red probe)',
-            'To (black probe)',
-            'Units',
-            'Min',
-            'Max',
-            'Measured']);
-
-        expect(wrapper.vm.mode).toBe('execution');
-        expect(JSON.stringify(wrapper.vm.hotSettings.colHeaders)).toBe(expectedColumnHeaders);
-    });
-
-    xit("[authoring mode] handsontable has correct amount of columns", () => {
-        const authoringWrapper = mount(IngDataEntry, {
-            store,
-            localVue,
-            propsData: {
-                elementId: '1234',
-                showModal: true, 
-                mode: 'authoring',
-                level: 1,
-                disableFields: false,
-                canDisableExecuteField: false
-            },
-            stubs
+    describe("validateCell", () => {
+        it("parses valid integers", () => {
+            const col = { type: "integer", name: "from", defaultValue: 0 };
+            expect(wrapper.vm.validateCell(col, "5", [])).toEqual({ validated: true, cellValue: 5 });
         });
 
-        expect(authoringWrapper.vm.mode).toBe('authoring');
-        expect(authoringWrapper.vm.hotSettings.colHeaders.length).toBe(7);
-    });
-
-    xit("[authoring mode] handsontable columns are in order", () => {
-        const authoringWrapper = mount(IngDataEntry, {
-            store,
-            localVue,
-            propsData: {
-                elementId: '1234',
-                showModal: true, 
-                mode: 'authoring',
-                level: 1,
-                disableFields: false,
-                canDisableExecuteField: false
-            },
-            stubs
+        it("falls back to the default for invalid integers", () => {
+            const col = { type: "integer", name: "from", defaultValue: 0 };
+            expect(wrapper.vm.validateCell(col, "abc", [])).toEqual({ validated: false, cellValue: 0 });
         });
 
-        const expectedColumnHeaders = JSON.stringify(['Signal Name',
-            'ICDS',
-            'From (red probe)',
-            'To (black probe)',
-            'Units',
-            'Min',
-            'Max']);
-
-        expect(authoringWrapper.vm.mode).toBe('authoring');
-        expect(JSON.stringify(authoringWrapper.vm.hotSettings.colHeaders)).toBe(expectedColumnHeaders);
-    });
-
-    xit("[execution mode] hotData has execution time fields present", () => {
-        expect(wrapper.vm.hotData.length).toBe(2);
-        expect(wrapper.vm.hotSettings.maxCols).toBe(8);
-        expect(wrapper.vm.hotData[0].length).toBe(8);
-    });
-
-    xit("[authoring mode] hotData has doesn't have execution time fields present", () => {
-        const authoringWrapper = mount(IngDataEntry, {
-            store,
-            localVue,
-            propsData: {
-                elementId,
-                showModal: true, 
-                mode: 'authoring',
-                level: 1,
-                disableFields: false,
-                canDisableExecuteField: false
-            },
-            stubs
+        it("trims valid strings", () => {
+            const col = { type: "string", name: "unit", defaultValue: "" };
+            expect(wrapper.vm.validateCell(col, "  Volt  ", [])).toEqual({ validated: true, cellValue: "Volt" });
         });
 
-        expect(authoringWrapper.vm.hotData.length).toBe(2);
-        expect(authoringWrapper.vm.hotSettings.maxCols).toBe(7);
-        expect(authoringWrapper.vm.hotData[0].length).toBe(7);
+        it("marks null values invalid", () => {
+            const col = { type: "string", name: "unit", defaultValue: "" };
+            expect(wrapper.vm.validateCell(col, null, []).validated).toBe(false);
+        });
+
+        it("coerces out-of-range enum values to the first allowed value", () => {
+            const col = { type: "string", name: "unit", defaultValue: "A", enumValues: ["A", "B"] };
+            expect(wrapper.vm.validateCell(col, "Z", [])).toEqual({ validated: false, cellValue: "A" });
+        });
     });
 
-    xit("random ordering of entries doesn't affect executionInputEntriesArrayFilter", () => {
-        const nominalEntries = [
-            ["they're","great",2,3,"Volt",0,100,"real"],
-            ["quality you","can taste",3,4,"Ohm",1,101,"super real"]
-        ];
-        expect(JSON.stringify(wrapper.vm.hotData)).toBe(JSON.stringify(nominalEntries));
-    });
-
-    xit("simulate pasting into empty data entry table", () => {
-        const hotRef = wrapper.vm.$refs.myTable.hotInstance;
-        hotRef.selectCell(0,0);
-        new ClipboardEvent('paste', [
-            ["a","b",1,2,"c",3,4,"d"],
-            ["e","f",4,5,"g",6,7,"h"]
-        ]);
-
-        wrapper.vm.afterChangeCallback(null, "edit");
-
-        expect(wrapper.vm.hotData.length).toBe(2);
-    });
-
-    xit("pasting into populated data entry table replacing entire contents", () => {
-        // Select second row
-        const hotRef = wrapper.vm.$refs.myTable.hotInstance;
-        hotRef.selectCell(1,0);
-        hotRef.setDataAtRowProp(0,0,[
-            ["i","j",7,6,"k",5,4,"l"],
-            ["m","n",3,2,"o",1,0,"p"]
-        ], 'edit');
-
-        new ClipboardEvent('paste', [
-            ["a","b",1,2,"c",3,4,"d"],
-            ["e","f",4,5,"g",6,7,"h"]
-        ]);
-
-        wrapper.vm.afterChangeCallback(null, "edit");
-
-        expect(wrapper.vm.hotData.length).toBe(2);
-    });
-
-    xit("pasting into populated data entry table partially replacing contents", () => {
-        // Select second row
-        const hotRef = wrapper.vm.$refs.myTable.hotInstance;
-        hotRef.selectCell(0,0);
-        hotRef.setDataAtRowProp(0,0,[
-            ["i","j",7,6,"k",5,4,"l"],
-            ["m","n",3,2,"o",1,0,"p"],
-            ["q","r",3,2,"s",1,0,"t"]
-        ], 'edit');
-
-        new ClipboardEvent('paste', [
-            ["a","b",1,2,"c",3,4,"d"],
-            ["e","f",4,5,"g",6,7,"h"]
-        ]);
-
-        wrapper.vm.afterChangeCallback(null, "edit");
-
-        expect(wrapper.vm.hotData.length).toBe(2);
-    });
-
-    xit("add row above", () => {
-        const hotRef = wrapper.vm.$refs.myTable.hotInstance;
-        hotRef.selectCell(0,0);
-        hotRef.setDataAtRowProp(0,0,[
-            ["i","j",7,6,"k",5,4,"l"],
-            ["m","n",3,2,"o",1,0,"p"]
-        ], 'edit');
-
-        wrapper.vm.afterCreateRowCallback(null, null, "ContextMenu.rowAbove");
-
-        expect(wrapper.vm.hotData.length).toBe(2);
-    });
-
-    xit("add row below", () => {
-        const hotRef = wrapper.vm.$refs.myTable.hotInstance;
-        hotRef.selectCell(0,0);
-        hotRef.setDataAtRowProp(0,0,[
-            ["i","j",7,6,"k",5,4,"l"],
-            ["m","n",3,2,"o",1,0,"p"]
-        ], 'edit');
-
-        wrapper.vm.afterCreateRowCallback(null, null, "ContextMenu.rowBelow");
-
-        expect(wrapper.vm.hotData.length).toBe(2);
-    });
-
-    xit("remove row from above", () => {
-        const hotRef = wrapper.vm.$refs.myTable.hotInstance;
-        hotRef.selectCell(1,0);
-        hotRef.setDataAtRowProp(0,0,[
-            ["i","j",7,6,"k",5,4,"l"]
-        ], 'edit');
-
-        wrapper.vm.afterCreateRowCallback(null, null, "ContextMenu.removeRow");
-
-        expect(wrapper.vm.hotData.length).toBe(2);
-    });
-    
-    xit("remove row from below", () => {
-        const hotRef = wrapper.vm.$refs.myTable.hotInstance;
-        hotRef.selectCell(0,0);
-        hotRef.setDataAtRowProp(0,0,[
-            ["i","j",7,6,"k",5,4,"l"]
-        ], 'edit');
-
-        wrapper.vm.afterCreateRowCallback(null, null, "ContextMenu.removeRow");
-
-        expect(wrapper.vm.hotData.length).toBe(2);
+    describe("toRowObj", () => {
+        it("[execution mode] maps a value array back to a keyed object with typed integers", () => {
+            const row = ["sig", "icd", "2", "3", "V", "0", "100", "meas"];
+            expect(wrapper.vm.toRowObj(row)).toEqual({
+                signal_name: "sig", icds: "icd", from: 2, to: 3,
+                unit: "V", min_value: 0, max_value: 100, actual_value: "meas"
+            });
+        });
     });
 });

@@ -1,11 +1,12 @@
-const webpackConfig = require("../../webpack.config.js");
+const webpackConfig = require("../../webpack.test.js");
 
 module.exports = function(config) {
     config.set({
         frameworks: ["jasmine"],
 
         files: [
-            "specs/**/*.spec.js"
+            "setup.js",
+            process.env.SPEC_GLOB || "specs/**/*.spec.js"
         ],
 
         exclude: [

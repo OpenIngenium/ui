@@ -35,22 +35,35 @@ const {
 
 describe("Store execution-store.js", () => {
     describe("getters", () => {
-        xit("elements - gets elements sorted by number", () => {
+        it("elements - returns the filtered elements within the viewport window", () => {
             const fakeId1 = faker.random.uuid();
             const fakeId2 = faker.random.uuid();
             const fakeId3 = faker.random.uuid();
             const state = {
-                elementIds: [fakeId1, fakeId2, fakeId3],
+                // ordering now comes from filteredElementIds (precomputed), not a number sort
+                filteredElementIds: [fakeId1, fakeId2, fakeId3],
                 elements: {
-                    [fakeId3]: { number: 3 },
-                    [fakeId1]: { number: 1 },
-                    [fakeId2]: { number: 2 }
-                }
+                    [fakeId3]: { elem_id: fakeId3, number: 3 },
+                    [fakeId1]: { elem_id: fakeId1, number: 1 },
+                    [fakeId2]: { elem_id: fakeId2, number: 2 }
+                },
+                viewportTopPointer: 0,
+                viewportSize: 10
             };
-            const sortedElements = elements(state);
-            expect(sortedElements[0].number).toEqual(1);
-            expect(sortedElements[1].number).toEqual(2);
-            expect(sortedElements[2].number).toEqual(3);
+            const visible = elements(state);
+            expect(visible.map(e => e.elem_id)).toEqual([fakeId1, fakeId2, fakeId3]);
+        });
+
+        it("elements - limits the result to the viewport size starting at the top pointer", () => {
+            const state = {
+                filteredElementIds: ["a", "b", "c", "d"],
+                elements: {
+                    a: { elem_id: "a" }, b: { elem_id: "b" }, c: { elem_id: "c" }, d: { elem_id: "d" }
+                },
+                viewportTopPointer: 1,
+                viewportSize: 2
+            };
+            expect(elements(state).map(e => e.elem_id)).toEqual(["b", "c"]);
         });
         it("nestedChildIds - takes an elementId argument, and retrieves all nested child ids", () => {
             const fakeElementId = faker.random.uuid();
@@ -411,9 +424,10 @@ describe("Store execution-store.js", () => {
             expect(Object.keys(state.entriesViewState).length).toEqual(0);
         });
 
-        xit("receiveElement - receives a element and updates state", () => {
+        it("receiveElement - receives a element and updates state", () => {
             const newCmdStep = {
                 elem_id: faker.random.uuid(),
+                parent_id: "",
                 procedure_modification: {
                     justification: {
                         content: "",
@@ -435,29 +449,43 @@ describe("Store execution-store.js", () => {
                 elementIds: [],
                 elements: {},
                 elementsViewState: {},
-                entriesViewState: {}
+                entriesViewState: {},
+                elemFilters: {filterElementIdMap: {}},
+                filteredElementIds: [],
+                outlinePrecomputed: {}
             };
+            // receiveElement now takes precomputed numbers/elementIds and rootState (for conversations)
+            const rootState = {comments: {conversations: {}}};
 
             expect(Object.keys(state.elementsViewState).length).toEqual(0);
             expect(Object.keys(state.entriesViewState).length).toEqual(0);
 
-            receiveElement(state, {element: newCmdStep});
+            receiveElement(state, {
+                element: newCmdStep,
+                detailLevel: 2,
+                numbers: [{elem_id: newCmdStep.elem_id, number: 1}],
+                elementIds: [newCmdStep.elem_id],
+                rootState
+            });
 
             expect(state.elementIds.length).toEqual(1);
             expect(state.elementIds).toContain(newCmdStep.elem_id);
             expect(state.elements[newCmdStep.elem_id].execution_user_input).toEqual(newCmdStep.execution_user_input);
 
-            // filters out garbage keys
+            // filters out garbage keys (slimElement whitelists known fields)
             expect(Object.keys(state.elements[newCmdStep.elem_id])).not.toContain("garbageKey1");
             expect(Object.keys(state.elements[newCmdStep.elem_id])).not.toContain("garbageKey2");
             // new element and entry should also get added to respective view state shapes
             expect(Object.keys(state.elementsViewState).length).toEqual(1);
             expect(Object.keys(state.entriesViewState).length).toEqual(1);
+            // a conversation bucket is initialized for the new element
+            expect(rootState.comments.conversations.hasOwnProperty(newCmdStep.elem_id)).toBe(true);
         });
 
-        xit("receiveElement - doesn't throw an error if execution_user_input is not found in element", () => {
+        it("receiveElement - doesn't throw an error if execution_user_input is not found in element", () => {
             const newBogusStep = {
                 elem_id: faker.random.uuid(),
+                parent_id: "",
                 procedure_modification: {
                     justification: {
                         content: "",
@@ -470,21 +498,37 @@ describe("Store execution-store.js", () => {
 
             const state = {
                 elementIds: [],
-                elements: {}
+                elements: {},
+                elementsViewState: {},
+                entriesViewState: {},
+                elemFilters: {filterElementIdMap: {}},
+                filteredElementIds: [],
+                outlinePrecomputed: {}
             };
+            const rootState = {comments: {conversations: {}}};
 
-            receiveElement(state, {element: newBogusStep, detailLevel: 2});
+            expect(() => receiveElement(state, {
+                element: newBogusStep,
+                detailLevel: 2,
+                numbers: [{elem_id: newBogusStep.elem_id, number: 1}],
+                elementIds: [newBogusStep.elem_id],
+                rootState
+            })).not.toThrow();
             expect(state.elementIds.length).toEqual(1);
-            expect(Object.keys(state.elements[newBogusStep.elem_id]).execution_user_input).toBe(undefined);
+            expect(state.elements[newBogusStep.elem_id].execution_user_input).toBe(undefined);
         });
 
-        xit("updateElementExecution - updates element execution contents (meta_data, results)", () => {
+        it("updateElementExecution - updates element execution contents (meta_data, results)", () => {
             const fakeElementId = faker.random.uuid();
             const fakeUserName = faker.internet.userName();
 
             const state = {
+                elementIds: [fakeElementId],
+                outlinePrecomputed: {},
                 elements: {
                     [fakeElementId]: {
+                        elem_id: fakeElementId,
+                        parent_id: "",
                         executed: true,
                         execution: {
                             meta_data: {},
@@ -557,20 +601,35 @@ describe("Store execution-store.js", () => {
             expect(state.entriesViewState[fakeId][3].detailLevel).toEqual(3);
         });
 
-        xit("deleteElement - deletes a specific element from elementIds and elements", () => {
+        it("deleteElement - keeps only the elements in the provided elementIds", () => {
+            // deleteElement now rebuilds state from the surviving elementIds/numbers
+            // (computed by the caller) plus rootState for conversation-aware filtering.
             const state = {
                 elementIds: ["destructible", "indestructible"],
-                elements: {"destructible": {}, "indestructible": {}}
+                elements: {
+                    "destructible": {elem_id: "destructible", parent_id: ""},
+                    "indestructible": {elem_id: "indestructible", parent_id: ""}
+                },
+                elementsViewState: {"destructible": {}, "indestructible": {}},
+                entriesViewState: {"destructible": [], "indestructible": []},
+                elemFilters: {filterElementIdMap: {}},
+                filteredElementIds: ["destructible", "indestructible"],
+                outlinePrecomputed: {}
             };
+            const rootState = {comments: {conversations: {}}};
 
             expect(state.elementIds.length).toEqual(2);
             expect(Object.keys(state.elements).length).toEqual(2);
 
-            deleteElement(state, {elementId: "destructible"});
+            deleteElement(state, {
+                numbers: [{elem_id: "indestructible", number: 1}],
+                elementIds: ["indestructible"],
+                rootState
+            });
 
-            expect(state.elementIds.length).toEqual(1);
-            expect(state.elementIds).toContain("indestructible");
-            expect(Object.keys(state.elements).length).toEqual(1);
+            expect(state.elementIds).toEqual(["indestructible"]);
+            expect(Object.keys(state.elements)).toEqual(["indestructible"]);
+            expect(state.elements.destructible).toBeUndefined();
         });
 
         it("receiveEntryInput - adds an entry to execution_user_input entries state", () => {
@@ -668,7 +727,13 @@ describe("Store execution-store.js", () => {
             receiveEntryArrayValue(state, fakeObj);
             expect(state.elements[fakeId].execution_user_input.entries[0].widgets).toEqual(['b']);
 
+            // Only null/undefined removes an index; an empty string is a real
+            // value and replaces the target index.
             fakeObj = {elementId: fakeId, keyString: "widgets", value: '', targetIndex: 0, entryIndex: 0};
+            receiveEntryArrayValue(state, fakeObj);
+            expect(state.elements[fakeId].execution_user_input.entries[0].widgets).toEqual(['']);
+
+            fakeObj = {elementId: fakeId, keyString: "widgets", value: undefined, targetIndex: 0, entryIndex: 0};
             receiveEntryArrayValue(state, fakeObj);
             expect(state.elements[fakeId].execution_user_input.entries[0].widgets).toEqual([]);
         });

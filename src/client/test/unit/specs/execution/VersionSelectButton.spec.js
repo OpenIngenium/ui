@@ -1,15 +1,27 @@
-import {shallow} from "@vue/test-utils";
+import {shallow, createLocalVue} from "@vue/test-utils";
+import Vuex from "vuex";
 import faker from "faker";
 import VersionSelectButton from "../../../../src/modules/elements/non-executable/run-procedure/VersionSelectButton.vue";
 
 const procedureId = faker.random.uuid();
 const version = faker.random.number();
 
+const localVue = createLocalVue();
+localVue.use(Vuex);
+
 describe("VersionSelectButton.vue", () => {
     let wrapper;
+    let store;
 
     beforeEach(() => {
+        store = new Vuex.Store({
+            getters: {
+                isAuthoringMode: () => false
+            }
+        });
         wrapper = shallow(VersionSelectButton, {
+            localVue,
+            store,
             propsData: {
                 data: {
                     procedure_id: procedureId,
@@ -17,6 +29,12 @@ describe("VersionSelectButton.vue", () => {
                 }
             }
         });
+    });
+
+    afterEach(() => {
+        if (wrapper) {
+            wrapper.destroy();
+        }
     });
 
     it("Make sure tableEvent gets emitted when clicked", () => {

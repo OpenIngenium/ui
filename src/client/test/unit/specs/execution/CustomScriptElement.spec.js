@@ -1,9 +1,8 @@
-/*
-import {shallow} from "@vue/test-utils";
+import {shallowMount} from "@vue/test-utils";
 import {createLocalVue} from "@vue/test-utils";
 import Vue from "vue";
 import Vuex from "vuex";
-import faker from "faker";
+import * as faker from "faker";
 import ProjectConfigStore from "../../../../src/modules/project-config/project-config-store";
 import ExecutionStore from "../../../../src/modules/execution/execution-store";
 import CustomScriptElement from "../../../../src/modules/elements/executable/custom_script/CustomScriptElement.vue";
@@ -107,7 +106,10 @@ const state = {
             detailLevel: 3,
             loading: false
         }
-    }
+    },
+    elemModificationMap: {},
+    customScripts: {},
+    customScriptsCount: 0
 };
 
 // Props
@@ -125,27 +127,37 @@ const propsData = {
     mode: 'execution',
 };
 
-// Getters
+// Getters (sourced from the real stores so computed props resolve correctly)
 const getters = {
     customScripts: ProjectConfigStore.getters.customScripts,
-    executionInput: ExecutionStore.getters.executionInput,
+    customScriptsCount: ProjectConfigStore.getters.customScriptsCount,
     customScriptIdByPath: ProjectConfigStore.getters.customScriptIdByPath,
-    selectedElementsByParent: ExecutionStore.getters.selectedElementsByParent,
+    executionInput: ExecutionStore.getters.executionInput,
+    executionInputKey: ExecutionStore.getters.executionInputKey,
+    executionResultsKey: ExecutionStore.getters.executionResultsKey,
+    executionRedlineInputKey: ExecutionStore.getters.executionRedlineInputKey,
     executionMetaDataKey: ExecutionStore.getters.executionMetaDataKey,
+    execution: ExecutionStore.getters.execution,
+    modStyle: ExecutionStore.getters.modStyle,
+    numEntries: ExecutionStore.getters.numEntries,
+    selectedElementsByParent: ExecutionStore.getters.selectedElementsByParent,
     elementsByParent: ExecutionStore.getters.elementsByParent,
     parentsByChild: ExecutionStore.getters.parentsByChild,
     elementViewState: ExecutionStore.getters.elementViewState,
-    executionInputKey: ExecutionStore.getters.executionInputKey,
     elementKey: ExecutionStore.getters.elementKey,
     parentIdsByChild: ExecutionStore.getters.parentIdsByChild,
 };
 
-// Actions
+// Actions (no-op stubs; these tests only exercise computed props)
 const actions = {
     fetchCustomScripts: () => {},
     editCustomScriptInput: () => {},
     editElementSpecification: () => {},
-    saveElementInput: () => {}
+    editElementInput: () => {},
+    editElementArray: () => {},
+    saveElementInput: () => {},
+    saveRedlineInput: () => {},
+    setElementViewStateDetailLevel: () => {}
 };
 
 // Stub components
@@ -160,32 +172,38 @@ const stubs = {
 const localVue = createLocalVue();
 localVue.use(Vuex);
 
-xdescribe("CustomScriptElement.vue", () => {
-    let store;
+describe("CustomScriptElement.vue", () => {
     let wrapper;
 
-    store = new Vuex.Store({ state, getters, actions });
-    wrapper = shallow(Vue.extend(elementExecutionMixin).extend(CustomScriptElement), {
-        store,
-        localVue,
-        propsData,
-        stubs
+    beforeEach(() => {
+        const store = new Vuex.Store({ state, getters, actions });
+        wrapper = shallowMount(Vue.extend(elementExecutionMixin).extend(CustomScriptElement), {
+            store,
+            localVue,
+            propsData,
+            stubs
+        });
     });
 
-    xit("scriptName get", () => {
-        expect(wrapper.vm.scriptName).toEqual(scriptName);
+    afterEach(() => {
+        if (wrapper) wrapper.destroy();
     });
 
-    xit("timeout get", () => {
+    // NOTE: the component exposes script_path via the `scriptPath` computed prop
+    // (there is no `scriptName` computed), so this asserts against scriptPath.
+    it("scriptPath resolves from execution_user_input", () => {
+        expect(wrapper.vm.scriptPath).toEqual("/abc");
+    });
+
+    it("timeout resolves as a parsed integer", () => {
         expect(wrapper.vm.timeout).toEqual(timeout);
     });
 
-    xit("input01 name get", () => {
+    it("inputs[0] name resolves from execution_user_input", () => {
         expect(wrapper.vm.inputs[0].name).toEqual(inputName01);
     });
 
-    xit("input01 value get", () => {
+    it("inputs[0] value resolves from execution_user_input", () => {
         expect(wrapper.vm.inputs[0].value).toEqual(inputValue01);
     });
 });
-*/
