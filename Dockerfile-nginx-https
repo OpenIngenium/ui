@@ -1,0 +1,13 @@
+# This file builds the NGINX reverse proxy for a "full" deployment.
+# Static assets (built Vue bundles + legacy static files) are served by the `ui` (Node/Express)
+# container itself at /static (see src/server/src/app.js), so NGINX here is a pure reverse
+# proxy - no frontend build is needed in this image.
+
+FROM nginx:1.30.6-alpine
+
+COPY eval_file_prod.sh /usr/local/bin/
+COPY ./nginx.conf /etc/nginx/nginx.conf
+COPY ./ingenium-https.conf /etc/nginx/conf.d/ingenium-https.template.conf 
+
+EXPOSE 443
+CMD ["/bin/sh", "-c", "eval_file_prod.sh /etc/nginx/conf.d/ingenium-https.template.conf > /etc/nginx/conf.d/ingenium-https.conf && rm /etc/nginx/conf.d/ingenium-https.template.conf && exec nginx -g 'daemon off;'"]

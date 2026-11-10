@@ -1,0 +1,18 @@
+ve
+src/client/node_modules
+
+# Node/Express server - node_modules is (re)installed fresh inside the image via `npm ci`
+# (see Dockerfile), and test files/coverage output/env files are dev-only, never needed at
+# runtime or in the production image.
+src/server/node_modules
+src/server/test
+src/server/coverage
+src/server/.env
+src/server/.env.example
+
+# Root convenience tooling (concurrently, see package.json) - dev-only, not part of any image.
+node_modules
+
+# Client test artifacts/coverage output - not needed in the production image (only
+# src/client/dist, produced by `npm run build`/`build:single-node`, is copied in).
+src/client/test-reports

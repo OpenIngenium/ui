@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - devel
+      - main
+  pull_request:
+    branches:
+      - devel
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-client:
+    name: Test (client)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: src/client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: src/client
+        run: npm ci --legacy-peer-deps
+
+      - name: Run tests with coverage
+        working-directory: src/client
+        run: npm run test:coverage
+
+  test-server:
+    name: Test (server)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: src/server/package-lock.json
+
+      - name: Install dependencies
+        working-directory: src/server
+        run: npm ci
+
+      - name: Run tests with coverage
+        working-directory: src/server
+        run: npm run test:coverage
+
+  docker:
+    name: Docker Build
+    needs: [test-client, test-server]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Build Docker image (UI)
+        run: docker build -t ingenium_ui:${{ github.sha }} .
+
+      - name: Build Docker image (UI NGINX)
+        run: docker build -f Dockerfile-nginx-https -t ingenium_ui_nginx:${{ github.sha }} .

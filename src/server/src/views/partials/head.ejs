@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= title %></title>
+
+    <link rel="icon" type="image/png" href="/static/images/favicon.png"/>
+
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/static/css/theme.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/static/css/global.css" rel="stylesheet" type="text/css"/>
+
+    <% (typeof extraStyles !== 'undefined' ? extraStyles : []).forEach(function(href) { %>
+    <link href="/static/<%= href %>" rel="stylesheet" type="text/css"/>
+    <% }); %>
+
+    <script type="text/javascript" src="/static/js/jquery-3.5.1.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.cookie.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/static/js/global.min.js"></script>
+
+    <script>
+        window.applicationTitle = "<%= APPLICATION_TITLE %>";
+        window.uiCustomFooter = "<%- UI_CUSTOM_FOOTER %>";
+        window.froalaKey = "<%- FROALA_KEY %>";
+        // JSON.stringify emits the surrounding quotes and escapes any quotes/backslashes in
+        // the value - formats commonly contain double quotes (e.g. the JSON-ish example).
+        window.cmdStringFormat = <%- JSON.stringify(CMD_STRING_FORMAT) %>;
+
+        window.contextMenuDropdowns = () => {
+            $('.dropdown-submenu .submenu').off('click');
+
+            $('.dropdown-submenu .submenu').click(function(e) {
+                // Hide all other submenus
+                $(this).closest('.dropdown-submenu').siblings().find('ul').hide();
+
+                $(this).next('ul').toggle();
+                e.stopPropagation();
+                e.preventDefault();
+            });
+        }
+
+        $(document).ready(function() {
+            window.contextMenuDropdowns();
+
+            // Handle document click to close all submenus
+            $(document).click(function(e) {
+                if (!$(e.target).closest('.dropdown-submenu').length) {
+                    $('.dropdown-submenu .submenu').next('ul').hide();
+                }
+            });
+        });
+    </script>
+</head>
+<body class="up-body mw-100 position-relative" style="min-height: auto;">
+
+<header class="up-header"></header>
+
+<div class="container-fluid main-content mb-5 mt-4 pt-2">

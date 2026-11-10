@@ -1,0 +1,89 @@
+/* All levels of nav */
+nav[data-toggle='toc'] .nav > li > a {
+    display: block;
+    padding: 4px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #767676;
+}
+
+nav[data-toggle='toc'] .nav > li > a:hover,
+nav[data-toggle='toc'] .nav > li > a:focus {
+    padding-left: 19px;
+    color: #563d7c;
+    text-decoration: none;
+    background-color: transparent;
+    border-left: 1px solid #563d7c;
+}
+
+nav[data-toggle='toc'] .nav > .active > a,
+nav[data-toggle='toc'] .nav > .active:hover > a,
+nav[data-toggle='toc'] .nav > .active:focus > a {
+    padding-left: 18px;
+    font-weight: bold;
+    color: #563d7c;
+    background-color: transparent;
+    border-left: 2px solid #563d7c;
+}
+
+/* Nav: second level (shown on .active) */
+nav[data-toggle='toc'] .nav .nav {
+    padding-bottom: 2px;
+}
+
+nav[data-toggle='toc'] .nav .nav > li > a {
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 30px;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+nav[data-toggle='toc'] .nav .nav > li > a:hover,
+nav[data-toggle='toc'] .nav .nav > li > a:focus {
+    padding-left: 29px;
+}
+
+nav[data-toggle='toc'] .nav .nav > .active > a,
+nav[data-toggle='toc'] .nav .nav > .active:hover > a,
+nav[data-toggle='toc'] .nav .nav > .active:focus > a {
+    padding-left: 28px;
+    font-weight: 500;
+}
+
+/* from https://github.com/twbs/bootstrap/blob/e38f066d8c203c3e032da0ff23cd2d6098ee2dd6/docs/assets/css/src/docs.css#L631-L634 */
+nav[data-toggle='toc'] .nav > .active > ul {
+    display: block;
+}
+
+div#toc_div {
+    height: 90%;
+    padding: 5px;
+    position: sticky;
+    position: -webkit-sticky;
+    top: 65px;
+    z-index: 1;
+}
+
+div#toc_scroll_wrapper {
+    width: 100%;
+    height: 100%;
+    display: -webkit-box; /* OLD - iOS 6-, Safari 3.1-6 */
+    display: -moz-box; /* OLD - Firefox 19- (buggy but mostly works) */
+    display: -ms-flexbox; /* TWEENER - IE 10 */
+    display: -webkit-flex; /* NEW - Chrome */
+    display: flex; /* NEW, Spec - Opera 12.1, Firefox 20+ */
+    -ms-flex-direction: column;
+    -moz-flex-direction: column;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+
+    overflow-y: scroll;
+    max-height: 500px;
+    overflow-x: inherit;
+    -webkit-box-flex: 1; /* OLD - iOS 6-, Safari 3.1-6 */
+    -moz-box-flex: 1; /* OLD - Firefox 19- */
+    -webkit-flex: 1; /* Chrome */
+    -ms-flex: 1; /* IE 10 */
+    flex: 1; /* NEW, */
+}

@@ -1,0 +1,8 @@
+<% var title = 'Execution As Run'; %>
+<% var extraStyles = ['css/execution_spa.css', 'css/steps_spa.css', 'css/vue-multiselect.min.css', 'css/vue-datetime.min.css']; %>
+<%- include('../partials/head', { title: title, extraStyles: extraStyles }) %>
+
+<div id="spa-execute-as-run"></div>
+<script src="/static/<%= execute_as_run_js_bundle %>"></script>
+
+<%- include('../partials/foot') %>

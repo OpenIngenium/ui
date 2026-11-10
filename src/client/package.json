@@ -1,0 +1,163 @@
+{
+  "name": "ingenium-ui",
+  "description": "Ingenium UI",
+  "version": "1.0.0",
+  "author": "JPL",
+  "private": true,
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "../../gen_version.sh; cross-env NODE_ENV=development webpack --progress --watch",
+    "dev:minified": "../../gen_version.sh; cross-env NODE_ENV=production webpack --progress --watch",
+    "build": "../../gen_version.sh; cross-env NODE_ENV=production webpack --progress && node timestamp ./dist/",
+    "build:single-node": "../../gen_version.sh; cross-env NODE_ENV=development webpack --progress && node timestamp ./dist/",
+    "test": "../../gen_version.sh; cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=8192 karma start test/unit/karma.test.conf.js --single-run",
+    "test:watch": "../../gen_version.sh; cross-env NODE_ENV=test NODE_OPTIONS=--max-old-space-size=8192 karma start test/unit/karma.dev.conf.js",
+    "test:coverage": "../../gen_version.sh; cross-env NODE_ENV=test NODE_OPTIONS=--max-old-space-size=8192 karma start test/unit/karma.coverage.conf.js --single-run"
+  },
+  "dependencies": {
+    "@casl/ability": "^3.2.0",
+    "@casl/vue": "^0.5.1",
+    "@fortawesome/fontawesome": "^1.1.6",
+    "@fortawesome/fontawesome-free-brands": "^5.0.11",
+    "@fortawesome/fontawesome-free-solid": "^5.0.11",
+    "@fortawesome/vue-fontawesome": "0.0.22",
+    "@vue/composition-api": "^1.7.2",
+    "axios": "^0.28.1",
+    "bootstrap": "^4.4.1",
+    "bootstrap-toggle": "^2.2.2",
+    "bootstrap-vue": "^2.13.0",
+    "core-js": "^3.45.1",
+    "echarts": "^5.6.0",
+    "froala-editor": "4.0.16",
+    "ing-vue-froalav3-wysiwyg": "4.0.16",
+    "ing-vue-infinite-loading": "1.2.0",
+    "jasmine-core": "^5.1.2",
+    "jwt-decode": "^2.2.0",
+    "karma-jasmine": "^5.1.0",
+    "karma-jasmine-html-reporter": "^2.1.0",
+    "lodash": "^4.17.10",
+    "luxon": "^1.26.0",
+    "moment-timezone": "^0.5.27",
+    "socket.io-client": "^2.2.0",
+    "tabulator-tables": "^6.5.2",
+    "vue": "^2.5.17-beta.0",
+    "vue-clipboard2": "^0.3.1",
+    "vue-datetime": "^1.0.0-beta.14",
+    "vue-echarts": "^6.5.5",
+    "vue-multiselect": "^2.1.6",
+    "vue-router": "^3.0.1",
+    "vue-socket.io": "^3.0.7",
+    "vue-text-highlight": "^2.0.10",
+    "vue-toasted": "^1.1.28",
+    "vue-typeahead-bootstrap": "^2.12.0",
+    "vuex": "^3.0.1",
+    "webpack-merge": "^4.1.2",
+    "weekstart": "^1.1.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.3",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.18.6",
+    "@babel/plugin-proposal-optional-chaining": "^7.21.0",
+    "@babel/preset-env": "^7.28.3",
+    "@vue/test-utils": "~1.0.0-beta.14",
+    "babel-loader": "^8.4.1",
+    "babel-plugin-istanbul": "^6.1.1",
+    "babel-plugin-lodash": "~3.3.4",
+    "buffer": "^6.0.3",
+    "cross-env": "^7.0.3",
+    "crypto-browserify": "^3.12.1",
+    "css-loader": "^6.11.0",
+    "eslint": "^4.14.0",
+    "eslint-plugin-vue": "^4.5.0",
+    "faker": "^4.1.0",
+    "jquery": "^3.5.1",
+    "jsdom": "^24.1.0",
+    "karma": "^6.4.4",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-coverage": "^2.2.1",
+    "karma-jsdom-launcher": "^17.0.0",
+    "karma-junit-reporter": "^2.0.1",
+    "karma-spec-reporter": "^0.0.36",
+    "karma-webpack": "^5.0.1",
+    "mini-css-extract-plugin": "^2.9.0",
+    "moment": "^2.22.0",
+    "process": "^0.11.10",
+    "sass": "^1.77.8",
+    "sass-loader": "^13.3.3",
+    "sinon": "^4.5.0",
+    "stream-browserify": "^3.0.0",
+    "terser-webpack-plugin": "^5.6.1",
+    "util": "^0.12.5",
+    "vm-browserify": "^1.1.2",
+    "vue-loader": "^15.11.1",
+    "vue-style-loader": "^4.1.3",
+    "vue-template-compiler": "^2.6.14",
+    "webpack": "^5.95.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "jasmine": true,
+      "node": true,
+      "es6": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 2017,
+      "sourceType": "module",
+      "ecmaFeatures": {
+        "modules": true
+      }
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:vue/essential"
+    ],
+    "rules": {
+      "no-debugger": "warn",
+      "no-console": "warn",
+      "no-unused-vars": "warn",
+      "no-var": "error",
+      "semi": "error",
+      "indent": "error",
+      "space-before-function-paren": [
+        "error",
+        "never"
+      ]
+    },
+    "overrides": [
+      {
+        "files": [
+          "*.vue"
+        ],
+        "rules": {
+          "indent": "off",
+          "vue/script-indent": [
+            "error",
+            4,
+            {
+              "baseIndent": 1,
+              "switchCase": 1
+            }
+          ],
+          "vue/html-self-closing": [
+            "error",
+            {
+              "html": {
+                "component": "never",
+                "normal": "any"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "globals": {
+      "process": true,
+      "browser": true
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

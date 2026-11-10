@@ -1,0 +1,656 @@
+/* ----------------------------------- */
+/*               general               */
+/* ----------------------------------- */
+
+/* prevent header flicker */
+.up-header { display:none; } 
+
+/* Hides the injected footer by jpl-theme library */
+.up-footer { display: none; }
+
+body { padding-bottom: 0px !important; }
+
+.main-content { margin-top: 80px !important; }
+
+span.status-dot {
+    content: ' ';
+    display: inline-block;
+    height: 16px;
+    width: 16px;
+
+    border-radius: 50%;
+}
+
+span.status-dot.status-dot-green {
+    background-color: #5cb85c;
+}
+
+span.status-dot.status-dot-yellow {
+    background-color: #f0ad4e;
+}
+
+span.status-dot.status-dot-red {
+    background-color: #d9534f;
+}
+
+span.status-dot.status-dot-grey {
+    background-color: #aaa;
+}
+
+/* should probably be moved to django_jpl_theme */
+label[data-toggle="tooltip"] {
+    height: 20px;
+    line-height: 20px;
+}
+
+/* Added: to prevent large images on WYSIWYG Editor from overflowing */
+img {
+    max-width: 825px;
+    height: auto;
+}
+
+/* ----------------------------------- */
+/*     view all venues - tile view     */
+/* ----------------------------------- */
+
+div.all-venues.all-venues-tile div.row {
+    margin-right: -5px;
+    margin-left: -5px;
+}
+
+div.all-venues.all-venues-tile div.row div[class^="col-"] {
+    margin-bottom: 10px;
+    padding: 5px;
+    position: relative;
+}
+
+div.all-venues div.venue-dummy {
+    margin-top: 100%;
+}
+
+div.all-venues div.venue {
+    border: 1px solid #ccc;
+    background-color: #f5f5f5;
+    padding: 15px;
+    margin: 5px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+}
+
+div.all-venues div.venue {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+div.all-venues div.venue > h1,
+div.all-venues div.venue > h2,
+div.all-venues div.venue > h3,
+div.all-venues div.venue > h4 {
+    margin: 0;
+}
+
+div.all-venues div.venue > span.glyphicon {
+    font-size: 32px;
+    color: #444;
+}
+
+div.all-venues div.venue > hr {
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #fff;
+    margin: 15px 0;
+    width: 100%;
+}
+
+div.all-venues div.venue > h1 {
+    font-size: 20px;
+    margin: 0;
+    text-align: center;
+}
+
+div.all-venues div.venue > h2 {
+    font-size: 14px;
+    margin: 15px 0 5px;
+}
+
+div.all-venues div.venue > h3 {
+    font-size: 12px;
+    font-weight: normal;
+    font-family: "Roboto-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+
+div.all-venues div.venue > h4 {
+    font-size: 16px;
+    margin-top: auto;
+}
+
+/* ----------------------------------- */
+/*             step_status             */
+/* ----------------------------------- */
+
+div.step_status:not(:empty) {
+    margin-top: 15px;
+}
+
+.execution-results-table.success {
+    color: #3c763d;
+    border: none;
+    background-color: #dff0d8;
+    border-collapse: collapse;
+
+}
+
+.execution-results-table.success > tbody > tr > th {
+    border: solid #3c763d;
+    border-width: 0 0 2px 0;
+}
+
+.execution-results-table.success > tbody > tr > td {
+    border: 1px solid #3c763d;
+}
+
+.execution-results-table.success > tbody > tr:last-of-type > td {
+    border-width: 1px 1px 0 1px;
+}
+
+.execution-results-table.danger {
+    color: #a94442;
+    background-color: #f2dede;
+    border-collapse: collapse;
+    border: none;
+}
+
+.execution-results-table.danger > tbody > tr > th {
+    border: solid #a94442;
+    border-width: 0 0 2px 0;
+}
+
+.execution-results-table.danger > tbody > tr:last-of-type > td {
+    border: solid #a94442;
+    border-width: 1px 1px 0 1px;
+}
+
+.execution-results-table.danger > tbody > tr > td {
+    border: 1px solid #a94442;
+}
+
+.execution-results-table.info {
+    color: #31708f;
+    background-color: #d9edf7;
+    border-collapse: collapse;
+    border: none #31708f;
+}
+
+.execution-results-table.info > tbody > tr > th {
+    border: solid #31708f;
+    border-width: 0 0 2px 0;
+}
+
+.execution-results-table.info > tbody > tr > td {
+    border: 1px solid #31708f;
+}
+
+.execution-results-table.info > tbody > tr:last-of-type > td {
+    border: solid #31708f;
+    border-width: 1px 1px 0 1px;
+}
+
+.execution-results-table.warning {
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+    border-collapse: collapse;
+    border: none #8a6d3b;
+}
+
+.execution-results-table.warning > tbody > tr > th {
+    border: solid #8a6d3b;
+    border-width: 0 0 2px 0;
+}
+
+.execution-results-table.warning > tbody > tr > td {
+    border: 1px solid #8a6d3b;
+}
+
+.execution-results-table.warning > tbody > tr:last-of-type > td {
+    border: solid #8a6d3b;
+    border-width: 1px 1px 0 1px;
+}
+
+.execution-results-table.success > tbody > tr > td:last-of-type, .execution-results-table.danger > tbody > tr > td:last-of-type, .execution-results-table.warning > tbody > tr > td:last-of-type {
+    border-right: none;
+}
+
+.execution-results-table.success > tbody > tr > td:first-of-type, .execution-results-table.danger > tbody > tr > td:first-of-type, .execution-results-table.warning > tbody > tr > td:first-of-type {
+    border-left: none;
+}
+
+div.step_status > .alert {
+    position: relative;
+    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+    border: 3px solid;
+    margin: -12px -10px;
+}
+
+div.step-detail-execution-label {
+    position: absolute;
+    left: -36px;
+    width: 27px;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 6px 0px 0px 6px;
+}
+
+div.step-detail-execution-label.success {
+    background-color: #3c763d;
+    color: #dff0d8;
+}
+
+div.step-detail-execution-label.info {
+    background-color: #3c763d;
+    color: #dff0d8;
+}
+
+div.step-detail-execution-label.danger {
+    background-color: #a94442;
+    color: #f2dede;
+}
+
+div.step-detail-execution-label.warning {
+    background-color: #8a6d3b;
+    color: #fcf8e3;
+}
+
+span.step-detail-execution-resize {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+span.step-detail-execution-label-text, span.step-detail-execution-label-counter {
+    transform: rotate(270deg);
+    text-transform: uppercase;
+    font-size: 18px;
+}
+
+div.step_status > .alert p {
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+div.step_status > .alert > .row {
+    /*padding-left: 20px;*/
+    text-align: center;
+}
+
+div.step_status > .alert .step_status_icon {
+    position: relative;
+}
+
+div.step_status > .alert .step_status_icon:before {
+    border-radius: 4px 0 0 4px;
+    bottom: 0;
+    content: ' ';
+    left: -21px;
+    margin: -16px 0;
+    position: absolute;
+    top: 0;
+    width: 22px;
+}
+
+div.step_status > .alert .step_status_icon:after {
+    content: 'EXECUTED';
+    font-weight: bold;
+    left: -10px;
+    position: absolute;
+    top: 80%;
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+    -webkit-transform-origin: 0;
+    -moz-transform-origin: 0;
+    -ms-transform-origin: 0;
+    -o-transform-origin: 0;
+    transform-origin: 0;
+}
+
+div.step_status > .alert .step_status_icon > .glyphicon {
+    font-size: 56px;
+}
+
+div.step_status > .alert .step_status_icon > p {
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+div.step_status > .alert.alert-danger {
+    border-color: #a94442;
+}
+
+div.step_status > .alert.alert-success {
+    border-color: #3c763d;
+}
+
+div.step_status > .alert.alert-info {
+    border-color: #31708f;
+}
+
+div.step_status > .alert.alert-warning {
+    border-color: #8a6d3b;
+}
+
+div.step_status > .alert.alert-danger .step_status_icon:before {
+    background-color: #a94442;
+}
+
+div.step_status > .alert.alert-info .step_status_icon:before {
+    background-color: #31708f;
+}
+
+div.step_status > .alert.alert-warning .step_status_icon:before {
+    background-color: #8a6d3b;
+}
+
+div.step_status > .alert.alert-danger .step_status_icon:after {
+    color: #f2dede;
+}
+
+div.step_status > .alert.alert-info .step_status_icon:after {
+    color: #d9edf7;
+}
+
+div.step_status > .alert.alert-warning .step_status_icon:after {
+    color: #fcf8e3;
+}
+
+div.step_status > .alert .step_status_info {
+    border-left: 1px solid;
+}
+
+div.step_status > .alert .step_status_info .row > div:first-child {
+    text-align: right;
+}
+
+div.step_status > .alert .step_status_info .row > div:last-child {
+    text-align: left;
+}
+
+div.step_status > .alert .step_status_info .row > div:first-child:after {
+    content: ' ';
+    height: 1px;
+    width: 19px;
+    border-bottom: 1px dotted;
+    display: block;
+    position: absolute;
+    right: -10px;
+    top: 8px;
+}
+
+/* ----------------------------------- */
+/*    typeahead on telemetry steps     */
+/* ----------------------------------- */
+
+.step_typeahead_suggestion {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 15px;
+}
+
+.step_typeahead_suggestion > div {
+    display: flex;
+    justify-content: space-between;
+}
+
+.step_typeahead_suggestion > div > h4:first-of-type {
+    font-size: 15px;
+    word-break: break-all;
+}
+
+.step_typeahead_suggestion > div > h4:last-of-type:not(:first-of-type) {
+    align-self: flex-end;
+    font-size: 12px;
+    font-weight: normal;
+    padding-left: 10px;
+    white-space: nowrap;
+}
+
+.step_typeahead_suggestion > p {
+    font-size: 12px;
+    line-height: 14px;
+    margin: 5px 0 0;
+}
+
+/* ----------------------------------- */
+/*       graph on graph eha step       */
+/* ----------------------------------- */
+
+.graph_eha_chart {
+    height: 350px;
+    width: 100%;
+}
+
+/* ----------------------------------- */
+/*       command builder wizard        */
+/* ----------------------------------- */
+.cmd_builder_component{
+    min-height: 300px;
+    width: 100%;
+    margin-top: 20px;
+    background-color: #EEEEEE;
+    border: 1px solid #DDDDDD;
+    border-radius: 4px;
+}
+
+.cmd_builder_placeholder{
+    display: block;
+    width: 300px;
+    margin: 20px auto 0 auto;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    color: #b3b3b3;
+
+}/* ----------------------------------- */
+/*       procedure details        */
+/* ----------------------------------- */
+.procedure_detail_component {
+    min-height: 300px;
+    width: 100%;
+    background-color: #EEEEEE;
+    border: 1px solid #DDDDDD;
+    border-radius: 4px;
+}
+
+#step_procedures_table_datatable_container .popover-content, #step_procedure_versions_table_datatable_container .popover-content {
+    width: 400px;
+}
+
+.procedure_detail_placeholder {
+    display: block;
+    width: 300px;
+    margin: 80px auto 0 auto;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    color: #b3b3b3;
+}
+
+.update-procedure-link, .delete-procedure-link, .procedure-action-link {
+    padding: 4px;
+}
+.update-procedure-link:hover, .delete-procedure-link:hover, .procedure-action-link:hover {
+    background-color: #d3d3d3;
+}
+
+#procedure_versions_table .popover-content {
+    cursor: pointer;
+    padding: 4px;
+    width: 120px;
+}
+
+#procedures_table .popover-content {
+    cursor: pointer;
+    padding: 4px;
+    width: 90px;
+    color: black;
+}
+
+.procedure-row-selected {
+    color: green !important;
+    background-color: #e0f0d8 !important;
+}
+
+.run-procedure-step-choose-steps {
+    background-color: #EEEEEE;
+    border: 4px solid gray;
+    margin: 0px;
+    max-height: 700px;
+    padding: 10px 0;
+    border-radius: 4px;
+}
+
+.select-procedure-step-choose-steps {
+    background-color: #EEEEEE;
+    border: 4px solid gray;
+    margin: 0px;
+    max-height: 700px;
+    overflow-y: scroll;
+    padding: 10px 0;
+    border-radius: 4px;
+}
+
+.cmd_builder_string_container {
+    margin: 0 16px 20px 16px;
+}
+
+.cmd_builder_string_container .form-control {
+    border-radius: 2px;
+    height: 38px;
+}
+
+.cmd_builder_string_container .form-control[disabled] {
+    background-color: #F7F7F7;
+}
+
+/* ----------------------------------- */
+/*             arguments               */
+/* ----------------------------------- */
+
+.cmd_builder_arguments_form {
+    border-top: 1px solid #DDDDDD;
+    border-bottom: 1px solid #DDDDDD;
+}
+
+.cmd_builder_arguments_form .titles-row {
+    margin-bottom: 10px;
+}
+
+.cmd_builder_arguments_form .titles-row div {
+    padding: 6px 15px;
+    font-size: 12px;
+    font-weight: bold;
+    border-bottom: 2px solid #DDDDDD;
+}
+
+.cmd_builder_arg_row {
+    padding: 10px 20px 10px 15px;
+    margin-bottom: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.cmd_builder_arg_row .row {
+    min-height: 70px;
+}
+
+.cmd_builder_arg_row .ranges-list {
+    list-style: none;
+    padding: 0;
+    font-size: 11px;
+}
+
+
+/* override default dynamic_element styles */
+.dynamic_element.cmd_builder_arg_row {
+    border-left-width: 1px !important;
+}
+
+/* ----------------------------------- */
+/*                table                */
+/* ----------------------------------- */
+table.cmd_builder_table {
+    border-collapse: collapse;
+    background-color: inherit;
+    border: none;
+}
+
+table.cmd_builder_table tr > td:not(:last-of-type):not(:first-of-type) {
+    border-right: 1px solid #DDDDDD;
+    border-left: 1px solid #DDDDDD;
+}
+
+table.cmd_builder_table th {
+    font-family: inherit !important;
+    font-size: 12px;
+}
+
+table.cmd_builder_table thead tr th {
+    padding: 2px 8px !important;
+}
+
+/* overcome theme shadow */
+table.cmd_builder_table tbody > tr:first-of-type > td {
+    padding-top: 10px !important;
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+    box-shadow: none !important;
+}
+
+/* make default froala highlighted border thicker */
+.fr-highlighted {
+    border-width: 4px !important;
+}
+
+/* ----------------------------------- */
+/*                fonts                */
+/* ----------------------------------- */
+@font-face {
+    font-family: 'Roboto';
+    src: url('../fonts/Roboto-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Oswald';
+    src: url('../fonts/Oswald-VariableFont_wght.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('../fonts/Montserrat-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Open+Sans+Condensed';
+    src: url('../fonts/OpenSansCondensed-Light.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'IBM+Plex+Mono';
+    src: url('../fonts/IBMPlexMono-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Courier+Prime';
+    src: url('../fonts/CourierPrime-Regular.ttf') format('truetype');
+}

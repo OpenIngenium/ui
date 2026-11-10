@@ -1,0 +1,35 @@
+{
+  "name": "ingenium-server",
+  "description": "Ingenium UI server (replaces Django) - auth, SPA page serving, API proxying",
+  "version": "1.0.0",
+  "author": "JPL",
+  "private": true,
+  "license": "Apache-2.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "cross-env NODE_ENV=development nodemon --watch . --ext js,ejs,env server.js",
+    "test": "node --test --test-force-exit \"test/**/*.test.js\"",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-exclude=\"test/**\" --test-force-exit \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "csrf-csrf": "^4.0.3",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "http-proxy-middleware": "^4.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "nodemon": "^3.1.4",
+    "supertest": "^7.2.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

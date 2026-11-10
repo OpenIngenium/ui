@@ -1,0 +1,8 @@
+<% var title = 'Venue Detail'; %>
+<%- include('../partials/head', { title: title }) %>
+
+<div id="venue-id" data-venue-id="<%= venue_id %>"></div>
+<div id="spa-venue-detail"></div>
+<script src="/static/<%= venue_detail_js_bundle %>"></script>
+
+<%- include('../partials/foot') %>

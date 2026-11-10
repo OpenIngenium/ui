@@ -1,0 +1,8 @@
+<% var title = 'Execution'; %>
+<% var extraStyles = ['css/execution_spa.css', 'css/steps_spa.css', 'css/vue-multiselect.min.css', 'css/vue-datetime.min.css']; %>
+<%- include('../partials/head', { title: title, extraStyles: extraStyles }) %>
+
+<div id="spa-execution"></div>
+<script src="/static/<%= execution_js_bundle %>"></script>
+
+<%- include('../partials/foot') %>

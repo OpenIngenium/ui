@@ -1,0 +1,100 @@
+div#execution_page_left hr {
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #fff;
+}
+
+.redline-blueline-toggle .toggle-on{
+    background-color:#ffe7e7;
+    color:#ff4d4d;
+    font-weight:bold;
+    border-color:#ff4d4d;
+}
+.redline-blueline-toggle .toggle-on:active{
+    background-color:#ffe7e7;
+    color:#ff4d4d;
+}
+
+.redline-blueline-toggle .toggle-off{
+    background-color:#e7f3ff;
+    color:#4da6ff;
+    font-weight:bold;
+    border-color:#4da6ff;
+}
+
+.redline-blueline-toggle .toggle-off:hover{
+    background-color:#e7f3ff;
+    color:#4da6ff;
+}
+
+.redline-approval-toggle .toggle-on{
+    background-color:#ffe7e7;
+    color:#ff4d4d;
+    font-weight:bold;
+    border-color:#ff4d4d;
+}
+
+.redline-approval-toggle .toggle-off{
+    background-color:#e7fff3;
+    color:#00cd00;
+    font-weight:bold;
+    border-color:#00cd00;
+} 
+
+.redline-approval-toggle .toggle-off:hover{
+    background-color:#e7fff3;
+    color:#00cd00;
+}
+
+
+.outline-top-control {
+    background: white;
+    height: 40px;
+    display: flex; 
+    justify-content: space-around;
+    align-items: center;
+}
+
+.outline-follow {
+    height: 35px !important;
+}
+
+.label-btn-radius {
+    border-radius: 0 4px 4px 0 !important;
+}
+
+.follow-btn {
+    background-color: #e7f3ff;
+    color: #4da6ff;
+    font-weight:bold !important;
+    border-color:#4da6ff;
+}
+
+.unfollow-btn {
+    background-color: #b1b1b17a;
+    color: rgb(117, 117, 117);
+    font-weight:bold !important;
+    border-color:rgb(121, 121, 121);
+}
+
+.default-btn {
+    background-color: #ffffff;
+    color: #999;
+    font-weight:bold !important;
+    border-color:#999;
+}
+
+.hide-radio-circle {
+    display:none;
+}
+
+.redline {
+    border:1px solid #ff4d4d;
+    background-color:#ffe7e7;
+    color:#ff4d4d;
+}
+
+.blueline {
+    border:1px solid #4da6ff;
+    background-color:#e7f3ff;
+    color:#4da6ff;
+}

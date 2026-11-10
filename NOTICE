@@ -1,0 +1,31 @@
+Ingenium UI
+Copyright (c) Jet Propulsion Laboratory, California Institute of Technology
+
+Licensed under the Apache License, Version 2.0 (the "License");
+see the LICENSE file at the root of this repository for the full text.
+
+------------------------------------------------------------------------------
+Third-Party Components
+------------------------------------------------------------------------------
+
+This product bundles or depends on the third-party npm packages listed below,
+each of which is distributed under its own license and is NOT covered by the
+Apache License 2.0 that applies to Ingenium UI's own source code. Users and
+distributors of this software are responsible for independently complying
+with the license terms of each of these components, including obtaining any
+required commercial licenses for production/commercial use.
+
+1. froala-editor / ing-vue-froalav3-wysiwyg
+   License:  Froala Editor Commercial License (proprietary)
+   Source:   https://froala.com
+   License terms: https://froala.com/wysiwyg-editor/pricing/
+   Notes:    Requires a paid license key for production use. This repository
+             surfaces the key via the FROALA_KEY environment variable (see
+             README.md, "Configuration" section), injected into
+             window.froalaKey by the server.
+
+------------------------------------------------------------------------------
+
+All other third-party dependencies of this project are used under their
+respective open-source licenses (e.g. MIT, BSD) as declared in
+src/client/package.json and src/server/package.json.

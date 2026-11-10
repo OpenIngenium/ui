@@ -1,0 +1,10 @@
+</div>
+
+<% if (typeof HEADER_JS_BUNDLE !== 'undefined' && HEADER_JS_BUNDLE) { %>
+<script src="/static/<%= HEADER_JS_BUNDLE %>"></script>
+<% } %>
+
+<%- include('sessionExpire') %>
+
+</body>
+</html>

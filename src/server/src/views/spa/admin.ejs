@@ -1,0 +1,8 @@
+<% var title = 'Admin'; %>
+<% var extraStyles = ['css/admin.css']; %>
+<%- include('../partials/head', { title: title, extraStyles: extraStyles }) %>
+
+<div id="spa-admin"></div>
+<script src="/static/<%= admin_js_bundle %>"></script>
+
+<%- include('../partials/foot') %>
